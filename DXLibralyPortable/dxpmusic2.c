@@ -69,7 +69,11 @@ MUSICDATA *musicdataroot = NULL;
 //20090410
 //音ファイル管理領域の変更に伴い追加
 #define MusicTableMAX 32
-static MUSICDATA* MusicTable[MusicTableMAX];
+//20090412
+//管理に関するエリアをメモリ断片化を防ぐためにmallocで
+//確保しない方式に変更
+//static MUSICDATA* MusicTable[MusicTableMAX];
+static MUSICDATA MusicTable[MusicTableMAX];
 
 //関数定義
 
@@ -99,13 +103,20 @@ MUSICDATA* Handle2MusicDataPtr(int handle)
 		ptr = ptr->next;
 	}
 	return ptr;*/
-	return MusicTable[handle];
+	//20090412
+	//管理に関するエリアをメモリ断片化を防ぐためにmallocで
+	//確保しない方式に変更
+	//return MusicTable[handle];
+	return &MusicTable[handle];
 }
 
 MUSICDATA* AddMusicData()
 {
-	MUSICDATA *ptr = (MUSICDATA*)malloc(sizeof(MUSICDATA));
-	if(ptr == NULL)return NULL;
+	//20090412
+	//管理に関するエリアをメモリ断片化を防ぐためにmallocで
+	//確保しない方式に変更
+	//MUSICDATA *ptr = (MUSICDATA*)malloc(sizeof(MUSICDATA));
+	//if(ptr == NULL)return NULL;
 	//20090410
 	//音ファイル管理用域の変更
 	//MUSICDATA *ptr2 = musicdataroot;
@@ -116,20 +127,36 @@ MUSICDATA* AddMusicData()
 	//	ptr2 = ptr2->next;
 	//}
 	int i;
+	//20090412
+	//管理に関するエリアをメモリ断片化を防ぐためにmallocで
+	//確保しない方式に変更
+	//for(i=0;i<MusicTableMAX;i++)
+	//{
+	//	if(MusicTable[i] == NULL) break;
+	//}
 	for(i=0;i<MusicTableMAX;i++)
 	{
-		if(MusicTable[i] == NULL) break;
+		if(MusicTable[i].useflg == 0) break;
 	}
+	if(i >= MusicTableMAX) return NULL;
+	MUSICDATA *ptr = &MusicTable[i];
+	//下の行は将来的に削除の方向で？
+	memset(&MusicTable[i],0x00,sizeof(MusicTable[0]));
 	ptr->handle = i;
-	ptr->apos = ptr->bpos = 0;
-	ptr->flag = 0;
-	ptr->pcm = NULL;
-	ptr->pcmlen = 0;
-	ptr->next = NULL;//musicdataroot;
+	//ptr->apos = ptr->bpos = 0;
+	//ptr->flag = 0;
+	//ptr->pcm = NULL;
+	//ptr->pcmlen = 0;
+	//下の行は将来的に削除の方向で
+	//ptr->next = NULL;//musicdataroot;
 	ptr->volume[0] = ptr->volume[1] = ptr->volume[2] = 100;
-	ptr->count = 0;
+	//ptr->count = 0;
+	ptr->useflg = 1;
 	//musicdataroot = ptr;
-	MusicTable[i] = ptr;
+	//20090412
+	//管理に関するエリアをメモリ断片化を防ぐためにmallocで
+	//確保しない方式に変更
+	//MusicTable[i] = ptr;
 	return ptr;
 }
 int AddMusicDataH()
@@ -142,7 +169,11 @@ int RemoveMusicDataH(int handle)
 {
 	if ( handle <				0 ) return -1;
 	if ( handle >=	MusicTableMAX ) return -2;
-	if ( MusicTable[handle] != NULL) goto rm;
+	//20090412
+	//管理に関するエリアをメモリ断片化を防ぐためにmallocで
+	//確保しない方式に変更
+	//if ( MusicTable[handle] != NULL) goto rm;
+	if ( MusicTable[handle].useflg == 0) return -3;
 	//20090410
 	//音ファイル管理用域の変更
 	//MUSICDATA *ptr = musicdataroot;
@@ -153,17 +184,22 @@ int RemoveMusicDataH(int handle)
 	//	ptr2 = ptr;
 	//	ptr = ptr->next;
 	//}
-	return -3;
-rm:
+	//return -3;
+//rm:
 	//20090410
 	//音ファイル管理用域の変更
 	//if(ptr2 != NULL)ptr2->next = ptr->next;
 	//else musicdataroot = ptr->next;
 	//free(ptr->pcm);
 	//free(ptr);
-	free(MusicTable[handle]->pcm);
-	free(MusicTable[handle]);
-	MusicTable[handle] = NULL;
+	//free(MusicTable[handle]->pcm);
+	free(MusicTable[handle].pcm);
+	//20090412
+	//管理に関するエリアをメモリ断片化を防ぐためにmallocで
+	//確保しない方式に変更
+	//free(MusicTable[handle]);
+	//MusicTable[handle] = NULL;
+	MusicTable[handle].useflg = 0;
 	return 0;
 }
 int RemoveMusicData(MUSICDATA *ptr)
@@ -537,8 +573,13 @@ int	CheckSoundMem( int handle )
 {
 	if( handle <	0				)	return -1;
 	if( handle >=	MusicTableMAX	)	return -2;
-	if( MusicTable[handle]	== NULL)	return -3;
-	if( MusicTable[handle]->flag & DXP_MUSICFLAG_PLAYING) return 1;
+	//20090412
+	//管理に関するエリアをメモリ断片化を防ぐためにmallocで
+	//確保しない方式に変更
+	//if( MusicTable[handle]	== NULL)	return -3;
+	//if( MusicTable[handle]->flag & DXP_MUSICFLAG_PLAYING) return 1;
+	if( MusicTable[handle].useflg == 0)	return -3;
+	if( MusicTable[handle].flag & DXP_MUSICFLAG_PLAYING) return 1;
 	return 0;
 }
 

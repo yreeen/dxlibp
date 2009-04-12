@@ -129,18 +129,19 @@ typedef struct
 
 typedef struct MUSICDATA__	//音楽データのハンドル用構造体
 {
-	struct MUSICDATA__ *next;
-	int apos,bpos;//リピート位置。A-Bリピートに対応させる。
-	u32 flag;//通常/ストリーム　リピート　再生/停止
-	int handle;
-	int count;//参照カウンタ
-	u16 *pcm;//通常ストリームの場合のみ非NULL;
-	int pcmlen;//何サンプルあるのか
-	u8 volume[4];//ボリューム　全体、左、右の順　最大100
-	STREAMDATA Src;
-	//20090410
-	//次改造用のフラグ
+	//20090412
+	//管理に関するエリアをメモリ断片化を防ぐためにmallocで
+	//確保しない方式に変更
+	//struct MUSICDATA__ *next;
 	int useflg;		//0)空き 1)割り当て済み
+	int apos,bpos;	//リピート位置。A-Bリピートに対応させる。
+	u32 flag;		//通常/ストリーム リピート 再生/停止
+	int handle;
+	int count;		//参照カウンタ
+	u16 *pcm;		//通常ストリームの場合のみ非NULL;
+	int pcmlen;		//何サンプルあるのか
+	u8 volume[4];	//ボリューム 全体、左、右の順 最大100
+	STREAMDATA Src;
 }MUSICDATA;
 
 //20090410
