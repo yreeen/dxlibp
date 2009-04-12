@@ -43,7 +43,8 @@ void*	TsFileLoad(const char* filename,int* FileSize)
 {
 	void *wfp;
 	if (!(fd = sceIoOpen((char *)filename, PSP_O_RDONLY, 0777))) return NULL;
-	unsigned long size = sceIoLseek32(fd, 0, PSP_SEEK_END);
+//	unsigned long size = sceIoLseek32(fd, 0, PSP_SEEK_END);
+	unsigned long size = FileRead_size(filename);
 	wfp = malloc(size);
 	if ( wfp == NULL) {
 		sceIoClose(fd);
