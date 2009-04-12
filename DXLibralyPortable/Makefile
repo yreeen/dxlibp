@@ -16,8 +16,3 @@ LDFLAGS =
 PSPSDK=$(shell psp-config --pspsdk-path)
 include $(PSPSDK)/lib/build.mak
 
-all:
-	@rm -f *.o
-	@rm -f *.elf
-	@rm -f *.BAK
-	@rm -f *.SFO
