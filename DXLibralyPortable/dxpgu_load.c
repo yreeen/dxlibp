@@ -1216,7 +1216,6 @@ texptr = MakeTexture(width,height,GU_PSM_T4);
 					texptr->ppalette->data[i] &= (((u32)trans[i]) << 24) | 0x00ffffff;
 				}
 			}
-			ClearDrawScreen();printfDx("PLTE!\n");ScreenFlip();
 		}
 		else
 		if( color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA )
