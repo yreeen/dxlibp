@@ -1129,10 +1129,11 @@ DXPTEXTURE2* LoadPngImage(const char *FileName)
 
 //	if( color_type == PNG_COLOR_TYPE_PALETTE )					png_set_expand( png_ptr ) ;		// パレット使用画像データの自動展開指定
 
-	// αチャンネル付きパレットか８ビット以下のグレースケール画像の場合は
+	// tRNS(一種のカラーキー)付き画像か８ビット以下のグレースケール画像の場合は
 	// 出力画像のピクセルフォーマットをフルカラーにする
+	//ただし、パレット画像でtRNSの場合はパレット情報とtRNS情報を合成する。
 	if( ( color_type == PNG_COLOR_TYPE_GRAY && bit_depth <= 8 ) ||
-	    png_get_valid( png_ptr, info_ptr, PNG_INFO_tRNS ) )
+		(color_type != PNG_COLOR_TYPE_PALETTE && png_get_valid( png_ptr, info_ptr, PNG_INFO_tRNS ) ))
 	{
 		png_set_expand( png_ptr );		
 		Expand = 1 ;
@@ -1201,6 +1202,21 @@ texptr = MakeTexture(width,height,GU_PSM_T4);
 					(((u32)SrcPalette[i].green & 0x000000ff) << 8) |
 					(((u32)SrcPalette[i].red & 0x000000ff) << 0);
 			}
+
+			//tRNS情報取得
+			if(png_get_valid(png_ptr,info_ptr,PNG_INFO_tRNS))
+			{
+				png_bytep trans;
+				int num_trans;
+				png_color_16p trans_values;
+				png_get_tRNS(png_ptr,info_ptr,&trans,&num_trans,&trans_values);
+				if(num_trans > 256)num_trans = 256;
+				for(i = 0;i < num_trans;++i)
+				{
+					texptr->ppalette->data[i] &= (((u32)trans[i]) << 24) | 0x00ffffff;
+				}
+			}
+			ClearDrawScreen();printfDx("PLTE!\n");ScreenFlip();
 		}
 		else
 		if( color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA )
