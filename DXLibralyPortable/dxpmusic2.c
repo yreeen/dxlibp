@@ -357,7 +357,7 @@ int musicthread_normal(SceSize arglen,void* argp)
 }
 
 
-int LoadStreamSound(const char *filename)
+int LoadStreamSound(const char *filename,int SetPcmLen,int* AnsPcmLen)
 {
 	MUSICDATA_THREADPARAM_STREAM param,*p;
 	p = &param;
@@ -373,7 +373,21 @@ int LoadStreamSound(const char *filename)
 	RemoveMusicData(param.md);
 	return -1;	
 mp3setup:
-	param.md->bpos = param.md->pcmlen = mp3len(param.context.src);
+	if(SetPcmLen <= 0)
+	//Pcmの長さがセットされてない(デフォルトは-1)場合は
+	//自前でmp3フォーマットを調べてpcm時の長さを解析
+	//AnsPcmLenにアドレスがあった場合はPcmの長さをセットする
+	//Pcmの長さがセットされていれば解析をせず入力された数字
+	//をそのままセットする。
+	{
+		//通常の処理
+		param.md->bpos = param.md->pcmlen = mp3len(param.context.src);
+		if(AnsPcmLen !=NULL) *AnsPcmLen = param.md->pcmlen;
+	}
+	else
+	{
+		param.md->bpos = param.md->pcmlen = SetPcmLen;
+	}
 	//param.md->pcmlen = mp3len(param.context.src); 2回同じ処理をしてるのでコメント 20090410
 
 	//PSP SDK書いてる人たちが作ってるサウンド系ライブラリが

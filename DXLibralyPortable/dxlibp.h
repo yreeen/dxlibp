@@ -283,7 +283,9 @@ extern "C" {
 		int	CheckSoundMem( int handle );
 		/*読み込み系*/
 		int LoadSoundMem(const char* filename);
-		int LoadStreamSound(const char* filename);
+		//20090415 Mp3の読み込みの高速化のため仕様変更
+		//int LoadStreamSound(const char* filename);
+		int LoadStreamSound(const char *filename,int SetPcmLen DXPDEFARG(-1),int* AnsPcmLen DXPDEFARG(NULL));
 		int	DeleteSoundMem( int SoundHandle, int LogOutFlag );
 		/*再生系*/
 		int PlaySoundMem(int SoundHandle,int PlayType/*,int TopPositionFlag DXPDEFARG(1)*/);
