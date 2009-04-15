@@ -4,15 +4,7 @@
 #include <pspdebug.h>
 #include "dxpstatic.h"
 #include <pspctrl.h>
-
-//#include "c_common.h"
-#include <pspkernel.h>
 #include <stdlib.h>
-
-#define	FILE_READ_MAX_BYTE	30000
-	char	Linewrk[6][FILE_READ_MAX_BYTE];
-
-	SceUID fd;
 
 //以下は龍神録さん所のサンプルソース 50章で使用している未実装関数になります。
 int	DrawFormatStringToHandle( int x, int y, int Color, int FontHandle, const char *FormatString, ... )
@@ -38,30 +30,42 @@ int	SetCreateSoundDataType( int SoundDataType )
 }
 */
 
-//以下の関数はPSP向けに最適化機能を実装するために追加した関数
 void*	TsFileLoad(const char* filename,int* FileSize)
 {
+	STREAMDATA src;
+	STREAMDATA *Src = &src;
+	if(SetupSTREAMDATA(filename,Src) == -1)
+	{
+		return NULL;
+	}
 	void *wfp;
-	if (!(fd = sceIoOpen((char *)filename, PSP_O_RDONLY, 0777))) return NULL;
-//	unsigned long size = sceIoLseek32(fd, 0, PSP_SEEK_END);
 	unsigned long size = FileRead_size(filename);
 	wfp = malloc(size);
 	if ( wfp == NULL) {
-		sceIoClose(fd);
+		STCLOSE(Src);
 		return NULL;
 	}
-	sceIoLseek32(fd, 0, PSP_SEEK_SET);
-	sceIoRead(fd,wfp, size);
-	sceIoClose(fd);
+	//20090415 このSEEK_SETってどこにもってるの？
+	//STSEEK(Src,0,SEEK_SET);
+	STSEEK(Src,0,PSP_SEEK_SET);
+	STREAD(wfp,size,1,Src);
+	STCLOSE(Src);
 	if (FileSize != NULL) *FileSize = size;
 	return wfp;
 }
 
 int	TsFileSave(const char* filename,unsigned int FileSize,const char* writedata)
 {
-	if (!(fd = sceIoOpen((char *)filename, PSP_O_CREAT | PSP_O_WRONLY, 0777))) return -1;
-	sceIoWrite(fd,writedata, FileSize);
-	sceIoClose(fd);
+	STREAMDATA src;
+	STREAMDATA *Src = &src;
+	//暫定実装
+	//書き込みで使う場合はファイルが存在しない時に作成できず
+    //終了してしまう。
+	if(SetupSTREAMDATA(filename,Src) == -1)
+	{
+		return -1;
+	}
+	STWRITE(&writedata,FileSize,1,Src);
+	STCLOSE(Src);
 	return 0;
 }
-

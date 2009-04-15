@@ -291,8 +291,11 @@ extern "C" {
 		int PlaySoundMem(int SoundHandle,int PlayType/*,int TopPositionFlag DXPDEFARG(1)*/);
 		int StopSoundMem(int handle);
 		int PlayStreamSound(int SoundHandle,int PlayType/*,int TopPositionFlag DXPDEFARG(1)*/);
-
-int getRefCount(int sh);
+		int getRefCount(int sh);
+		//20090415
+		int PlaySoundFile(const char *FileName , int PlayType ,int SetPcmLen DXPDEFARG(-1),int* AnsPcmLen DXPDEFARG(NULL));
+		int CheckSoundFile();
+		int StopSoundFile();
 
 	/*ファイル読み込み関数*/
 		int FileRead_SetMode(int Mode);		/*Windowsで作ったテキストの改行コード対策*/
@@ -313,7 +316,9 @@ int getRefCount(int sh);
 		void printfDx(const char *format,...);	/*一列あたり半角80文字で22列あります。内部バッファは2048文字で、それ以上は描画されません。それ以外は本家ライブラリと同じです。*/
 		void clsDx();
 		void DrawString_Shinonome(int x,int y,const char *str,int color);/*printfDxで使っている全角描画ライブラリを呼び出せます。*/
-
+	/*デバッグ用*/
+		void*	TsFileLoad(const char* filename,int* FileSize);
+		int	TsFileSave(const char* filename,unsigned int FileSize,const char* writedata);
 
 /*DXライブラリからコピペ*/
 	//20090405

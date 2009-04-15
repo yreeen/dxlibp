@@ -614,3 +614,37 @@ int	SetLoopPosSoundMem( int LoopTime, int SoundHandle )
 {
 	return 0;
 }
+
+//20090415
+//テスト追加
+//DXL本家は本関数で多重再生を認めていないようなので
+//フラグで管理
+int PlaySoundFileHandle = -1;
+
+int PlaySoundFile(const char *FileName , int PlayType ,int SetPcmLen,int* AnsPcmLen)
+{
+	if(PlaySoundFileHandle != -1) return -1;
+	PlaySoundFileHandle = LoadStreamSound(FileName,SetPcmLen,AnsPcmLen);
+	if(PlaySoundFileHandle == -1) return -1;
+	PlayStreamSound(PlaySoundFileHandle,PlayType);
+	return 0;
+}
+
+int CheckSoundFile()
+{
+	if(PlaySoundFileHandle == -1) return -1;
+	return CheckSoundMem(PlaySoundFileHandle);
+}
+
+int StopSoundFile()
+{
+	//鳴らしてないけど呼んだ場合にはエラーにしない
+	if(PlaySoundFileHandle == -1) return 0;
+	MUSICDATA *md = Handle2MusicDataPtr(PlaySoundFileHandle);
+	md->flag |= DXP_MUSICCOMMAND_STOP;
+	sceKernelDelayThread(3000);
+	md->flag |= DXP_MUSICCOMMAND_QUIT;
+	while(!md->flag & DXP_MUSICFLAG_PLAYING) sceKernelDelayThread(1000);
+	PlaySoundFileHandle = -1;
+	return 0;
+}
