@@ -114,7 +114,7 @@ static u8 FileReadMode = 0x00000000;
 
 int FileRead_open(const char* FileName)
 {
-	return PTR2HND(sceIoOpen(FileName,PSP_O_RDONLY,0777));
+	return PTR2HND(sceIoOpen(FileName,PSP_O_RDWR,0777));
 //	return PTR2HND(fopen(FileName,"rb"));
 }
 int FileRead_close(int FileHandle)
@@ -192,6 +192,13 @@ int FileRead_read(void * Buffer,int Size,int FileHandle)
 	if(FileHandle == -1)return -1;
 	return sceIoRead(HND2PTR(FileHandle),Buffer,Size);
 }
+int FileRead_write(void *Buffer,int Size,int Num,int FileHandle)
+{
+	if(FileHandle == -1)return -1;
+	if(Size == 0 || Num == 0)return 0;
+	return sceIoWrite(HND2PTR(FileHandle),Buffer,Num * Size) / Size;
+}
+
 //int FileRead_scanf(int FileHandle,const char* Format,...)
 //{
 //	/*解析ルーチン組むしかない。*/

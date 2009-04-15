@@ -63,7 +63,7 @@ int DerivationGraph( int SrcX, int SrcY,int Width, int Height, int src )
 	DXPGRAPHDATA *texptr = GraphHandle2Ptr(src);
 	if(texptr == NULL)return -1;
 	if(texptr->tex == NULL)return -1;
-	if(SrcX + Width > texptr->tex->width || SrcY + Height > texptr->tex->height)return -1;	
+	if(SrcX + Width > texptr->tex->umax || SrcY + Height > texptr->tex->vmax)return -1;	
 	DXPGRAPHDATA *res = (DXPGRAPHDATA*)MALLOC(sizeof(DXPGRAPHDATA));
 	if(res == NULL)return -1;
 	res->u0 = SrcX;

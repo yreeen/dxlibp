@@ -44,7 +44,8 @@ DXPGPUSETTING gusettings =
 	0,										/*2D描画時に使うZ値*/
 	64,										/*何バイトでsliceするか*/
 	0,										/*frontbufferのどちらが表示されているのか*/
-	{0,0,480,272}								/*シザー領域の設定値*/
+	{0,0,480,272},								/*シザー領域の設定値*/
+	{1,-1,0,0,0,0,0,-1,0}						/*GPU設定値の保持*/
 };
 u32 __attribute__((aligned(16))) gulist[GULIST_LEN];/*GPUに送る命令を溜め込むためのバッファ　とりあえず256KByte*/
 //DXPTEXTURE texarray[TEXTURE_MAX];
@@ -349,6 +350,7 @@ AppLogAdd2("");
 	gusettings.alpha			= 255;
 	gusettings.z_2d				= 0x0000;
 	gusettings.backbuffer		= 0;
+	gusettings.bc.forceupdate	= 1;
 	texlist = NULL;
 	AppLogAdd2("テクスチャ管理データを初期化しました。");
 
@@ -440,6 +442,7 @@ AppLogAdd2("");
 	sceGuEnable(GU_SCISSOR_TEST);
 	sceGuFrontFace(GU_CW);
 	sceGuEnable(GU_TEXTURE_2D);
+	//sceGuEnable(GU_FRAGMENT_2X);
 	sceGuDepthMask(0xffff);
 	sceGuShadeModel(GU_SMOOTH);
 	sceGuTexScale(1.0f,1.0f);
@@ -633,7 +636,6 @@ int SetTexture(int handle,int TransFlag)//テクスチャを使う描画関数�
 	case DX_BLENDMODE_ADD:
 		op = GU_ADD;
 		src = GU_SRC_ALPHA;
-//		src = GU_FIX;
 		dest = GU_FIX;
 		srcfix = 0xffffffff;
 		destfix = 0xffffffff;
@@ -666,7 +668,7 @@ int SetTexture(int handle,int TransFlag)//テクスチャを使う描画関数�
 		srcfix = 0;
 		destfix = 0;
 		break;
-	case DX_BLENDMODE_INVSRC://これだけちょっと処理が特殊
+	case DX_BLENDMODE_INVSRC:
 		op = GU_ADD;
 		src = GU_SRC_ALPHA;
 		dest = GU_ONE_MINUS_SRC_ALPHA;
@@ -679,17 +681,35 @@ int SetTexture(int handle,int TransFlag)//テクスチャを使う描画関数�
 
 	if(gusettings.blendmode == DX_BLENDMODE_NOBLEND && !AlphaChannel)
 	{
-		sceGuDisable(GU_BLEND);
+		if(sceGuGetStatus(GU_BLEND))sceGuDisable(GU_BLEND);
 	}
 	else
 	{
-		sceGuEnable(GU_BLEND);
-		sceGuBlendFunc(op,src,dest,srcfix,destfix);
+		if(!sceGuGetStatus(GU_BLEND))sceGuEnable(GU_BLEND);
+		if(gusettings.bc.forceupdate
+			|| gusettings.bc.op != op
+			|| gusettings.bc.src != src
+			|| gusettings.bc.dest != dest
+			|| gusettings.bc.srcfix != srcfix
+			|| gusettings.bc.destfix != destfix
+		){
+			sceGuBlendFunc(op,src,dest,srcfix,destfix);
+			gusettings.bc.op = op;
+			gusettings.bc.src = src;
+			gusettings.bc.dest = dest;
+			gusettings.bc.srcfix = srcfix;
+			gusettings.bc.destfix = destfix;
+		}
 	}
 //色を設定
 	unsigned int color;
 	int tfx,tcc;
 	color = (u32)(gusettings.blendmode == DX_BLENDMODE_NOBLEND ? 255 : gusettings.alpha) << 24 | (u32)(gusettings.blue) << 16 | (u32)(gusettings.green) << 8 | (u32)(gusettings.red);
+	if(gusettings.bc.color != color || gusettings.bc.forceupdate)
+	{
+		sceGuColor(color);
+		gusettings.bc.color = color;
+	}
 
 	switch(gusettings.blendmode)
 	{
@@ -697,36 +717,31 @@ int SetTexture(int handle,int TransFlag)//テクスチャを使う描画関数�
 	case DX_BLENDMODE_MUL:
 	case DX_BLENDMODE_DESTCOLOR:
 		tcc = GU_TCC_RGB;
-		//if((color | 0xff000000) == 0xffffffff)
-		//	tfx = GU_TFX_REPLACE;
-		//else
-			tfx = GU_TFX_MODULATE;
+		tfx = GU_TFX_MODULATE;
 		if(AlphaChannel)tcc = GU_TCC_RGBA;
-//		if(ColorKey)tcc = GU_TCC_RGBA;
 	break;
 	case DX_BLENDMODE_ALPHA:
 	case DX_BLENDMODE_ADD:
 	case DX_BLENDMODE_SUB:
 	case DX_BLENDMODE_INVDESTCOLOR:
 		tcc = GU_TCC_RGBA;
-		//if(color == 0xffffffff)
-		//	tfx = GU_TFX_REPLACE;
-		//else
-			tfx = GU_TFX_MODULATE;
-//		if(AlphaChannel)tcc = GU_TCC_RGBA;
+		tfx = GU_TFX_MODULATE;
 		break;
 	case DX_BLENDMODE_INVSRC:
 		sceGuTexEnvColor(0x00000000);
-//		sceGuTexFunc(GU_TFX_BLEND,GU_TCC_RGBA);
 		tcc = GU_TCC_RGBA;
 		tfx = GU_TFX_BLEND;
-//		gusettings.texcolor = color;
 		break;
 	default:
 		return -1;
 	}
-	sceGuTexFunc(tfx,tcc);
-	sceGuColor(color);
+	if(gusettings.bc.forceupdate || gusettings.bc.tfx != tfx || gusettings.bc.tcc)
+	{
+		sceGuTexFunc(tfx,tcc);
+		gusettings.bc.tfx = tfx;
+		gusettings.bc.tcc = tcc;
+	}
+	gusettings.bc.forceupdate = 0;
 	return 0;
 }
 
@@ -769,7 +784,11 @@ static int SetBaseColor(u32 color)
 	a /= 255;
 	a &= 0x000000ff;
 	color = (a << 24) | (b << 16) | (g << 8) | r;
-	sceGuColor(color);
+	if(gusettings.bc.color != color || gusettings.bc.forceupdate)
+	{
+		sceGuColor(color);
+		gusettings.bc.color = color;
+	}
 //ブレンディングの方法を設定する
 	int op;
 	int src,dest;
@@ -778,8 +797,7 @@ static int SetBaseColor(u32 color)
 	switch(gusettings.blendmode)
 	{
 	case DX_BLENDMODE_NOBLEND:
-		sceGuDisable(GU_BLEND);
-		return 0;
+		break;
 	case DX_BLENDMODE_ALPHA:
 		op = GU_ADD;
 		src = GU_SRC_ALPHA;
@@ -830,11 +848,31 @@ static int SetBaseColor(u32 color)
 		destfix = 0;
 		break;
 	default:
-		sceGuDisable(GU_BLEND);
 		return -1;
 	}
-	sceGuEnable(GU_BLEND);
-	sceGuBlendFunc(op,src,dest,srcfix,destfix);
+	if(gusettings.blendmode == DX_BLENDMODE_NOBLEND)
+	{
+		if(sceGuGetStatus(GU_BLEND))sceGuDisable(GU_BLEND);
+	}
+	else
+	{
+		if(!sceGuGetStatus(GU_BLEND))sceGuEnable(GU_BLEND);
+		if(gusettings.bc.forceupdate
+			|| gusettings.bc.op != op
+			|| gusettings.bc.src != src
+			|| gusettings.bc.dest != dest
+			|| gusettings.bc.srcfix != srcfix
+			|| gusettings.bc.destfix != destfix
+		){
+			sceGuBlendFunc(op,src,dest,srcfix,destfix);
+			gusettings.bc.op = op;
+			gusettings.bc.src = src;
+			gusettings.bc.dest = dest;
+			gusettings.bc.srcfix = srcfix;
+			gusettings.bc.destfix = destfix;
+		}
+	}
+	gusettings.bc.forceupdate = 0;
 	return 0;
 }
 
@@ -862,7 +900,7 @@ int SetDrawBright(int Red,int Green,int Blue)
 	gusettings.red		= Red & 0x000000ff;
 	gusettings.green	= Green & 0x000000ff;
 	gusettings.blue		= Blue & 0x000000ff;
-	return 0;//ApplyBrightAndBlendMode();
+	return 0;
 }
 
 int SetDrawBlendMode(int BlendMode,int Param)
@@ -870,122 +908,9 @@ int SetDrawBlendMode(int BlendMode,int Param)
 	gusettings.blendmode = BlendMode;
 	gusettings.blendparam= Param;
 	gusettings.alpha = Param & 0x000000ff;
-	return 0;//ApplyBrightAndBlendMode();
+	return 0;
 }
 
-//static int ApplyBrightAndBlendMode()
-//{
-//	GUSTART;
-//	int op;
-//	int src,dest;
-//	unsigned int srcfix;
-//	unsigned int destfix;	 
-//
-//	switch(gusettings.blendmode)
-//	{
-//	case DX_BLENDMODE_NOBLEND:
-//		op = GU_ADD;
-//		src = GU_FIX;
-//		dest = GU_FIX;
-//		srcfix = 1;
-//		destfix = 0;
-//		break;
-//	case DX_BLENDMODE_ALPHA:
-//		op = GU_ADD;
-//		src = GU_SRC_ALPHA;
-//		dest = GU_ONE_MINUS_SRC_ALPHA;
-//		srcfix = 0;
-//		destfix = 0;
-//		break;
-//	case DX_BLENDMODE_ADD:
-//		op = GU_ADD;
-//		src = GU_SRC_ALPHA;
-//		dest = GU_FIX;
-//		srcfix = 1;
-//		destfix = 1;
-//		break;
-//	case DX_BLENDMODE_SUB:
-//		op = GU_REVERSE_SUBTRACT;
-//		src = GU_SRC_ALPHA;
-//		dest = GU_FIX;
-//		srcfix = 1;
-//		destfix = 1;
-//		break;
-//	case DX_BLENDMODE_MUL:
-//		op = GU_ADD;
-//		src = GU_DST_COLOR;
-//		dest = GU_FIX;
-//		srcfix = 0;
-//		destfix = 0;
-//		break;
-//	case DX_BLENDMODE_DESTCOLOR:
-//		return 0;
-//	case DX_BLENDMODE_INVDESTCOLOR:
-//		op = GU_ADD;
-//		src = GU_ONE_MINUS_DST_COLOR;
-//		dest = GU_FIX;
-//		srcfix = 0;
-//		destfix = 0;
-//		break;
-//	case DX_BLENDMODE_INVSRC:
-//		op = GU_ADD;
-//		src = GU_SRC_ALPHA;
-//		dest = GU_ONE_MINUS_SRC_ALPHA;
-//		srcfix = 0;
-//		destfix = 0;
-//		break;
-//	default:
-//		return -1;
-//	}
-//	if(gusettings.blendmode == DX_BLENDMODE_NOBLEND)
-//	{
-//		sceGuDisable(GU_BLEND);
-//	}
-//	else
-//	{
-//		sceGuEnable(GU_BLEND);
-//		sceGuBlendFunc(op,src,dest,srcfix,destfix);
-//	}
-//
-//	int color;
-//	color = (u32)(gusettings.alpha) << 24 | (u32)(gusettings.blue) << 16 | (u32)(gusettings.green) << 8 | (u32)(gusettings.red);
-//
-//	switch(gusettings.blendmode)
-//	{
-//	case DX_BLENDMODE_NOBLEND:
-//	case DX_BLENDMODE_MUL:
-//		if((color | 0xff000000) == 0xffffffff)
-//			sceGuTexFunc(GU_TFX_REPLACE,GU_TCC_RGB);
-//		else
-//		{
-//			gusettings.texcolor = color;
-//			sceGuTexFunc(GU_TFX_MODULATE,GU_TCC_RGB);
-//		}
-//	return 0;
-//	case DX_BLENDMODE_ALPHA:
-//	case DX_BLENDMODE_ADD:
-//	case DX_BLENDMODE_SUB:
-//	case DX_BLENDMODE_INVDESTCOLOR:
-//		if(color == 0xffffffff)
-//			sceGuTexFunc(GU_TFX_REPLACE,GU_TCC_RGBA);
-//		else
-//		{
-//			gusettings.texcolor = color;
-//			sceGuTexFunc(GU_TFX_MODULATE,GU_TCC_RGBA);
-//		}
-//		return 0;
-//	case DX_BLENDMODE_DESTCOLOR:
-//		return 0;
-//	case DX_BLENDMODE_INVSRC:
-//		sceGuTexEnvColor(0x00000000);
-//		sceGuTexFunc(GU_TFX_BLEND,GU_TCC_RGBA);
-//		gusettings.texcolor = color;
-//		/*描画時にtexcolorが0xffffffffであっても頂点カラーを消してはいけない*/
-//		return 0;
-//	default:
-//		return -1;
-//	}
-//}
 
 
 int DrawGraph(int x,int y,int gh,int trans)

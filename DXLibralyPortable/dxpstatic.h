@@ -137,6 +137,17 @@ typedef struct tagDXPGPUSETTING
 	u8			slice;		/*何バイトでsliceするか*/
 	u8			backbuffer;/*displaybufferのどちらが裏画面とされているのか*/
 	int			scissor[4];	/*sceGuScissorの設定値を保存。DrawString系関数のために使用する。*/
+	struct BLENDANDCOLOR
+	{
+		u8	forceupdate;//強制設定更新
+		u32	color;
+		int op;
+		int src;
+		int dest;
+		u32 srcfix;
+		u32 destfix;
+		int tfx,tcc;
+	}bc;
 }DXPGPUSETTING;
 extern DXPGPUSETTING gusettings;
 

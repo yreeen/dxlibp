@@ -175,6 +175,7 @@ int SetupSTREAMDATA(const char *FileName,STREAMDATA *DataPtr)
 	DataPtr->ReadShred.Close	= (int(*)(void*))FileRead_close;
 	DataPtr->ReadShred.Eof		= (int(*)(void*))FileRead_eof;
 	DataPtr->ReadShred.IdleCheck= (int(*)(void*))FileRead_idle_chk;
+	DataPtr->ReadShred.Write	= (unsigned int(*)(void*,size_t,size_t,void*))FileRead_write;
 	DataPtr->ReadShred.Read		= (unsigned int(*)(void*,size_t,size_t,void*))FileRead_stdread;
 	DataPtr->ReadShred.Seek		= (int(*)(void*,long,int))FileRead_seek;
 	DataPtr->ReadShred.Tell		= (long(*)(void*))FileRead_tell;

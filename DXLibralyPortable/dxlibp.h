@@ -1,7 +1,7 @@
 /****************************************************
-*		DXライブラリPortable	Ver0.4.10			*
+*		DXライブラリPortable	Ver0.4.11			*
 *		製作者	：夢瑞憂煉							*
-*		最終更新：2009/04/12						*
+*		最終更新：2009/04/13						*
 *		更新履歴はファイルの最後のほうにあります。	*
 ****************************************************/
 /****************************************************
@@ -301,6 +301,7 @@ int getRefCount(int sh);
 		int FileRead_size(const char *FileName);
 		int FileRead_tell(int FileHandle);
 		int FileRead_seek(int FileHandle,int Offset,int Origin);
+		int FileRead_write(void * Buffer,int Size,int Num,int FileHandle);
 		int FileRead_stdread(void * Buffer,int Size,int Num,int FileHandle);
 		int FileRead_read(void * Buffer,int Size,int FileHandle);
 		int FileRead_eof(int FileHandle);
@@ -365,7 +366,7 @@ typedef struct
 	long					(*Tell)( void *StreamDataPoint ) ;
 	int						(*Seek)( void *StreamDataPoint, long SeekPoint, int SeekType ) ;
 	size_t					(*Read)( void *Buffer, size_t BlockSize, size_t DataNum, void *StreamDataPoint ) ;
-//	size_t					(*Write)( void *Buffer, size_t BlockSize, size_t DataNum, void *StreamDataPoint ) ;
+	size_t					(*Write)( void *Buffer, size_t BlockSize, size_t DataNum, void *StreamDataPoint ) ;
 	int						(*Eof)( void *StreamDataPoint ) ;
 	int						(*IdleCheck)( void *StreamDataPoint ) ;
 	int						(*Close)( void *StreamDataPoint ) ;
@@ -423,5 +424,6 @@ Ver0.4.7
 Ver0.4.8		バグ修正
 Ver0.4.9		ブレンドモードの仕様を本家に合わせた。
 Ver0.4.10		加算合成が正常に働かないバグを修正
+Ver0.4.11		パレット形式のPNG画像はパレットを使って描画するように修正
 */
 

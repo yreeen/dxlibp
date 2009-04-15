@@ -20,7 +20,7 @@ static struct SceCtrlData CtrlData;		/*入力データ　RenewInputで更新さ�
 //モード制御
 int	PspCtrlMode		= 0;// 0) マイクロソフトサイドワインダーパッド準拠モード
 						// 1) キーボードモード
-int PspAnalogMode	= 0;// 0) PSPアナログパッドを十字キーの結果に合成する
+int PspAnalogMode	= 1;// 0) PSPアナログパッドを十字キーの結果に合成する
 						//    マイクロソフトサイドワインダーパッドに
 						//    アナログ機能無しとして振舞う
 						// 1) PSPアナログパッドを十字キーの結果に合成しない
