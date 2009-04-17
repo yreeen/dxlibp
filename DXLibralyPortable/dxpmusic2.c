@@ -648,3 +648,8 @@ int StopSoundFile()
 	PlaySoundFileHandle = -1;
 	return 0;
 }
+
+int	SetCreateSoundDataType( int SoundDataType )
+{
+	return 0;
+}

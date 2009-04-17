@@ -179,6 +179,20 @@ extern "C" {
 	#define DX_PLAYTYPE_BACK				  			(1)							// バックグラウンド再生
 	#define DX_PLAYTYPE_LOOP							(3)	// ループ再生
 
+	#define DXP_FONT_ALIGN_LEFT		0x0000		//左寄せ
+	#define DXP_FONT_ALIGN_CENTER	0x0200		//中央
+	#define DXP_FONT_ALIGN_RIGHT	0x0400		//右寄せ
+	#define DXP_FONT_WIDTH_FIX		0x0800		//等幅指定用
+	#define DXP_FONT_ALIGN_DEFAULT	(DXP_FONT_ALIGN_LEFT)
+	#define DXP_FONT_COLOR_NONE		0x00000000	//透明
+	#define DXP_FONT_COLOR_BLACK	0xff000000
+	#define DXP_FONT_COLOR_RED 		0xff0000ff
+	#define DXP_FONT_COLOR_GREEN	0xff00ff00
+	#define DXP_FONT_COLOR_BLUE		0xffff0000
+	#define DXP_FONT_COLOR_WHITE	0xffffffff
+	#define DXP_FONT_COLOR_LITEGRAY	0xffbfbfbf
+	#define DXP_FONT_COLOR_GRAY		0xff7f7f7f
+	#define DXP_FONT_COLOR_DARKGRAY	0xff3f3f3f
 
 /*構造体定義部*/
 /*関数定義部*/
@@ -275,8 +289,16 @@ extern "C" {
 		int EndString();			/*フォントデータを全てメモリ上から開放します。（デフォルトフォント含む）*/
 		int DrawString( int x, int y, const char *String, int Color, int EdgeColor DXPDEFARG(0));/*まだ正常に動作しません！*/
 		int DrawFormatString(int x,int y,int color,const char *String,...);
+		int	DrawFormatStringToHandle( int x, int y, int Color, int FontHandle, const char *FormatString, ... );
+		int	CreateFontToHandle( const char *FontName, int Size, int Thick, int FontType , int CharSet , int EdgeSize , int Italic  , int DataIndex , int ID );
+		int SetFontSize( int FontSize );
+		int SetFontSizeF( float FontSize );
+		int SetFontBackgroundColor(int Color);
+		int SetFontAlignment(int Position,int Width);
+
 	/*音楽関連関数*/
 		/*設定系*/
+		int	SetCreateSoundDataType( int SoundDataType );
 		int	ChangeVolumeSoundMem( int VolumePal, int SoundHandle );
 		int	SetLoopPosSoundMem( int LoopTime, int SoundHandle );
 		/*取得系*/
@@ -316,6 +338,8 @@ extern "C" {
 		void printfDx(const char *format,...);	/*一列あたり半角80文字で22列あります。内部バッファは2048文字で、それ以上は描画されません。それ以外は本家ライブラリと同じです。*/
 		void clsDx();
 		void DrawString_Shinonome(int x,int y,const char *str,int color);/*printfDxで使っている全角描画ライブラリを呼び出せます。*/
+	/*マイナー系*/
+		int SaveDrawScreen( int x1, int y1, int x2, int y2, char *FileName );
 	/*デバッグ用*/
 		void*	TsFileLoad(const char* filename,int* FileSize);
 		int	TsFileSave(const char* filename,unsigned int FileSize,const char* writedata);

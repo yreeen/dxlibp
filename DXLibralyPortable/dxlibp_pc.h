@@ -42,6 +42,8 @@ inline int	PCDrawRotaGraph2F(float x,float y,float cx,float cy,double ExtRate,do
 inline int	PCDrawModiGraphF(float x1,float y1,float x2,float y2,float x3,float y3,float x4,float y4,int gh,int trans){x1 = pc2psp_x(x1);y1 = pc2psp_y(y1);x2 = pc2psp_x(x2);y2 = pc2psp_y(y2);x3 = pc2psp_x(x3);y3 = pc2psp_y(y3);x4 = pc2psp_x(x4);y4 = pc2psp_y(y4);return DrawModiGraphF(x1,y1,x2,y2,x3,y3,x4,y4,gh,trans);}
 inline int	PCSetDrawArea(int x1,int y1,int x2,int y2){x1 = pc2psp_x(x1);y1 = pc2psp_y(y1);x2 = pc2psp_x(x2);y2 = pc2psp_y(y2);return SetDrawArea(x1,y1,x2,y2);}
 inline int	PCDrawString(int x,int y,const char *str,int color,int edge DXPDEFARG(0)){x = pc2psp_x(x);y = pc2psp_y(y);return DrawString(x,y,str,color,edge);}
+inline int	PCSetFontSize( int FontSize ){ return SetFontSize( FontSize * 9 / 16);}
+inline int	PCSetFontSizeF( float FontSize ){ return SetFontSizeF( pc2psp_y(FontSize));}
 
 #define	DrawFormatString(X,Y,COL,STR,...)	DrawFormatString(pc2psp_x(X),pc2psp_y(Y),COL,STR,##__VA_ARGS__)
 
@@ -63,4 +65,7 @@ inline int	PCDrawString(int x,int y,const char *str,int color,int edge DXPDEFARG
 #define SetDrawArea		PCSetDrawArea
 
 #define DrawString		PCDrawString
+#define SetFontSize		PCSetFontSize
+#define SetFontSizeF	PCSetFontSizeF
+
 #endif

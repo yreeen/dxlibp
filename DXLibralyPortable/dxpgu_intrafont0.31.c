@@ -5,6 +5,8 @@
 #include "dxpstatic.h"
 #include "intraFont.h"
 
+//1.0fの時のドットサイズが不明なのでとりあえず
+#define DXLP_PSP_FONT_SIZE (32.0)
 /*
 シザー領域の設定値をどこかに保存しとかないといけないみたい…gusettingsに追加するかｗ
 */
@@ -47,10 +49,11 @@ static void StringFinish(GUCONTEXT_FORSTRING *ptr)
 typedef struct DXP_FONTDATA__
 {
 	struct DXP_FONTDATA__ *next;
-	intraFont *ifp;
-	float scale;
-	unsigned int edgecolor_default;
-	int handle;
+		intraFont	*ifp;
+			float	scale;
+	unsigned int	edgecolor_default;
+			int		Alignment;
+			int		handle;
 }DXP_FONTDATA;
 //関数宣言
 int InitString();
@@ -58,7 +61,7 @@ int EndString();
 int DrawString( int x, int y, const char *String, int Color, int EdgeColor);
 //大域変数定義
 static u8 intrafont_init = 0;
-static DXP_FONTDATA fontarray = {NULL,NULL,1.0f,0xFF3F3F3F,-1};
+static DXP_FONTDATA fontarray = {NULL,NULL,1.0f,DXP_FONT_COLOR_DARKGRAY,DXP_FONT_ALIGN_DEFAULT,-1};
 //関数定義
 static DXP_FONTDATA* FontHandle2Ptr(int handle)
 {
@@ -107,7 +110,7 @@ int DrawStringWithHandle(int x,int y,const char *String,int color,int handle, in
 	DXP_FONTDATA *ptr = FontHandle2Ptr(handle);
 	if(ptr == NULL)return -1;
 	StringStart(&gc);
-	intraFontSetStyle(ptr->ifp,ptr->scale,(u32)color,EdgeColor ? (u32)EdgeColor : ptr->edgecolor_default,0);
+	intraFontSetStyle(ptr->ifp,ptr->scale,(u32)color,EdgeColor ? (u32)EdgeColor : ptr->edgecolor_default,ptr->Alignment);
 	intraFontPrint(ptr->ifp,x,y,String);
 	StringFinish(&gc);
 	return 0;
@@ -168,3 +171,61 @@ int DeleteFont(int handle)
 	return 0;
 }
 
+int SetFontSize( int FontSize )
+{
+	SetFontSizeF((float)(FontSize/DXLP_PSP_FONT_SIZE));
+	return 0;
+}
+
+int SetFontSizeF( float FontSize )
+{
+	if(FontSize < 0.0f) return -1;
+	if(FontSize > 2.0f) return -1;
+	DXP_FONTDATA *ptr = FontHandle2Ptr(-1);
+	if(ptr == NULL)return -1;
+	ptr->scale = FontSize;
+	return 0;
+}
+
+int SetFontBackgroundColor(int Color)
+{
+	DXP_FONTDATA *ptr = FontHandle2Ptr(-1);
+	if(ptr == NULL)return -1;
+	ptr->edgecolor_default = Color;
+	return 0;
+}
+
+int SetFontAlignment(int Position,int Width)
+{
+	switch(Position){
+	case DXP_FONT_ALIGN_LEFT:
+	case DXP_FONT_ALIGN_CENTER:
+	case DXP_FONT_ALIGN_RIGHT:
+		break;
+	case DXP_FONT_WIDTH_FIX:
+		if(Width <= 0){
+			Width = 1;
+		}else if(Width > 255) {
+			Width = 255;
+		}
+		Position |= Width;
+		break;
+	default:
+		Position = DXP_FONT_ALIGN_DEFAULT;
+		break;
+	}
+	DXP_FONTDATA *ptr = FontHandle2Ptr(-1);
+	if(ptr == NULL)return -1;
+	ptr->Alignment = Position;
+	return 0;
+}
+
+int	DrawFormatStringToHandle( int x, int y, int Color, int FontHandle, const char *FormatString, ... )
+{
+	return 0;
+}
+
+int	CreateFontToHandle( const char *FontName, int Size, int Thick, int FontType , int CharSet , int EdgeSize , int Italic  , int DataIndex , int ID )
+{
+	return 0;
+}

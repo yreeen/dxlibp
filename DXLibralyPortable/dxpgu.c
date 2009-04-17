@@ -1531,3 +1531,8 @@ int SetDrawScreen(int ghandle)
 
 	return 0;
 }
+
+int SaveDrawScreen( int x1, int y1, int x2, int y2, char *FileName )
+{
+	return 0;
+}
