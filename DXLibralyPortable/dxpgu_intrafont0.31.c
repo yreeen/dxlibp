@@ -6,7 +6,8 @@
 #include "intraFont.h"
 #include <math.h>
 
-#define	DXP_FONT_BASE_SIZE	22.627416997969522	//SetFontSizeの計算用16x16ドットを1.0fとするため
+#define	DXP_FONT_BASE_SIZE	22.627416997969522f	//SetFontSizeの計算用16x16ドットを1.0fとするため
+#define	DXP_FONT_SQRT_SIZE	1.4142135623730951f	//SetFontSizeの計算用
 /*
 シザー領域の設定値をどこかに保存しとかないといけないみたい…gusettingsに追加するかｗ
 */
@@ -83,7 +84,7 @@ static void StringStart(GUCONTEXT_FORSTRING *ptr)
 		destfix = 0;
 		break;
 	default:
-		return -1;
+		return;
 	}
 	if(!sceGuGetStatus(GU_BLEND))sceGuEnable(GU_BLEND);
 	if(gusettings.bc.forceupdate
@@ -101,7 +102,7 @@ static void StringStart(GUCONTEXT_FORSTRING *ptr)
 		gusettings.bc.destfix = destfix;
 	}
 	unsigned int color;
-	int tfx,tcc;
+	//int tfx,tcc;
 	color = (u32)(gusettings.blendmode == DX_BLENDMODE_NOBLEND || gusettings.blendmode == DX_BLENDMODE_MUL || gusettings.blendmode == DX_BLENDMODE_DESTCOLOR ? 255 : gusettings.alpha) << 24 | (u32)(gusettings.blue) << 16 | (u32)(gusettings.green) << 8 | (u32)(gusettings.red);
 	if(gusettings.bc.color != color || gusettings.bc.forceupdate)
 	{
@@ -119,13 +120,13 @@ static void StringStart(GUCONTEXT_FORSTRING *ptr)
 		color = (color & 0xff000000) | (~color & 0x00ffffff);
 		break;
 	default:
-		return -1;
+		return;
 	}
 		sceGuColor(color);
 		gusettings.bc.color = color;
 	}
 	gusettings.bc.forceupdate = 0;
-	return 0;
+	return;
 
 	//gusettings.texture = -1;
 	//sceGuEnable(GU_BLEND);
@@ -277,17 +278,16 @@ int DeleteFont(int handle)
 int SetFontSize( int FontSize )
 {
 	if(FontSize < 0) return -1;
+	float size;
 	if(FontSize == 16)
 	{
-		SetFontSizeF(1.0f);
+		size = 1.0f;
 	}
 	else
 	{
-		//SetFontSizeF((float)(FontSize/DXP_FONT_DEFAULT_SIZE));	//これだと小さくなりすぎ1.0fは対角線のサイズ
-		//結果としては下記式でいいけど範囲を限定して配列化したほうがいいかなあ・・・
-		SetFontSizeF((float)(sqrt(FontSize*FontSize*2)/DXP_FONT_BASE_SIZE));
+		size = FontSize*DXP_FONT_SQRT_SIZE/DXP_FONT_BASE_SIZE;
 	}
-	return 0;
+	return SetFontSizeF(size);
 }
 
 int SetFontSizeF( float FontSize )

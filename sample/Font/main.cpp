@@ -86,11 +86,6 @@ int main(void)
 	if(ClearDrawScreen()!=0)	return	-1;	//画面クリア処理がエラーなら-1を返す
 	if(InitString() != 0)		return	-1;	//フォントの初期化
 	int y;
-
-	//下の二行をとりあえず呼ばないと文字表示がおかしくなる
-//	SetDrawBlendMode(DX_BLENDMODE_ADD,255);
-//	SetBaseColor(0x00000000);
-
 	SetFontBackgroundColor(DXP_FONT_COLOR_NONE);	//デフォルトはバックカラーありなので無しにする
 	while(ProcessLoop()==0){				//メインループ
 		ClearDrawScreen();
