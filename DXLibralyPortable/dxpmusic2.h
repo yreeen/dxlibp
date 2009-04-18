@@ -133,7 +133,7 @@ typedef struct MUSICDATA__	//音楽データのハンドル用構造体
 	//管理に関するエリアをメモリ断片化を防ぐためにmallocで
 	//確保しない方式に変更
 	//struct MUSICDATA__ *next;
-	int useflg;		//0)空き 1)割り当て済み
+	unsigned useflg:1;		//0)空き 1)割り当て済み
 	int apos,bpos;	//リピート位置。A-Bリピートに対応させる。
 	u32 flag;		//通常/ストリーム リピート 再生/停止
 	int handle;

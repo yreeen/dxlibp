@@ -1264,7 +1264,7 @@ sceGuTexLevelMode	みっぷマップの設定　当分使わないつもり
 #define GU_ALPHA_TEST		(0)		アルファテスト
 #define GU_DEPTH_TEST		(1)		深度テスト
 #define GU_SCISSOR_TEST		(2)		シザーテスト（描画矩形内にピクセルが収まっているかの判定）
-#define GU_STENCIL_TEST		(3)		ステンシルテスト	バッファの設定方法がよくわからない
+#define GU_STENCIL_TEST		(3)		ステンシルテスト	バッファの設定方法がよくわからない ディスプレイバッファのα成分を使うらしい
 #define GU_BLEND		(4)			ブレンドを使用する。
 #define GU_CULL_FACE		(5)		カリング	2Dでは使わない
 #define GU_DITHER		(6)			減色		よくわからない

@@ -7,6 +7,7 @@ int main(void)
 	DxLib_Init();//DXPを初期化
 	int buf[4];
 	int gh = LoadDivGraph("test.png",3,2,2,32,32,buf);//64x64くらいが吉。VRAM足りないと後で困る。
+	LoadStreamSound("test.mp3");
 	while(ProcessMessage() != -1)//この関数がエラーを返すまでループする
 	{
 		ClearDrawScreen();

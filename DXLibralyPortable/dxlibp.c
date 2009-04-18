@@ -34,17 +34,15 @@ int GetNowCount()/*milis単位での時間*/
 }
 u64	GetNowHiPerformanceCount()/*micros単位*/
 {
-	//20090417 龍神録サンプルのデバッグ機能で使っているが
-	//コメントの場所が生きていると関数の戻り値が0になって
-	//しまうので暫定対策
 	u64 tick;
-	//float tmp;
+	double tmp;
 	if(sceRtcGetCurrentTick(&tick) != 0)return -1;
-	//tmp = tick;
-	//tmp = tmp * 1000 * 1000 / dxpdata.TPS;
-	//tick = tmp;
-	return tick;
+	tmp = tick;
+	tmp *= 1000000;
+	tmp /= dxpdata.TPS;
+	return (u64)tmp;
 }
+
 /*HOMEボタン監視*/
 static int exit_callback(int arg1, int arg2, void *common)
 {

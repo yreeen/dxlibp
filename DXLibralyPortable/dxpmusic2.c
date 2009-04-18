@@ -54,6 +54,7 @@ SetVolumeSoundFile
 //インクルード
 
 #include "dxpmusic2.h"
+#include "dxpstatic.h"
 
 //宣言
 
@@ -356,7 +357,37 @@ int musicthread_normal(SceSize arglen,void* argp)
 	return 0;
 }
 
+#define TEST09041600
+#ifdef	TEST09041600
+int LoadStreamSound(const char *filename,int a0,int* a1)
+{
+	MUSICDATA_THREADPARAM_STREAM param,*p;
+	p = &param;
+	if((param.md = AddMusicData()) == NULL)return -1;
+	if(SetupSTREAMDATA(filename,param.context.src = &param.md->Src) == -1)
+	{
+		RemoveMusicData(param.md);
+		return -1;
+	}
+	param.md->flag |= DXP_MUSICFLAG_STREAM;
+	if(decodeprepare_mp3(&param.context) != -1)goto mp3setup;
+	STCLOSE(param.context.src);
+	RemoveMusicData(param.md);
+	return -1;	
+mp3setup:
+	param.md->pcmlen = 0x7fffff;//とりあえずint型の最大値を設定しておく
 
+	int thid = sceKernelCreateThread("soundthreads",musicthread_stream,0x11,0x4000,THREAD_ATTR_USER,NULL);
+	if(0 > thid)
+	{
+		decodefinish(&param.context);
+		RemoveMusicData(param.md);
+		return -1;
+	}
+	sceKernelStartThread(thid,sizeof(MUSICDATA_THREADPARAM_STREAM),p);
+	return param.md->handle;
+}
+#else
 int LoadStreamSound(const char *filename,int SetPcmLen,int* AnsPcmLen)
 {
 	MUSICDATA_THREADPARAM_STREAM param,*p;
@@ -402,7 +433,7 @@ mp3setup:
 	sceKernelStartThread(thid,sizeof(MUSICDATA_THREADPARAM_STREAM),p);
 	return param.md->handle;
 }
-
+#endif
 int PlayStreamSound(int handle,int playtype)
 {
 	MUSICDATA *md = Handle2MusicDataPtr(handle);
@@ -483,6 +514,7 @@ int musicthread_stream(SceSize arglen,void *argp)
 			ptr->context.nextframe = -1;
 			if((pos >= ptr->md->bpos && ptr->md->bpos != 0) || (pos >= ptr->md->pcmlen && ptr->md->pcmlen != 0))
 			{
+playendproc:
 				if(ptr->md->flag & DXP_MUSICTHREADPARAMFLAG_LOOP)
 				{
 					pos = ptr->md->apos - ptr->md->apos % spf;
@@ -491,6 +523,7 @@ int musicthread_stream(SceSize arglen,void *argp)
 				else
 				{
 					play = 0;
+					ptr->context.nextframe = (ptr->md->apos - ptr->md->apos / spf) / spf;
 					ptr->md->flag &=~ DXP_MUSICFLAG_PLAYING;//20090410
 															//これがないとDX_PLAYTYPE_NORMAL
 															//で再生終了の際にメインタスクが次へ進めない
@@ -505,7 +538,17 @@ int musicthread_stream(SceSize arglen,void *argp)
 			vright *= ptr->md->volume[2] / 100.0f;
 
 			ptr->context.out = outbuf;
+#ifdef TEST09041600
+			if(decode(&ptr->context) == -1)
+			{
+				ptr->md->pcmlen = pos - spf;
+				
+				ptr->md->bpos = MAX(ptr->md->bpos, ptr->md->pcmlen);
+				goto playendproc;
+			}
+#else
 			if(decode(&ptr->context) == -1)goto err;
+#endif
 			u16 *tmp = playbuf;
 			playbuf = outbuf;
 			//outbuf = playbuf; 報告のあったバグ部分の修正 20090410
