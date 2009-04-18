@@ -23,13 +23,116 @@ static void StringStart(GUCONTEXT_FORSTRING *ptr)
 	ptr->dat[0] = sceGuGetAllStatus();
 	ptr->dat[1] = gusettings.blendmode;
 	ptr->dat[2] = gusettings.blendparam;
-	SetTexture(-1,0);
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA,255);
+//	SetTexture(-1,0);
+//	SetDrawBlendMode(DX_BLENDMODE_ALPHA,255);
+	gusettings.texture = NULL;
+	int op;
+	int src,dest;
+	unsigned int srcfix;
+	unsigned int destfix;	 
+	switch(gusettings.blendmode)
+	{
+	case DX_BLENDMODE_NOBLEND:
+	case DX_BLENDMODE_ALPHA:
+		op = GU_ADD;
+		src = GU_SRC_ALPHA;
+		dest = GU_ONE_MINUS_SRC_ALPHA;
+		srcfix = 0;
+		destfix = 0;
+		break;
+	case DX_BLENDMODE_ADD:
+		op = GU_ADD;
+		src = GU_SRC_ALPHA;
+		dest = GU_FIX;
+		srcfix = 0xffffffff;
+		destfix = 0xffffffff;
+		break;
+	case DX_BLENDMODE_SUB:
+		op = GU_REVERSE_SUBTRACT;
+		src = GU_SRC_ALPHA;
+		dest = GU_FIX;
+		srcfix = 0xffffffff;
+		destfix = 0xffffffff;
+		break;
+	case DX_BLENDMODE_MUL:
+		op = GU_ADD;
+		src = GU_DST_COLOR;
+		dest = GU_FIX;
+		srcfix = 0xffffffff;
+		destfix = 0xffffffff;
+		break;
+	case DX_BLENDMODE_DESTCOLOR:
+		op = GU_ADD;
+		src = GU_FIX;
+		dest = GU_FIX;
+		srcfix = 0;
+		destfix = 0xffffffff;
+		break;
+	case DX_BLENDMODE_INVDESTCOLOR:
+		op = GU_ADD;
+		src = GU_ONE_MINUS_DST_COLOR;
+		dest = GU_FIX;
+		srcfix = 0;
+		destfix = 0;
+		break;
+	case DX_BLENDMODE_INVSRC:
+		op = GU_ADD;
+		src = GU_SRC_ALPHA;
+		dest = GU_ONE_MINUS_SRC_ALPHA;
+		srcfix = 0;
+		destfix = 0;
+		break;
+	default:
+		return -1;
+	}
+	if(!sceGuGetStatus(GU_BLEND))sceGuEnable(GU_BLEND);
+	if(gusettings.bc.forceupdate
+		|| gusettings.bc.op != op
+		|| gusettings.bc.src != src
+		|| gusettings.bc.dest != dest
+		|| gusettings.bc.srcfix != srcfix
+		|| gusettings.bc.destfix != destfix
+	){
+		sceGuBlendFunc(op,src,dest,srcfix,destfix);
+		gusettings.bc.op = op;
+		gusettings.bc.src = src;
+		gusettings.bc.dest = dest;
+		gusettings.bc.srcfix = srcfix;
+		gusettings.bc.destfix = destfix;
+	}
+	unsigned int color;
+	int tfx,tcc;
+	color = (u32)(gusettings.blendmode == DX_BLENDMODE_NOBLEND || gusettings.blendmode == DX_BLENDMODE_MUL || gusettings.blendmode == DX_BLENDMODE_DESTCOLOR ? 255 : gusettings.alpha) << 24 | (u32)(gusettings.blue) << 16 | (u32)(gusettings.green) << 8 | (u32)(gusettings.red);
+	if(gusettings.bc.color != color || gusettings.bc.forceupdate)
+	{
+	switch(gusettings.blendmode)
+	{
+	case DX_BLENDMODE_NOBLEND:
+	case DX_BLENDMODE_MUL:
+	case DX_BLENDMODE_DESTCOLOR:
+	case DX_BLENDMODE_ALPHA:
+	case DX_BLENDMODE_ADD:
+	case DX_BLENDMODE_SUB:
+	case DX_BLENDMODE_INVDESTCOLOR:
+		break;
+	case DX_BLENDMODE_INVSRC:
+		color = (color & 0xff000000) | (~color & 0x00ffffff);
+		break;
+	default:
+		return -1;
+	}
+		sceGuColor(color);
+		gusettings.bc.color = color;
+	}
+	gusettings.bc.forceupdate = 0;
+	return 0;
+
 	//gusettings.texture = -1;
 	//sceGuEnable(GU_BLEND);
 	//sceGuBlendFunc(GU_ADD,GU_SRC_ALPHA,GU_ONE_MINUS_SRC_ALPHA,0,0);
 	//sceGuTexFunc(GU_TFX_REPLACE,GU_TCC_RGBA);
 	//printfDx("test");
+
 }																					
 
 static void StringFinish(GUCONTEXT_FORSTRING *ptr)

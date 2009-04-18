@@ -67,11 +67,13 @@
 
 
 #define GLOBAL_INSTANCE 
-#include "./dxlibp.h"
+#include "../../DXLibralyPortable/dxlibp.h"
 
 PSP_MODULE_INFO("FontSample", 0, 1, 1);		//モジュール情報を設定
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER);		//ユーザーモードに設定
 PSP_MAIN_THREAD_STACK_SIZE_KB(1024);		//スタックサイズを明示する場合に使用
+
+int SetBaseColor(u32 color);
 
 int ProcessLoop(){
 	if(ProcessMessage()!=0)		return -1;	//プロセス処理がエラーなら-1を返す
@@ -86,13 +88,17 @@ int main(void)
 	int y;
 
 	//下の二行をとりあえず呼ばないと文字表示がおかしくなる
-	//SetDrawBlendMode(DX_BLENDMODE_ALPHA,255);
-	//SetBaseColor(0x00000000);
+//	SetDrawBlendMode(DX_BLENDMODE_ADD,255);
+//	SetBaseColor(0x00000000);
 
 	SetFontBackgroundColor(DXP_FONT_COLOR_NONE);	//デフォルトはバックカラーありなので無しにする
 	while(ProcessLoop()==0){				//メインループ
 		ClearDrawScreen();
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND,255);
+		DrawBox(0,0,480,272,0xffffffff,1);
+		SetDrawBlendMode(DX_BLENDMODE_SUB,255);
 		y = 26;
+
 		SetFontSizeF(1.5f);
 		DrawFormatString(  0,  y,DXP_FONT_COLOR_RED,"1文字のサンプルです。%d",y);
 		y += 16;
