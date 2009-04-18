@@ -4,9 +4,9 @@
 #include "dxlibp.h"
 #include "dxpstatic.h"
 #include "intraFont.h"
+#include <math.h>
 
-//1.0fの時のドットサイズが不明なのでとりあえず
-#define DXLP_PSP_FONT_SIZE (32.0)
+#define	DXP_FONT_BASE_SIZE	22.627416997969522	//SetFontSizeの計算用16x16ドットを1.0fとするため
 /*
 シザー領域の設定値をどこかに保存しとかないといけないみたい…gusettingsに追加するかｗ
 */
@@ -173,7 +173,17 @@ int DeleteFont(int handle)
 
 int SetFontSize( int FontSize )
 {
-	SetFontSizeF((float)(FontSize/DXLP_PSP_FONT_SIZE));
+	if(FontSize < 0) return -1;
+	if(FontSize == 16)
+	{
+		SetFontSizeF(1.0f);
+	}
+	else
+	{
+		//SetFontSizeF((float)(FontSize/DXP_FONT_DEFAULT_SIZE));	//これだと小さくなりすぎ1.0fは対角線のサイズ
+		//結果としては下記式でいいけど範囲を限定して配列化したほうがいいかなあ・・・
+		SetFontSizeF((float)(sqrt(FontSize*FontSize*2)/DXP_FONT_BASE_SIZE));
+	}
 	return 0;
 }
 

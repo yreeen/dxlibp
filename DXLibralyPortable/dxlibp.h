@@ -193,6 +193,7 @@ extern "C" {
 	#define DXP_FONT_COLOR_LITEGRAY	0xffbfbfbf
 	#define DXP_FONT_COLOR_GRAY		0xff7f7f7f
 	#define DXP_FONT_COLOR_DARKGRAY	0xff3f3f3f
+	#define DXP_FONT_DEFAULT_SIZE	16			//1.0fの時のドットサイズ
 
 /*構造体定義部*/
 /*関数定義部*/
