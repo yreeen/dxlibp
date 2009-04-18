@@ -279,7 +279,7 @@ int SetFontSize( int FontSize )
 {
 	if(FontSize < 0) return -1;
 	float size;
-	if(FontSize == 16)
+	if(FontSize == DXP_FONT_DEFAULT_SIZE)
 	{
 		size = 1.0f;
 	}
