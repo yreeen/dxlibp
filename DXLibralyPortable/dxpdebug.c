@@ -72,7 +72,8 @@ void printfDx(const char *format,...)
 		}
 	}
 	strbuf[cy][cx] = '\0';
-	DrawDebugScreen();
+//	DrawDebugScreen();
+	ScreenCopy();
 }
 
 void DrawDebugScreen()

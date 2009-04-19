@@ -15,7 +15,10 @@ int decodeprepare_mp3(DXP_MUSICDECODECONTEXT *context)
 	header = (header << 8) | headerbuf[1];
 	header = (header << 8) | headerbuf[2];
 	header = (header << 8) | headerbuf[3];
-	if((header & 0xFFE00000) != 0xFFE00000)return -1;	//同期ヘッダの存在確認
+	if((header & 0xFFE00000) != 0xFFE00000)
+	{
+		return -1;	//同期ヘッダの存在確認
+	}
 	context->filetype = DXPMFT_MP3;
 	if((context->mp3stream.codec_buffer = (unsigned long*)memalign(64,65 * sizeof(unsigned long))) == NULL)return -1;
 	memset(context->mp3stream.codec_buffer,0,sizeof(unsigned long) * 65);
@@ -166,7 +169,7 @@ others:skip size in bytes
 		if(header[5] & 0x10)
 			tagsize += 10;
 
-		STSEEK(src,tagsize - 10,SEEK_CUR);
+		STSEEK(src,tagsize,SEEK_CUR);
 		return tagsize + 10;
 	}
 	STSEEK(src,pos,SEEK_SET);
