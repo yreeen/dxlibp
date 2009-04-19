@@ -117,7 +117,7 @@ extern "C" {
 	/*描画*/
 	#define DXP_SCREEN_BACK		0xfffffffe
 
-	/*フォーマット定義	注：ABGR配列になっているのはDXライブラリと違う点の一つです。*/
+	/*グラフィックのフォーマット定義*/
 	#define DXP_FMT_5650		(0)	/* テクスチャ、パレット、描画先*/
 	#define DXP_FMT_5551		(1)	/* テクスチャ、パレット、描画先*/
 	#define DXP_FMT_4444		(2)	/* テクスチャ、パレット、描画先*/
@@ -234,6 +234,7 @@ extern "C" {
 													/*init		：初期文字列				*/
 	/*描画関連関数*/
 		/*設定系*/
+		int SetDisplayFormat(int format);				/*画面のフォーマットを変更します。DXP_FMT_5650を指定するとマスク機能が使えなくなるので注意してください。*/
 		int SetDrawScreen(int ghandle);
 		int SetDrawMode(int mode);
 		int SetDrawBlendMode(int BlendMode,int Param);
@@ -243,6 +244,7 @@ extern "C" {
 		int SetTransColor( int Red , int Green , int Blue );
 		int SetDrawArea(int x1,int y1,int x2,int y2);
 		/*取得系*/
+		int GetDisplayFormat();
 		int GetColor(int red,int green,int blue);
 		int GraphSize2DataSize(int width,int height,int Format);				/*縦横の大きさとフォーマットからデータサイズを計算する。*/
 		int AppLogAdd_GraphicData(int gh);										/*グラフィックハンドルの情報を書き出す。デバッグ専用*/
@@ -283,7 +285,7 @@ extern "C" {
 		int UnswizzleGraph(int gh);	/*指定されたグラフィックをUnswizzleする。ただし、メインメモリの空き容量が足りない（グラフィックの実サイズより少ない）と失敗します。*/
 		int MoveGraphToDDR(int gh);	/*指定されたグラフィックがVRAM上にある場合はメインメモリに移動*/
 		int MoveGraphToVRAM(int gh);/*指定されたグラフィックがメインメモリにある場合はVRAM上に移動*/
-		int ConvertGraphFormat(int gh,int psm);/*グラフィックのフォーマットを変更する。メモリの節約と高速化にどうぞ*/
+		int ConvertGraphFormat(int gh,int psm);/*グラフィックのフォーマットを変更する。メモリの節約と高速化にどうぞ。DX_SCREEN_BACKには適用できません*/
 		void WaitGPUSync();			/*GPUが描画を終えるまで待つ*/
 	/*文字列描画関連関数*/
 		int InitString();			/*はじめてDrawString系関数が呼ばれたときに呼び出されます。あらかじめ呼び出しておくのも手です。*/

@@ -86,7 +86,7 @@ typedef struct tagDXPTEXTURE2
 	u16			width;					/*テクスチャの横サイズ*/
 	u16			height;					/*テクスチャの縦サイズ*/
 	u16			pitch;					/*テクスチャの横サイズ*/
-	u16			umax,vmax;				/*有効なテクスチャサイズ*/
+	u16			umax,vmax;				/*有効なUV座標の最大値*/
 	u32			colorkey;				/*カラーキー*/
 	unsigned	vramflag:1;				/*VRAM上に存在しているかどうかのフラグ。ビットフィールドです。*/
 	unsigned	swizzledflag:1;
