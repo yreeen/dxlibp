@@ -256,6 +256,7 @@ extern "C" {
 		int DerivationGraph( int SrcX, int SrcY,int Width, int Height, int src );
 		int LoadGraph(const char *FileName);
 		int DeleteGraph(int GrHandle);
+		int ConvertGraphFormat(int gh,int psm);/*グラフィックのフォーマットを変更する。メモリの節約と高速化にどうぞ。DX_SCREEN_BACKには適用できません*/
 		/*描画系*/
 		/*
 				〜ほとんどの描画系関数に対する注意〜
@@ -285,7 +286,6 @@ extern "C" {
 		int UnswizzleGraph(int gh);	/*指定されたグラフィックをUnswizzleする。ただし、メインメモリの空き容量が足りない（グラフィックの実サイズより少ない）と失敗します。*/
 		int MoveGraphToDDR(int gh);	/*指定されたグラフィックがVRAM上にある場合はメインメモリに移動*/
 		int MoveGraphToVRAM(int gh);/*指定されたグラフィックがメインメモリにある場合はVRAM上に移動*/
-		int ConvertGraphFormat(int gh,int psm);/*グラフィックのフォーマットを変更する。メモリの節約と高速化にどうぞ。DX_SCREEN_BACKには適用できません*/
 		void WaitGPUSync();			/*GPUが描画を終えるまで待つ*/
 	/*文字列描画関連関数*/
 		int InitString();			/*はじめてDrawString系関数が呼ばれたときに呼び出されます。あらかじめ呼び出しておくのも手です。*/

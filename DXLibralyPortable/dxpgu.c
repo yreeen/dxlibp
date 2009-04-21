@@ -1342,7 +1342,7 @@ int DrawBox(int x1,int y1,int x2,int y2,int color,int fillflag)
 		vtxbuf[4].y = y1;
 		vtxbuf[4].z = gusettings.z_2d;
 		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 5);
-		sceGuDrawArray(GU_LINES,DXP_VTYPE_2D | GU_TRANSFORM_2D,5,0,vtxbuf);
+		sceGuDrawArray(GU_LINE_STRIP,DXP_VTYPE_2D | GU_TRANSFORM_2D,5,0,vtxbuf);
 	}
 	return 0;
 }
@@ -1390,7 +1390,7 @@ int	DrawCircle( int x, int y, int r, int Color,int fill)
 	if(fill)
 		sceGuDrawArray(GU_TRIANGLE_FAN,DXP_VTYPE_2D | GU_TRANSFORM_2D,DXPOVAL_DIV + 2,0,vtxbuf);
 	else
-		sceGuDrawArray(GU_LINES,DXP_VTYPE_2D | GU_TRANSFORM_2D,DXPOVAL_DIV + 1,0,vtxbuf + 1);
+		sceGuDrawArray(GU_LINE_STRIP,DXP_VTYPE_2D | GU_TRANSFORM_2D,DXPOVAL_DIV + 1,0,vtxbuf + 1);
 	return 0;
 }
 
@@ -1502,7 +1502,7 @@ int DrawTriangle(int x1,int y1,int x2,int y2,int x3,int y3,int color,int fill)
 		vtxbuf[3].y = y1;
 		vtxbuf[3].z = gusettings.z_2d;
 		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 4);
-		sceGuDrawArray(GU_LINES,DXP_VTYPE_2D | GU_TRANSFORM_2D,4,0,vtxbuf);
+		sceGuDrawArray(GU_LINE_STRIP,DXP_VTYPE_2D | GU_TRANSFORM_2D,4,0,vtxbuf);
 	}
 	return 0;
 }
