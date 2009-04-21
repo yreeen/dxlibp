@@ -1,27 +1,13 @@
 /****************************************************
-*		DXライブラリPortable	Ver0.4.12			*
+*		DXライブラリPortable	Ver0.4.13			*
 *		製作者	：夢瑞憂煉							*
-*		最終更新：2009/04/19						*
+*		最終更新：2009/04/21						*
 *		更新履歴はファイルの最後のほうにあります。	*
 ****************************************************/
 /****************************************************
-*このライブラリが依存、内包しているライブラリ一覧
-*ライブラリ利用者はこれらの著作権表示を必ず行ってください。
-*
-*libpng
-*	Copyright (c) 1998-2004 Glenn Randers-Pehrson.
-*zlib
-*	Copyright (c) 1995-2004 Jean-loup Gailly and Mark Adler.
-*intraFont
-*	Uses intraFont by BenHur
-*libccc
-*	Uses libccc by BenHur
-*全角文字表示ライブラリ
-*	このソフトウェアはmediumgauge氏作成の全角文字表示ライブラリを使用しています。
-*
-*DXP_NOUSE_LIBJPEGのコンパイルオプションを外した場合は、これもお願いします。
-*libjpeg
-*	Copyright (c) 1991-1998 Thomas G. Lane. this software is based in part on the work of the Independent JPEG Group.
+     ---CAUTION!----
+このライブラリは幾つかのライブラリを内包しています。
+readme.txtに詳細がありますので、ご参照ください。
 ****************************************************/
 /****************************************************
 		備考欄										
