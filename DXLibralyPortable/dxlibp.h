@@ -70,14 +70,6 @@ extern "C" {
 #endif
 
 
-/*DXPのコンパイル時オプション*/
-
-#define DXP_NOUSE_LIBJPEG		/*コメントアウトすると512x512以上のサイズのJpegファイルを読み込めるようになります。ただし、実行ファイルのサイズが80KBほど大きくなります。*/
-#define DXP_NOUSE_MTRAND		/*コメントアウトすると乱数生成にメルセンヌ・ツイスターを使います。デフォルトではLFSR方式となります。*/
-/*#define DXP_NON_ZENKAKU*/		/*全角文字のデバッグスクリーンを使わない場合はコメントアウトを外してください。*/
-
-/*DXPのコンパイル時オプション終わり*/
-
 /*Windowsの定義をすこし流用*/
 #define	BYTE	u8
 #define	WORD	u16

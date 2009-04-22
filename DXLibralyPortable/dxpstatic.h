@@ -1,11 +1,20 @@
 #ifndef	DXPSTATIC_H__
 #define	DXPSTATIC_H__
 /*
-*	DXライブラリPortable	ライブラリ内部用ヘッダ	Ver0.4.0
+*	DXライブラリPortable	ライブラリ内部用ヘッダ
 *	製作者	：憂煉
 */
 
 #include <pspkernel.h>
+
+/*DXPのコンパイル時オプション*/
+
+#define DXP_NOUSE_LIBJPEG		/*コメントアウトすると512x512以上のサイズのJpegファイルを読み込めるようになります。ただし、実行ファイルのサイズが80KBほど大きくなります。*/
+#define DXP_NOUSE_MTRAND		/*コメントアウトすると乱数生成にメルセンヌ・ツイスターを使います。デフォルトではLFSR方式改となります。*/
+/*#define DXP_NON_ZENKAKU*/		/*全角文字のデバッグスクリーンを使わない場合はコメントアウトを外してください。*/
+//#define DXP_NOUSE_FLTVERTEX_WITH_ROTA	/*コメントアウトするとDrawRotaGraph、DrawRotaGraph2の描画に不動小数点数型頂点を使うようになります。*/
+/*DXPのコンパイル時オプション終わり*/
+
 
 
 /*マクロ*/

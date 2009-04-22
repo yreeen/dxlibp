@@ -1156,7 +1156,44 @@ int DrawModiGraphF( float x1,float y1,float x2,float y2,float x3,float y3,float 
 }
 int	DrawRotaGraph(int x,int y,double ExtRate,double Angle,int gh,int trans,int turn)
 {
+#ifdef DXP_NOUSE_FLTVERTEX_WITH_ROTA
+	DXPGRAPHDATA* gptr = GraphHandle2Ptr(gh);
+	if(gptr == NULL)return -1;
+	register float x1,x2,x3,x4,y1,y2,y3,y4;
+	register float x1_,x2_,x3_,x4_,y1_,y2_,y3_,y4_;
+	x2 = x3 = (gptr->u1 - gptr->u0) / 2;
+	x1 = x4 = -x3;
+	y3 = y4 = (gptr->v1 - gptr->v0) / 2;
+	y1 = y2 = -y3;
+	register float extrate = ExtRate;
+	x1 *= extrate;
+	x2 *= extrate;
+	x3 *= extrate;
+	x4 *= extrate;
+	y1 *= extrate;
+	y2 *= extrate;
+	y3 *= extrate;
+	y4 *= extrate;
+	float s,c;
+	s = sinf(Angle);
+	c = cosf(Angle);
+
+#define XROT(VARNUM)	\
+	{	\
+	x##VARNUM##_ = x##VARNUM * c - y##VARNUM * s + x;	\
+	y##VARNUM##_ = x##VARNUM * s + y##VARNUM * c + y;	\
+	}
+
+	XROT(1)
+	XROT(2)
+	XROT(3)
+	XROT(4)
+#undef XROT
+	if(turn)return DrawModiGraph(x2_,y2_,x1_,y1_,x4_,y4_,x3_,y3_,gh,trans);
+	return DrawModiGraph(x1_,y1_,x2_,y2_,x3_,y3_,x4_,y4_,gh,trans);
+#else
 	return DrawRotaGraphF(x,y,ExtRate,Angle,gh,trans,turn);
+#endif
 }
 int	DrawRotaGraphF(float x,float y,double ExtRate,double Angle,int gh,int trans,int turn)
 {
@@ -1199,7 +1236,44 @@ int	DrawRotaGraphF(float x,float y,double ExtRate,double Angle,int gh,int trans,
 }
 int DrawRotaGraph2(int x,int y,int cx,int cy,double ExtRate,double Angle,int gh,int trans,int turn)
 {
+#ifdef DXP_NOUSE_FLTVERTEX_WITH_ROTA
+	DXPGRAPHDATA* gptr = GraphHandle2Ptr(gh);
+	if(gptr == NULL)return -1;
+	register float x1,x2,x3,x4,y1,y2,y3,y4;
+	register float x1_,x2_,x3_,x4_,y1_,y2_,y3_,y4_;
+	x2 = x3 = (gptr->u1 - gptr->u0) - cx;
+	x1 = x4 = -cx;
+	y3 = y4 = (gptr->v1 - gptr->v0) - cy;
+	y1 = y2 = -cy;
+	register float extrate = ExtRate;
+	x1 *= extrate;
+	x2 *= extrate;
+	x3 *= extrate;
+	x4 *= extrate;
+	y1 *= extrate;
+	y2 *= extrate;
+	y3 *= extrate;
+	y4 *= extrate;
+	float s,c;
+	s = sinf(Angle);
+	c = cosf(Angle);
+
+#define XROT(VARNUM)	\
+	{	\
+	x##VARNUM##_ = x##VARNUM * c - y##VARNUM * s + x;	\
+	y##VARNUM##_ = x##VARNUM * s + y##VARNUM * c + y;	\
+	}
+
+	XROT(1)
+	XROT(2)
+	XROT(3)
+	XROT(4)
+#undef XROT
+	if(turn)return DrawModiGraph(x2_,y2_,x1_,y1_,x4_,y4_,x3_,y3_,gh,trans);
+	return DrawModiGraph(x1_,y1_,x2_,y2_,x3_,y3_,x4_,y4_,gh,trans);
+#else
 	return DrawRotaGraph2F(x,y,cx,cy,ExtRate,Angle,gh,trans,turn);
+#endif
 }
 int	DrawRotaGraph2F(float x,float y,float cx,float cy,double ExtRate,double Angle,int gh,int trans,int turn)//未テスト
 {
