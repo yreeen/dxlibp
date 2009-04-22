@@ -281,20 +281,21 @@ int MakeGraph(int x,int y,int format)
 
 int GetColor(int Red,int Green,int Blue)/*現在のカラーフォーマットで色を返す*/
 {
-	int psm = gusettings.rendertarget != NULL ? gusettings.rendertarget->psm : GU_PSM_8888;
-	switch(psm)
-	{
-		case GU_PSM_4444:
-			return 0x0000f000 | (Blue & 0x000000f0) << 4 | (Green & 0x000000f0) | (Red & 0x000000f0) >> 4;
-		case GU_PSM_5551:
-			return 0x00008000 | (Blue & 0x000000f8) << 7 | (Green & 0x000000f8) << 2| (Red & 0x000000f8) >> 3;
-		case GU_PSM_5650:
-			return 0x00008000 | (Blue & 0x000000f8) << 8 | (Green & 0x000000f8) << 3| (Red & 0x000000f8) >> 3;
-		case GU_PSM_8888:
-			return 0xff000000 | (Blue & 0x000000ff) << 16 | (Green & 0x000000ff) << 8 | (Red & 0x000000ff);
-		default:
-			return 0;
-	}
+	//int psm = gusettings.rendertarget != NULL ? gusettings.rendertarget->psm : GU_PSM_8888;
+	//switch(psm)
+	//{
+	//	case GU_PSM_4444:
+	//		return 0x0000f000 | (Blue & 0x000000f0) << 4 | (Green & 0x000000f0) | (Red & 0x000000f0) >> 4;
+	//	case GU_PSM_5551:
+	//		return 0x00008000 | (Blue & 0x000000f8) << 7 | (Green & 0x000000f8) << 2| (Red & 0x000000f8) >> 3;
+	//	case GU_PSM_5650:
+	//		return 0x00008000 | (Blue & 0x000000f8) << 8 | (Green & 0x000000f8) << 3| (Red & 0x000000f8) >> 3;
+	//	case GU_PSM_8888:
+	//		return 0xff000000 | (Blue & 0x000000ff) << 16 | (Green & 0x000000ff) << 8 | (Red & 0x000000ff);
+	//	default:
+	//		return 0;
+	//}
+	return 0xff000000 | (Blue & 0x000000ff) << 16 | (Green & 0x000000ff) << 8 | (Red & 0x000000ff);
 }
 
 int GraphSize2DataSize(int width,int height,int psm)
@@ -444,7 +445,7 @@ AppLogAdd2("");
 	sceGuEnable(GU_TEXTURE_2D);
 	//sceGuEnable(GU_FRAGMENT_2X);
 	sceGuDepthMask(0xffff);
-	sceGuShadeModel(GU_SMOOTH);
+	sceGuShadeModel(GU_FLAT);
 	sceGuTexScale(1.0f,1.0f);
 	sceGuTexOffset(0.0f,0.0f);
 /*	sceGuShadeModel(GU_SMOOTH);*/
@@ -1383,8 +1384,8 @@ int	DrawCircle( int x, int y, int r, int Color,int fill)
 
 	for(i = 1;i <= DXPOVAL_DIV + 1;++i)
 	{
-		vtxbuf[i].x = x + r * cos(M_PI * 2 / DXPOVAL_DIV * i);
-		vtxbuf[i].y = y + r * sin(M_PI * 2 / DXPOVAL_DIV * i);
+		vtxbuf[i].x = x + r * cosf(M_PI * 2 / DXPOVAL_DIV * i);
+		vtxbuf[i].y = y + r * sinf(M_PI * 2 / DXPOVAL_DIV * i);
 		vtxbuf[i].z = gusettings.z_2d;
 	}
 

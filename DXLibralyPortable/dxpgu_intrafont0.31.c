@@ -4,7 +4,7 @@
 #include "dxlibp.h"
 #include "dxpstatic.h"
 #include "intraFont.h"
-#include <math.h>
+#include <fastmath.h>
 
 #define	DXP_FONT_BASE_SIZE	22.627416997969522f	//SetFontSizeの計算用16x16ドットを1.0fとするため
 #define	DXP_FONT_SQRT_SIZE	1.4142135623730951f	//SetFontSizeの計算用
