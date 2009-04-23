@@ -13,6 +13,8 @@ int main()
 	int n = 10000;
 while(ProcessMessage() != -1)
 {
+	clsDx();
+//	printfDx("%d",GetCpuUsage());
 	if(GetInputState() & DXP_INPUT_LTRIGGER)UnswizzleGraph(gh);
 	if(GetInputState() & DXP_INPUT_RTRIGGER)SwizzleGraph(gh);
 	if(GetInputState() & DXP_INPUT_UP)n += 1000;

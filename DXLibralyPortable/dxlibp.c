@@ -123,6 +123,7 @@ int DxLib_Init()
 
 	SetExitCallback();/*HOMEボタンコールバック関数のセット*/
 	InitInput();/*入力の初期化*/
+	RenewInput();
 	InitGUEngine();/*GPU周りの初期化*/
 	SRand(time(NULL));/*乱数初期化*/
 
@@ -167,6 +168,31 @@ int Sleep(int time)
 	sceKernelDelayThread(time * 1000);
 	return 0;
 }
+
+
+
+
+void InitProfiler(void); 
+void ExitProfiler(void); 
+void ClrProfileRegs(void); 
+void GetProfileRegs(PspDebugProfilerRegs *dest);
+//int GetCpuUsage()
+//{
+	//static SceUInt mod = -1;
+	//PspDebugProfilerRegs regs;
+	//if(mod < 0)
+	//{
+	//	mod = pspSdkLoadStartModule("dxpkernel.prx", PSP_MEMORY_PARTITION_KERNEL); 
+	//	if(mod < 0)return -1;
+	//	InitProfiler(); 
+	//	ClrProfileRegs();
+	//}
+	//GetProfileRegs(&regs);
+	//ClrProfileRegs();
+	//int res = 100 * (regs.cpuck - regs.sleep) / regs.cpuck; 
+	//return res;
+	//return -1;
+//}
 
 int SetupSTREAMDATA(const char *FileName,STREAMDATA *DataPtr)
 /*DXライブラリのSTREAMDATAを設定する。多少強引なのは仕様*/

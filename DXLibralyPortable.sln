@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sample_Font", "sample\Font\
 		{C1F514B7-CB0D-4CB2-B8A6-941A64BB9ABB} = {C1F514B7-CB0D-4CB2-B8A6-941A64BB9ABB}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "prx", "prx\prx.vcproj", "{05D7FFB4-68F1-448F-8F31-A053EFE9E529}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|PSP = Debug|PSP
@@ -56,6 +58,16 @@ Global
 		{746D0D41-07E0-4ACC-9EB8-0461B7CAFE58}.Release|PSP.ActiveCfg = PSP|Win32
 		{746D0D41-07E0-4ACC-9EB8-0461B7CAFE58}.Release|Win32.ActiveCfg = PSP|Win32
 		{746D0D41-07E0-4ACC-9EB8-0461B7CAFE58}.Release|Win32.Build.0 = PSP|Win32
+		{05D7FFB4-68F1-448F-8F31-A053EFE9E529}.Debug|PSP.ActiveCfg = Debug|Win32
+		{05D7FFB4-68F1-448F-8F31-A053EFE9E529}.Debug|PSP.Build.0 = Debug|Win32
+		{05D7FFB4-68F1-448F-8F31-A053EFE9E529}.Debug|Win32.ActiveCfg = Debug|Win32
+		{05D7FFB4-68F1-448F-8F31-A053EFE9E529}.Debug|Win32.Build.0 = Debug|Win32
+		{05D7FFB4-68F1-448F-8F31-A053EFE9E529}.PSP|PSP.ActiveCfg = Release|Win32
+		{05D7FFB4-68F1-448F-8F31-A053EFE9E529}.PSP|Win32.ActiveCfg = Release|Win32
+		{05D7FFB4-68F1-448F-8F31-A053EFE9E529}.PSP|Win32.Build.0 = Release|Win32
+		{05D7FFB4-68F1-448F-8F31-A053EFE9E529}.Release|PSP.ActiveCfg = Release|Win32
+		{05D7FFB4-68F1-448F-8F31-A053EFE9E529}.Release|Win32.ActiveCfg = Release|Win32
+		{05D7FFB4-68F1-448F-8F31-A053EFE9E529}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
