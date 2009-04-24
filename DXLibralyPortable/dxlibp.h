@@ -299,6 +299,8 @@ extern "C" {
 		int PlaySoundFile(const char *FileName , int PlayType ,int SetPcmLen DXPDEFARG(-1),int* AnsPcmLen DXPDEFARG(NULL));
 		int CheckSoundFile();
 		int StopSoundFile();
+		//20090425
+		int	SetTopPosSoundMem(int handle );
 
 	/*ファイル読み込み関数*/
 		int FileRead_SetMode(int Mode);		/*Windowsで作ったテキストの改行コード対策*/

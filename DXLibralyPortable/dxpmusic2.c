@@ -344,6 +344,13 @@ int musicthread_normal(SceSize arglen,void* argp)
 		else
 			sceAudioSetChannelDataLen(reservedchannel,SAMPLECOUNT_DEFAULT);
 		sceAudioOutputPannedBlocking(reservedchannel,vleft,vright,buf);
+		//20090425
+		if(ptr->flag & DXP_MUSICCOMMAND_TOP)
+		{
+			pos = ptr->apos;
+			ptr->flag &=~ DXP_MUSICCOMMAND_TOP;
+		}
+
 	}
 	if(reservedchannel >= 0)sceAudioChRelease(reservedchannel);
 	reservedchannel = -1;
@@ -694,5 +701,14 @@ int StopSoundFile()
 
 int	SetCreateSoundDataType( int SoundDataType )
 {
+	return 0;
+}
+
+int	SetTopPosSoundMem(int handle )
+{
+	if( handle <	0				)	return -1;
+	if( handle >=	MusicTableMAX	)	return -2;
+	if( MusicTable[handle].useflg == 0)	return -3;
+	MusicTable[handle].flag |= DXP_MUSICCOMMAND_TOP;
 	return 0;
 }
