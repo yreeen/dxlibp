@@ -152,6 +152,11 @@ extern "C" {
 	#define	DXP_OSK_KANJI		(0x00008000)	//漢字
 	#define	DXP_OSK_URL			(0x00080000)	//URL入力支援
 
+	#define PSPCTRLMODE_MSWP		0x00000001
+	#define PSPCTRLMODE_KB			0x00000002
+	#define PSPANALOGMODE_CKEY		0x00000010
+	#define PSPANALOGMODE_NOCKEY	0x00000020
+
 	/*音楽再生*/
 	#define DX_PLAYTYPE_NORMAL							(0)												// ノーマル再生
 	#define DX_PLAYTYPE_BACK				  			(1)							// バックグラウンド再生
@@ -210,6 +215,9 @@ extern "C" {
 													/*inputmode	：DXP_OSKMODEのどれか		*/
 													/*title		：タイトル文字列			*/
 													/*init		：初期文字列				*/
+		int	SetPspCtrlMode(int Mode);
+		int	SetPspAnalogMode(int Mode);
+
 	/*描画関連関数*/
 		/*設定系*/
 		int SetDisplayFormat(int format);				/*画面のフォーマットを変更します。DXP_FMT_5650を指定するとマスク機能が使えなくなるので注意してください。*/

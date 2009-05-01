@@ -28,11 +28,6 @@ int PspAnalogMode	= 1;// 0) PSPアナログパッドを十字キーの結果に�
 						//    アナログ機能有りとして振舞う
 						//注) PspCtrlModeのモードに関係なく振舞う
 
-#define PSPCTRLMODE_MSWP		0x00000001
-#define PSPCTRLMODE_KB			0x00000002
-#define PSPANALOGMODE_CKEY		0x00000010
-#define PSPANALOGMODE_NOCKEY	0x00000020
-
 //PSPのダメアナログパッド(笑)のブレを吸収するための数字
 #define ANALOG_BOUNDARY_MIN  85
 #define ANALOG_BOUNDARY_MAX 170
