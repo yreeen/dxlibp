@@ -272,13 +272,19 @@ extern "C" {
 		int DrawExtendGraph(int x1,int y1,int x2,int y2,int gh,int trans);
 		int	DrawModiGraph(int x1,int y1,int x2,int y2,int x3,int y3,int x4,int y4,int gh,int trans);
 		int	DrawTurnGraph(int x,int y,int gh,int trans);
-		int	DrawRotaGraph(int x,int y,double ExtRate,double Angle,int gh,int trans,int turn DXPDEFARG(0));
-		int DrawRotaGraph2(int x,int y,int cx,int cy,double ExtRate,double Angle,int gh,int trans,int turn DXPDEFARG(0));
+		int	DrawRotaGraph(int x,int y,float ExtRate,float Angle,int gh,int trans,int turn DXPDEFARG(0));
+		int DrawRotaGraph2(int x,int y,int cx,int cy,float ExtRate,float Angle,int gh,int trans,int turn DXPDEFARG(0));
 
 		int	DrawModiGraphF(float x1,float y1,float x2,float y2,float x3,float y3,float x4,float y4,int gh,int trans);
-		int	DrawRotaGraphF(float x,float y,double ExtRate,double Angle,int gh,int trans,int turn DXPDEFARG(0));
-		int	DrawRotaGraph2F(float x,float y,float cx,float cy,double ExtRate,double Angle,int gh,int trans,int turn DXPDEFARG(0));
+		int	DrawRotaGraphF(float x,float y,float ExtRate,float Angle,int gh,int trans,int turn DXPDEFARG(0));
+		int	DrawRotaGraph2F(float x,float y,float cx,float cy,float ExtRate,float Angle,int gh,int trans,int turn DXPDEFARG(0));
 		int DrawPolygon3D(VERTEX_3D *Vertex,int PolygonNum,int GrHandle,int TransFlag);//テスト中です…
+
+		/*引数を本家に合わせたバージョン*/
+		int	DrawRotaGraphCompatible(int x,int y,double ExtRate,double Angle,int gh,int trans,int turn DXPDEFARG(0));
+		int DrawRotaGraph2Compatible(int x,int y,int cx,int cy,double ExtRate,double Angle,int gh,int trans,int turn DXPDEFARG(0));
+		int	DrawRotaGraphFCompatible(float x,float y,double ExtRate,double Angle,int gh,int trans,int turn DXPDEFARG(0));
+		int	DrawRotaGraph2FCompatible(float x,float y,float cx,float cy,double ExtRate,double Angle,int gh,int trans,int turn DXPDEFARG(0));
 
 		/*その他*/
 		int SwizzleGraph(int gh);	/*指定されたグラフィックをSwizzleする。ただし、メインメモリの空き容量が足りない（グラフィックの実サイズより少ない）と失敗します。*/

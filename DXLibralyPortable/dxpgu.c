@@ -48,7 +48,7 @@ DXPGPUSETTING gusettings =
 	{0,0,480,272},								/*シザー領域の設定値*/
 	{1,-1,0,0,0,0,0,-1,0}						/*GPU設定値の保持*/
 };
-u32 __attribute__((aligned(16))) gulist[GULIST_LEN];/*GPUに送る命令を溜め込むためのバッファ　とりあえず256KByte*/
+u32 __attribute__((aligned(16))) gulist[GULIST_LEN];/*GPUに送る命令を溜め込むためのバッファ　とりあえず1MByte*/
 //DXPTEXTURE texarray[TEXTURE_MAX];
 DXPTEXTURE2		*texlist	= NULL;
 DXPGRAPHDATA	*graphlist	= NULL;
@@ -108,10 +108,22 @@ int GenerateGraphHandle()//ハンドルの番号を生成する。
 	return handle;
 }
 
-DXPGRAPHDATA* GraphHandle2Ptr(int handle)
+DXPGRAPHDATA* GraphHandle2Ptr(int handle)//とりあえず自己組織化リストにしようかなと。逆に遅いかも？
 {
 	DXPGRAPHDATA *ptr;
-	for(ptr = graphlist;ptr != NULL;ptr = ptr->next)if(ptr->handle == handle)return ptr;
+	for(ptr = graphlist;ptr != NULL;ptr = ptr->next)if(ptr->handle == handle)
+	{
+		if(ptr != graphlist)
+		{
+			if(ptr->next != NULL)ptr->next->prev = ptr->prev;
+			ptr->prev->next = ptr->next;
+			ptr->next = graphlist;
+			ptr->prev = NULL;
+			if(graphlist != NULL)graphlist->prev = ptr;
+			graphlist = ptr;
+		}
+		return ptr;
+	}
 	return NULL;
 }
 DXPTEXTURE2* GraphHandle2TexPtr(int handle)
@@ -1187,7 +1199,15 @@ int DrawModiGraphF( float x1,float y1,float x2,float y2,float x3,float y3,float 
 	GuListSafety();
 	return 0;
 }
-int	DrawRotaGraph(int x,int y,double ExtRate,double Angle,int gh,int trans,int turn)
+
+
+
+int	DrawRotaGraphCompatible(int x,int y,double ExtRate,double Angle,int gh,int trans,int turn)
+{
+	return DrawRotaGraph(x,y,ExtRate,Angle,gh,trans,turn);
+}
+
+int	DrawRotaGraph(int x,int y,float ExtRate,float Angle,int gh,int trans,int turn)
 {
 #ifdef DXP_NOUSE_FLTVERTEX_WITH_ROTA
 	DXPGRAPHDATA* gptr = GraphHandle2Ptr(gh);
@@ -1228,7 +1248,12 @@ int	DrawRotaGraph(int x,int y,double ExtRate,double Angle,int gh,int trans,int t
 	return DrawRotaGraphF(x,y,ExtRate,Angle,gh,trans,turn);
 #endif
 }
-int	DrawRotaGraphF(float x,float y,double ExtRate,double Angle,int gh,int trans,int turn)
+
+int	DrawRotaGraphFCompatible(float x,float y,double ExtRate,double Angle,int gh,int trans,int turn)
+{
+	return DrawRotaGraphF(x,y,ExtRate,Angle,gh,trans,turn);
+}
+int	DrawRotaGraphF(float x,float y,float ExtRate,float Angle,int gh,int trans,int turn)
 {
 	DXPGRAPHDATA* gptr = GraphHandle2Ptr(gh);
 	if(gptr == NULL)return -1;
@@ -1267,7 +1292,11 @@ int	DrawRotaGraphF(float x,float y,double ExtRate,double Angle,int gh,int trans,
 //ｘ’＝ｘcosθ-ysinθ
 //ｙ’＝ｘsinθ+ycosθ
 }
-int DrawRotaGraph2(int x,int y,int cx,int cy,double ExtRate,double Angle,int gh,int trans,int turn)
+int DrawRotaGraph2Compatible(int x,int y,int cx,int cy,double ExtRate,double Angle,int gh,int trans,int turn)
+{
+	return DrawRotaGraph2(x,y,cx,cy,ExtRate,Angle,gh,trans,turn);
+}
+int DrawRotaGraph2(int x,int y,int cx,int cy,float ExtRate,float Angle,int gh,int trans,int turn)
 {
 #ifdef DXP_NOUSE_FLTVERTEX_WITH_ROTA
 	DXPGRAPHDATA* gptr = GraphHandle2Ptr(gh);
@@ -1308,7 +1337,11 @@ int DrawRotaGraph2(int x,int y,int cx,int cy,double ExtRate,double Angle,int gh,
 	return DrawRotaGraph2F(x,y,cx,cy,ExtRate,Angle,gh,trans,turn);
 #endif
 }
-int	DrawRotaGraph2F(float x,float y,float cx,float cy,double ExtRate,double Angle,int gh,int trans,int turn)//未テスト
+int	DrawRotaGraph2FCompatible(float x,float y,float cx,float cy,double ExtRate,double Angle,int gh,int trans,int turn)
+{
+	return DrawRotaGraph2F(x,y,cx,cy,ExtRate,Angle,gh,trans,turn);
+}
+int	DrawRotaGraph2F(float x,float y,float cx,float cy,float ExtRate,float Angle,int gh,int trans,int turn)
 {
 	DXPGRAPHDATA* gptr = GraphHandle2Ptr(gh);
 	if(gptr == NULL)return -1;

@@ -16,7 +16,8 @@ int main()
 	SetDrawScreen( DXP_SCREEN_BACK ) ;
 
 	// テクスチャの読み込み
-	GrHandle = LoadGraph( "test.png" ) ;
+	int hbuf[5];
+	GrHandle = LoadDivGraph( "test.png",5,5,1,23,23,hbuf ) ;
 
 	// Ｚ値の初期化
 	Z = 0.0F ;
@@ -24,14 +25,17 @@ int main()
 	// Ｚ値の加算値を初期化(最初は近づける)
 	ZAdd = -1.0F ;
 
+	int cnt = 0;
 	// 何かキーが押されるまでループ
 	while(! (GetInputState() & DXP_INPUT_CROSS) )
 	{
+		;
 		// メッセージ処理
 		if( ProcessMessage() != 0 ) break ;
 
 		// 画面の初期化
 		ClearDrawScreen() ;
+		DrawGraph(0,0,GrHandle = hbuf[(cnt++) % 5],0);
 		//DrawBox(0,0,240,272,0xffffffff,GrHandle != -1 ? 1 : 0 );
 
 		// Ｚ値の処理
