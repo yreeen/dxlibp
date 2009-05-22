@@ -10,6 +10,7 @@
 pspDebugScreen系関数は使うと泣きを見るので使用禁止。VRAMの先頭数千バイトが使えなくなります。
 */
 #include <pspgu.h>
+#include <pspgum.h>
 #include <pspdisplay.h>
 #include <pspdebug.h>
 #include "dxlibp.h"
@@ -448,6 +449,38 @@ AppLogAdd2("");
 	sceGuShadeModel(GU_FLAT);
 	sceGuTexScale(1.0f,1.0f);
 	sceGuTexOffset(0.0f,0.0f);
+		sceGuAmbientColor(0xffffffff);
+
+	sceGumMatrixMode(GU_PROJECTION);
+	sceGumLoadIdentity();
+	sceGumOrtho(0,480,0,272,1,1000);
+	//{
+	//	ScePspFMatrix4 m;
+	//	m.x.x = 1;	m.x.y = 0;	m.x.z = 0;	m.x.w = 0;
+	//	m.y.x = 0;	m.y.y = 1;	m.y.z = 0;	m.y.w = 0;
+	//	m.z.x = 0;	m.z.y = 0;	m.z.z = 1;	m.z.w = 0;
+	//	m.w.x = 0;	m.w.y = 0;	m.w.z = 0;	m.w.w = 1;
+	//	sceGumLoadMatrix(&m);
+	//}
+//	sceGumPerspective(90.0f,16.0f/9.0f,-1000.0f,1000.0f);
+
+	sceGumMatrixMode(GU_VIEW);
+	sceGumLoadIdentity();
+	{
+		ScePspFMatrix4 m;
+		m.x.x = 1;	m.x.y = 0;	m.x.z = 0;	m.x.w = 0;
+		m.y.x = 0;	m.y.y = 1;	m.y.z = 0;	m.y.w = 0;
+		m.z.x = 0;	m.z.y = 0;	m.z.z = 1;	m.z.w = 0;
+		m.w.x = 0;	m.w.y = 0;	m.w.z = 0;	m.w.w = 1;
+		sceGumLoadMatrix(&m);
+//		ScePspFVector3 pos = { -240.0f, -136.0f, 0.0f };
+//		sceGumTranslate(&pos);
+	}
+
+	sceGumMatrixMode(GU_MODEL);
+	sceGumLoadIdentity();
+
+
 /*	sceGuShadeModel(GU_SMOOTH);*/
 //	ApplyBrightAndBlendMode();
 	SetDrawMode(DX_DRAWMODE_NEAREST);
@@ -1655,4 +1688,30 @@ int SetDisplayFormat(int format)
 int GetDisplayFormat()
 {
 	return gusettings.displaybuffer[0].psm;
+}
+
+int DrawPolygon3D(VERTEX_3D *Vertex,int PolygonNum,int gh,int trans)
+{
+	GUSTART
+	DXPGRAPHDATA *pg = GraphHandle2Ptr(gh);
+	if(pg == NULL)return -1;
+	SetTexture(gh,trans);
+	DXPVERTEX_3DTEX_F *vtxbuf = sceGuGetMemory(sizeof(DXPVERTEX_3DTEX_F) * PolygonNum * 3);
+	if(vtxbuf == NULL)return -1;
+	int i,j;
+	for(i = 0;i < PolygonNum;++i)
+	{
+		for(j = 0;j < 3;++j)
+		{
+			vtxbuf[i * 3 + j].u = pg->u0 + (pg->u1 - pg->u0) * Vertex[i * 3 + j].u;
+			vtxbuf[i * 3 + j].v = pg->v0 + (pg->v1 - pg->v0) * Vertex[i * 3 + j].v;
+			vtxbuf[i * 3 + j].color = ((u32)Vertex[i * 3 + j].a << 24) | ((u32)Vertex[i * 3 + j].b << 16) | ((u32)Vertex[i * 3 + j].g << 8) | ((u32)Vertex[i * 3 + j].r);
+			vtxbuf[i * 3 + j].x = Vertex[i * 3 + j].pos.x;
+			vtxbuf[i * 3 + j].y = Vertex[i * 3 + j].pos.y;
+			vtxbuf[i * 3 + j].z = Vertex[i * 3 + j].pos.z;
+		}
+	}
+	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_3DTEX_F) * PolygonNum * 3);
+	sceGumDrawArray(GU_TRIANGLES,DXP_VTYPE_3DTEX_F | GU_TRANSFORM_3D,PolygonNum * 3,0,vtxbuf);
+	return 0;
 }

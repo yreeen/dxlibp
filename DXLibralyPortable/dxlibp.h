@@ -179,6 +179,17 @@ extern "C" {
 	#define DXP_FONT_DEFAULT_SIZE	16			//1.0fの時のドットサイズ
 
 /*構造体定義部*/
+	typedef struct tagVECTOR
+	{
+		float	x, y, z ;
+	}VECTOR, *LPVECTOR ;
+
+	typedef struct tagVERTEX_3D
+	{
+		VECTOR					pos ;
+		unsigned char			b, g, r, a ;
+		float					u, v ;
+	}VERTEX_3D,*LPVERTEX_3D;
 /*関数定義部*/
 	/*必須関数*/
 		int DxLib_IsInit();
@@ -267,6 +278,8 @@ extern "C" {
 		int	DrawModiGraphF(float x1,float y1,float x2,float y2,float x3,float y3,float x4,float y4,int gh,int trans);
 		int	DrawRotaGraphF(float x,float y,double ExtRate,double Angle,int gh,int trans,int turn DXPDEFARG(0));
 		int	DrawRotaGraph2F(float x,float y,float cx,float cy,double ExtRate,double Angle,int gh,int trans,int turn DXPDEFARG(0));
+		int DrawPolygon3D(VERTEX_3D *Vertex,int PolygonNum,int GrHandle,int TransFlag);//テスト中です…
+
 		/*その他*/
 		int SwizzleGraph(int gh);	/*指定されたグラフィックをSwizzleする。ただし、メインメモリの空き容量が足りない（グラフィックの実サイズより少ない）と失敗します。*/
 		int UnswizzleGraph(int gh);	/*指定されたグラフィックをUnswizzleする。ただし、メインメモリの空き容量が足りない（グラフィックの実サイズより少ない）と失敗します。*/

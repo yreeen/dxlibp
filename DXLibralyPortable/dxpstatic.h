@@ -181,6 +181,15 @@ typedef	struct
 	float		x,y,z;
 }DXPVERTEX_2DTEX_F;
 
+#define DXP_VTYPE_3DTEX_F	(GU_VERTEX_32BITF | GU_TEXTURE_16BIT | GU_COLOR_8888)
+typedef	struct
+{
+	u16			u,v;
+	u32			color;
+	float		x,y,z;
+}DXPVERTEX_3DTEX_F;
+
+
 /*VRAM領域の取得、開放*/
 void InitVRAM();
 DXPVRAMCTRL* AllocVRAM(int Size,int StaticFlag);
