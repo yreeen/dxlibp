@@ -4,7 +4,7 @@ OBJS += dxposk.o dxpunicode.o dxpmusic_wavedata.o dxpmusic_wavestream.o dxpmusic
 OBJS += dxpmusic2.o libccc.o intraFont.o dxpgu_intrafont0.31.o
 
 INCDIR = 
-CFLAGS = -O3 -G0 -Wall -pg
+CFLAGS = -O3 -G0 -Wall
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
 ASFLAGS = $(CFLAGS)
 
