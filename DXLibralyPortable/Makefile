@@ -2,8 +2,6 @@ TARGET_LIB = dxlibp.a
 OBJS = dxlibp.o dxpfileio.o dxpvram.o dxpinput.o dxpgu.o dxpgu_load.o dxpdebug.o zenkaku.o
 OBJS += dxposk.o dxpunicode.o dxpmusic_wavedata.o dxpmusic_wavestream.o dxpmusic_mp3stream.o
 OBJS += dxpmusic2.o libccc.o intraFont.o dxpgu_intrafont0.31.o
-OBJS += dxaddfun.o
-#OBJS += dxpreadcache.o dxpfileioa.o
 
 INCDIR = 
 CFLAGS = -O3 -G0 -Wall -pg
