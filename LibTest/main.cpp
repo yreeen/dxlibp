@@ -1,5 +1,5 @@
 #include "../DXLibralyPortable/dxlibp.h"
-
+#include <pspprof.h>
 PSP_MODULE_INFO("Test", 0, 1, 1); //モジュール情報を設定
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER); //ユーザーモードに設定
 int main()
@@ -143,6 +143,7 @@ int main()
 	DxLib_End() ;
 
 	// ソフトの終了
+	gprof_cleanup();
 	return 0 ;
 }
 

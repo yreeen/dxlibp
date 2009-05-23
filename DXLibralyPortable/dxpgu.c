@@ -601,7 +601,7 @@ int SetTexture(int handle,int TransFlag)//テクスチャを使う描画関数�
 		gusettings.texture = NULL;
 		return -1;
 	}
-	sceGuEnable(GU_TEXTURE_2D);
+	if(!sceGuGetStatus(GU_TEXTURE_2D))sceGuEnable(GU_TEXTURE_2D);
 	if(gusettings.texture != texptr || texptr->reloadflag )/*同じテクスチャがセットされている場合はなにもしない。パフォーマンス落ちちゃうからｗ*/
 	{
 		texptr->reloadflag = 0;
@@ -660,12 +660,12 @@ int SetTexture(int handle,int TransFlag)//テクスチャを使う描画関数�
 //カラーキーを設定する
 	if(ColorKey)
 	{
-		sceGuEnable(GU_COLOR_TEST);
+		if(!sceGuGetStatus(GU_COLOR_TEST))sceGuEnable(GU_COLOR_TEST);
 		sceGuColorFunc(GU_NOTEQUAL,texptr->colorkey,0x00fefefe);
 	}
 	else
 	{
-		sceGuDisable(GU_COLOR_TEST);
+		if(sceGuGetStatus(GU_COLOR_TEST))sceGuDisable(GU_COLOR_TEST);
 	}
 //ブレンディングの方法を設定する
 	int op;

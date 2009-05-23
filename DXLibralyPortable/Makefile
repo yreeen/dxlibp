@@ -6,7 +6,7 @@ OBJS += dxaddfun.o
 #OBJS += dxpreadcache.o dxpfileioa.o
 
 INCDIR = 
-CFLAGS = -O3 -G0 -Wall
+CFLAGS = -O3 -G0 -Wall -pg
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
 ASFLAGS = $(CFLAGS)
 
