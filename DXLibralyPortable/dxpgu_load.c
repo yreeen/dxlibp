@@ -243,24 +243,27 @@ int LoadDivGraph( const char *FileName, int AllNum, int XNum, int YNum, int XSiz
 }
 #endif
 
-int PSM2BYTEx2(int psm)
-{
-	switch(psm)
-	{
-	case GU_PSM_T4:
-		return 1;
-	case GU_PSM_T8:
-		return 2;
-	case GU_PSM_4444:
-	case GU_PSM_5551:
-	case GU_PSM_5650:
-		return 4;
-	case GU_PSM_8888:
-		return 8;
-	default:
-		return 0;
-	}
-}
+
+
+
+//int PSM2BYTEx2(int psm)
+//{
+//	switch(psm)
+//	{
+//	case GU_PSM_T4:
+//		return 1;
+//	case GU_PSM_T8:
+//		return 2;
+//	case GU_PSM_4444:
+//	case GU_PSM_5551:
+//	case GU_PSM_5650:
+//		return 4;
+//	case GU_PSM_8888:
+//		return 8;
+//	default:
+//		return 0;
+//	}
+//}
 
 void swizzle_fast(u8* out, const u8* in, unsigned int width, unsigned int height)
 {

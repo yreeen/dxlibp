@@ -27,6 +27,8 @@
 #define MIN(A,B)		((A) > (B) ? (B) : (A))
 #define MAX(A,B)		((A) > (B) ? (A) : (B))
 
+#define PSM2BYTEx2(PSM)	( 0 <= PSM  && PSM <= 2 ? 4 : (PSM == 3 ? 8 : (PSM == 5 ? 2 : PSM == 4 ? 1 : 0)))
+
 /*ライブラリ本体の設定とか*/
 #define	DXPDATAFLAGS_0_INITIALIZED	0x00000001
 #define	DXPDATAFLAGS_0_INITIALIZING	0x00000002
@@ -230,7 +232,7 @@ void TextureList_Remove(DXPTEXTURE2 *ptr);
 void GraphDataList_PushFront(DXPGRAPHDATA *ptr);
 DXPTEXTURE2* MakeTexture(int x,int y,int format);
 int GenerateGraphHandle();//ハンドルの番号を生成する。
-int PSM2BYTEx2(int psm);
+//int PSM2BYTEx2(int psm);
 #define MALLOC		malloc
 #define	MEMALIGN	memalign
 #define	FREE		free
