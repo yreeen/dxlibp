@@ -59,6 +59,9 @@ extern "C" {
 #include <pspkernel.h>
 //#include <stdio.h>
 
+//#define DXP_USE_COMPATIBLEPARAMATERS	//DrawRotaGraph系の描画関数の引数を本家に合わせる。dxlibpの実装は引数にdoubleが存在しない
+
+
 #ifndef	TRUE
 #define	TRUE	(1)
 #endif
@@ -438,7 +441,16 @@ int SetupSTREAMDATA(const char *FileName,STREAMDATA *DataPtr);	/*ファイル名
 };
 #endif
 
+#ifdef DXP_USE_COMPATIBLEPARAMATERS
+#define DrawRotaGraph DrawRotaGraphCompatible
+#define DrawRotaGraphF DrawRotaGraphFCompatible
+#define DrawRotaGraph2 DrawRotaGraph2Compatible
+#define DrawRotaGraph2F DrawRotaGraph2FCompatible
 #endif
+
+#endif
+
+
 
 /*
 更新履歴

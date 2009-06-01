@@ -70,6 +70,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\dxpgu_draw.c"
+					>
+				</File>
+				<File
 					RelativePath=".\dxpgu_intrafont0.31.c"
 					>
 				</File>

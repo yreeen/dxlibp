@@ -1,5 +1,5 @@
 TARGET_LIB = dxlibp.a
-OBJS = dxlibp.o dxpfileio.o dxpvram.o dxpinput.o dxpgu.o dxpgu_load.o dxpdebug.o zenkaku.o
+OBJS = dxlibp.o dxpfileio.o dxpvram.o dxpinput.o dxpgu.o dxpgu_draw.o dxpgu_load.o dxpdebug.o zenkaku.o
 OBJS += dxposk.o dxpunicode.o dxpmusic_wavedata.o dxpmusic_wavestream.o dxpmusic_mp3stream.o
 OBJS += dxpmusic2.o libccc.o intraFont.o dxpgu_intrafont0.31.o
 

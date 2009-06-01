@@ -15,6 +15,7 @@
 //#define DXP_NOUSE_FLTVERTEX_WITH_ROTA	/*コメントアウトするとDrawRotaGraph、DrawRotaGraph2の描画に不動小数点数型頂点を使うようになります。*/
 /*DXPのコンパイル時オプション終わり*/
 
+#define GRAPHNUM_MAX (1024)	/*テクスチャの最大枚数*/
 
 
 /*マクロ*/
@@ -94,7 +95,7 @@ typedef struct tagDXPPALETTE	/*PSMはGU_PSM_8888で固定です。*/
 typedef struct tagDXPTEXTURE2
 {
 	int			psm;
-	struct tagDXPTEXTURE2 *next,*prev;
+//	struct tagDXPTEXTURE2 *next,*prev;
 	DXPPALETTE	*ppalette;
 	DXPVRAMCTRL	*pvram;
 	void*		pmemory;
@@ -112,7 +113,7 @@ typedef struct tagDXPTEXTURE2
 
 typedef	struct	tagDXPGRAPHDATA
 {
-	struct tagDXPGRAPHDATA	*next,*prev;
+//	struct tagDXPGRAPHDATA	*next,*prev;
 	DXPTEXTURE2	*tex;
 	u16			u0,v0,u1,v1;
 	int			handle;
@@ -148,6 +149,7 @@ typedef struct tagDXPGPUSETTING
 	int			blendmode;	/*SetDrawBlendModeで指定される値*/
 	int			blendparam;
 	u8			red,green,blue,alpha;/*SetDrawBrightとSetDrawBlendModeで指定された値から割り出される数値*/
+	u32			color_graph;
 	u16			z_2d;		/*2D描画時に用いるZ値。*/
 	u8			slice;		/*何バイトでsliceするか*/
 	u8			backbuffer;/*displaybufferのどちらが裏画面とされているのか*/
@@ -216,24 +218,26 @@ extern u32 gulist[];
 	{														\
 		sceGuFinish();										\
 		gusettings.flags[0] &= (~GPUSETTINGFLAGS_0_GUSTART);\
-		sceGuSync(0,0);										\
+		sceGuSync(GU_SYNC_FINISH,GU_SYNC_WHAT_DONE);		\
 	}														\
 }
 
 int InitGUEngine();
 int EndGUEngine();
 int SetTexture(int GrHandle,int TransFlag);
+int SetTexture2(DXPTEXTURE2 *texptr,int trans);
 /*デバッグスクリーン用*/
 void InitDebugScreen();
 void DrawDebugScreen();
 
 int LoadModule_AV_MP3();/*MP3のコーデックをロードする。*/
 int ProcessAudio();
-DXPGRAPHDATA* GraphHandle2Ptr(int handle);
-DXPTEXTURE2* GraphHandle2TexPtr(int handle);
-void TextureList_PushFront(DXPTEXTURE2 *ptr);
-void TextureList_Remove(DXPTEXTURE2 *ptr);
-void GraphDataList_PushFront(DXPGRAPHDATA *ptr);
+extern DXPGRAPHDATA	*GraphArray[GRAPHNUM_MAX];
+#define GraphHandle2Ptr(HANDLE) ((HANDLE == -1 || HANDLE < 0 || HANDLE >= GRAPHNUM_MAX) ? NULL : GraphArray[HANDLE])
+#define GraphHandle2TexPtr(HANDLE) ((HANDLE == -1 || HANDLE < 0 || HANDLE >= GRAPHNUM_MAX) ? NULL : (GraphArray[HANDLE] == NULL ? NULL : GraphArray[HANDLE]->tex))
+//void TextureList_PushFront(DXPTEXTURE2 *ptr);
+//void TextureList_Remove(DXPTEXTURE2 *ptr);
+//void GraphDataList_PushFront(DXPGRAPHDATA *ptr);
 DXPTEXTURE2* MakeTexture(int x,int y,int format);
 int GenerateGraphHandle();//ハンドルの番号を生成する。
 //int PSM2BYTEx2(int psm);
