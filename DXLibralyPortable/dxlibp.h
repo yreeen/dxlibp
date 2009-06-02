@@ -96,7 +96,7 @@ extern "C" {
 	#define DXP_FILEREAD_DOS	0x00000000
 	#define DXP_FILEREAD_UNIX	0x00000001
 	/*描画*/
-	#define DXP_SCREEN_BACK		0xfffffffe
+	#define DX_SCREEN_BACK		0xfffffffe
 
 	/*グラフィックのフォーマット定義*/
 	#define DXP_FMT_5650		(0)	/* テクスチャ、パレット、描画先*/
@@ -193,6 +193,13 @@ extern "C" {
 		unsigned char			b, g, r, a ;
 		float					u, v ;
 	}VERTEX_3D,*LPVERTEX_3D;
+
+	typedef struct tagMATRIX
+	{
+		float					m[4][4] ;
+	} MATRIX, *LPMATRIX ;
+
+
 /*関数定義部*/
 	/*必須関数*/
 		int DxLib_IsInit();
@@ -243,6 +250,8 @@ extern "C" {
 		int SetSliceSize(int size);						/*描画時にsliceが可能な場合、何バイト境界で行うか指定*/
 		int SetTransColor( int Red , int Green , int Blue );
 		int SetDrawArea(int x1,int y1,int x2,int y2);
+		int ChangeWindowMode(int mode);
+		int SetGraphMode(int x,int y,int colordepth,int pconly DXPDEFARG(60));
 		/*取得系*/
 		int GetDisplayFormat();
 		int GetColor(int red,int green,int blue);

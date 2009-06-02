@@ -1,5 +1,5 @@
 #include "dxpmusic2.h"
-#define TRACE		printfDx("%s::%d\n",__FILE__,__LINE__);
+//#define TRACE		printfDx("%s::%d\n",__FILE__,__LINE__);
 
 int decodeprepare_mp3(DXP_MUSICDECODECONTEXT *context)
 {

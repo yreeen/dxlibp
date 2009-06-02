@@ -444,11 +444,15 @@ AppLogAdd2("");
 	sceGuShadeModel(GU_FLAT);
 	sceGuTexScale(1.0f,1.0f);
 	sceGuTexOffset(0.0f,0.0f);
-		sceGuAmbientColor(0xffffffff);
+	sceGuAmbientColor(0xffffffff);
 
+
+	gumInit();
+//	sceGuTexProjMapMode(GU_UV);
+//	sceGuTexMapMode(GU_TEXTURE_COORDS,0,0);
 	sceGumMatrixMode(GU_PROJECTION);
 	sceGumLoadIdentity();
-	sceGumOrtho(0,480,0,272,1,1000);
+	sceGumOrtho(0,480,0,272,-1000,1000);
 	//{
 	//	ScePspFMatrix4 m;
 	//	m.x.x = 1;	m.x.y = 0;	m.x.z = 0;	m.x.w = 0;
@@ -457,7 +461,7 @@ AppLogAdd2("");
 	//	m.w.x = 0;	m.w.y = 0;	m.w.z = 0;	m.w.w = 1;
 	//	sceGumLoadMatrix(&m);
 	//}
-//	sceGumPerspective(90.0f,16.0f/9.0f,-1000.0f,1000.0f);
+//	sceGumPerspective(90.0f,16.0f/9.0f,1.0f,2000.0f);
 
 	sceGumMatrixMode(GU_VIEW);
 	sceGumLoadIdentity();
@@ -467,7 +471,7 @@ AppLogAdd2("");
 		m.y.x = 0;	m.y.y = 1;	m.y.z = 0;	m.y.w = 0;
 		m.z.x = 0;	m.z.y = 0;	m.z.z = 1;	m.z.w = 0;
 		m.w.x = 0;	m.w.y = 0;	m.w.z = 0;	m.w.w = 1;
-		sceGumLoadMatrix(&m);
+		sceGumMultMatrix(&m);
 //		ScePspFVector3 pos = { -240.0f, -136.0f, 0.0f };
 //		sceGumTranslate(&pos);
 	}
@@ -479,7 +483,7 @@ AppLogAdd2("");
 /*	sceGuShadeModel(GU_SMOOTH);*/
 //	ApplyBrightAndBlendMode();
 	SetDrawMode(DX_DRAWMODE_NEAREST);
-	GUFINISH
+	GUSYNC
 	sceDisplayWaitVblankStart();
 	sceGuDisplay(GU_TRUE);
 	ScreenFlip();
@@ -488,7 +492,7 @@ AppLogAdd2("");
 
 int EndGUEngine()
 {
-	GUFINISH;
+	GUSYNC;
 	sceGuTerm();
 	int i;
 	for(i = 0;i < GRAPHNUM_MAX;++i)if(GraphArray[i] != NULL)DeleteGraph(GraphArray[i]->handle);
@@ -517,7 +521,7 @@ void DisplayWait()
 int ScreenFlip()
 {
 	void *p;
-	GUFINISH
+	GUSYNC
 //	sceDisplayWaitVblankStart();//垂直同期を待つ
 	DisplayWait();
 	//スワップするときにデバッグ用のスクリーンのオフセットを指定する。
@@ -534,7 +538,6 @@ int ScreenCopy()
 {
 	if(ScreenFlip() != 0)return -1;
 	void *src = sceGeEdramGetAddr(),*dst;
-	GUFINISH
 	dst = src;
 	src += gusettings.displaybuffer[gusettings.backbuffer^1].pvram->offset;
 	dst += gusettings.displaybuffer[gusettings.backbuffer].pvram->offset;
@@ -1026,7 +1029,7 @@ int SetTransColor(int red,int green,int blue)
 
 void WaitGPUSync()
 {
-	GUFINISH
+	GUSYNC
 }
 
 int SetDrawArea(int x1,int y1,int x2,int y2)
@@ -1046,7 +1049,7 @@ int SetDrawScreen(int ghandle)
 {
 	GUSTART
 	if(ghandle == -1)return -1;
-	if(ghandle == DXP_SCREEN_BACK)
+	if(ghandle == DX_SCREEN_BACK)
 	{
 		gusettings.rendertarget = &gusettings.displaybuffer[gusettings.backbuffer];
 	}

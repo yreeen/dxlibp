@@ -7,7 +7,7 @@ ASFLAGS = $(CFLAGS)
 
 LIBDIR =
 #PSP_FW_VERSION=390
-LIBS = ../../DXLibralyPortable/dxlibp.a -lpspaudiolib -lpspaudio -lpspmpeg -lpspaudiocodec -lpspgu -lpng -lz -lm -lpsppower -lpsprtc -lpspgum -lpspjpeg
+LIBS = ../../DXLibralyPortable/dxlibp.a -lpspaudiolib -lpspaudio -lpspmpeg -lpspaudiocodec -lpspgu -lpng -lz -lm -lpsppower -lpsprtc -lpspgum -lpspjpeg -lpspgu
 LDFLAGS =
 
 EXTRA_TARGETS = EBOOT.PBP

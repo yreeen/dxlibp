@@ -4,7 +4,6 @@ DXライブラリPortable　描画関数群
 */
 
 #include <pspgu.h>
-#include <pspgum.h>
 #include <pspdisplay.h>
 #include <pspdebug.h>
 #include "dxlibp.h"
@@ -107,6 +106,7 @@ int	DrawRotaGraphFCompatible(float x,float y,double ExtRate,double Angle,int gh,
 {
 	return DrawRotaGraphF(x,y,ExtRate,Angle,gh,trans,turn);
 }
+
 int	DrawRotaGraphF(float x,float y,float ExtRate,float Angle,int gh,int trans,int turn)
 {
 	DXPGRAPHDATA* gptr = GraphHandle2Ptr(gh);
@@ -146,10 +146,12 @@ int	DrawRotaGraphF(float x,float y,float ExtRate,float Angle,int gh,int trans,in
 //ｘ’＝ｘcosθ-ysinθ
 //ｙ’＝ｘsinθ+ycosθ
 }
+
 int DrawRotaGraph2Compatible(int x,int y,int cx,int cy,double ExtRate,double Angle,int gh,int trans,int turn)
 {
 	return DrawRotaGraph2(x,y,cx,cy,ExtRate,Angle,gh,trans,turn);
 }
+
 int DrawRotaGraph2(int x,int y,int cx,int cy,float ExtRate,float Angle,int gh,int trans,int turn)
 {
 #ifdef DXP_NOUSE_FLTVERTEX_WITH_ROTA
@@ -191,10 +193,12 @@ int DrawRotaGraph2(int x,int y,int cx,int cy,float ExtRate,float Angle,int gh,in
 	return DrawRotaGraph2F(x,y,cx,cy,ExtRate,Angle,gh,trans,turn);
 #endif
 }
+
 int	DrawRotaGraph2FCompatible(float x,float y,float cx,float cy,double ExtRate,double Angle,int gh,int trans,int turn)
 {
 	return DrawRotaGraph2F(x,y,cx,cy,ExtRate,Angle,gh,trans,turn);
 }
+
 int	DrawRotaGraph2F(float x,float y,float cx,float cy,float ExtRate,float Angle,int gh,int trans,int turn)
 {
 	DXPGRAPHDATA* gptr = GraphHandle2Ptr(gh);
@@ -400,8 +404,8 @@ int DrawPolygon3D(VERTEX_3D *Vertex,int PolygonNum,int gh,int trans)
 	{
 		for(j = 0;j < 3;++j)
 		{
-			vtxbuf[i * 3 + j].u = pg->u0 + (pg->u1 - pg->u0) * Vertex[i * 3 + j].u;
-			vtxbuf[i * 3 + j].v = pg->v0 + (pg->v1 - pg->v0) * Vertex[i * 3 + j].v;
+			vtxbuf[i * 3 + j].u = (pg->u0 + (pg->u1 - pg->u0) * Vertex[i * 3 + j].u) / pg->tex->width;
+			vtxbuf[i * 3 + j].v = (pg->v0 + (pg->v1 - pg->v0) * Vertex[i * 3 + j].v) / pg->tex->height;
 			vtxbuf[i * 3 + j].color = ((u32)Vertex[i * 3 + j].a << 24) | ((u32)Vertex[i * 3 + j].b << 16) | ((u32)Vertex[i * 3 + j].g << 8) | ((u32)Vertex[i * 3 + j].r);
 			vtxbuf[i * 3 + j].x = Vertex[i * 3 + j].pos.x;
 			vtxbuf[i * 3 + j].y = Vertex[i * 3 + j].pos.y;

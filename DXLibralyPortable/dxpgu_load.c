@@ -51,6 +51,9 @@ int LoadGraph(const char *FileName)
 	gptr->v1 = gptr->tex->vmax;
 	if(gptr->handle == -1)
 	{
+		--gptr->tex->refcount;
+		DeleteTexture(gptr->tex);
+		FREE(gptr);
 		return -1;
 	}
 	GraphArray[gptr->handle] = gptr;
@@ -86,6 +89,7 @@ int LoadDivGraph( const char *FileName, int AllNum, int XNum, int YNum, int XSiz
 	DXPTEXTURE2 *tex = NULL;
 	int i;
 	if(HandleBuf == NULL)return -1;
+	for(i = 0;i < AllNum;++i)HandleBuf[i] = -1;
 	if(AllNum > XNum * YNum)AllNum = XNum * YNum;
 	for(i = 0;i < AllNum;++i)HandleBuf[i] = -1;
 	if(AllNum <= 0 || XNum <= 0 || YNum <= 0 || XSize <= 0 || YSize <= 0)return -1;
@@ -107,6 +111,13 @@ int LoadDivGraph( const char *FileName, int AllNum, int XNum, int YNum, int XSiz
 		gptr->u1 = x + XSize;
 		gptr->v1 = y + YSize;
 		HandleBuf[i] = gptr->handle = GenerateGraphHandle();
+		if(gptr->handle == -1)
+		{
+			HandleBuf[i] = -1;
+			--tex->refcount;
+			FREE(gptr);
+			break;
+		}
 		GraphArray[gptr->handle] = gptr;
 	}
 	if(i == 0)
@@ -173,6 +184,7 @@ void swizzle_fast(u8* out, const u8* in, unsigned int width, unsigned int height
      ysrc += src_row;
    }
 }
+
 void unswizzle_fast(u8* out, const u8* in, unsigned int width, unsigned int height)
 {
    unsigned int blockx, blocky;
@@ -209,7 +221,7 @@ void unswizzle_fast(u8* out, const u8* in, unsigned int width, unsigned int heig
 
 int SwizzleGraph(int gh)	/*指定されたグラフィックをSwizzleする。*/
 {
-	GUFINISH
+	GUSYNC
 	void *buf;
 	s32 size;
 	DXPGRAPHDATA *gptr = GraphHandle2Ptr(gh);
@@ -237,7 +249,7 @@ int SwizzleGraph(int gh)	/*指定されたグラフィックをSwizzleする。*
 }
 int UnswizzleGraph(int gh)	/*指定されたグラフィックをUnswizzleする。*/
 {
-	GUFINISH
+	GUSYNC
 	void *buf;
 	s32 size;
 	DXPGRAPHDATA *gptr = GraphHandle2Ptr(gh);
@@ -265,7 +277,7 @@ int UnswizzleGraph(int gh)	/*指定されたグラフィックをUnswizzleする
 
 int MoveGraphToVRAM(int gh)	/*グラフィックをVRAMに移動する。VRAM不足の場合はなにもしない。*/
 {
-	GUFINISH
+	GUSYNC
 	s32 size;
 	DXPGRAPHDATA *gptr = GraphHandle2Ptr(gh);
 	if(gptr == NULL)return -1;
@@ -284,7 +296,7 @@ int MoveGraphToVRAM(int gh)	/*グラフィックをVRAMに移動する。VRAM不
 
 int MoveGraphToDDR(int gh)	/*グラフィックをメインメモリに移動する*/
 {
-	GUFINISH
+	GUSYNC
 	s32 size;
 	DXPGRAPHDATA *gptr = GraphHandle2Ptr(gh);
 	if(gptr == NULL)return -1;
@@ -356,6 +368,7 @@ VRAMグラフィックだったりSwizzleグラフィックだったりなら元
 スーパービット演算タイム。デバッグする気がおきませんｗ
 */
 {
+	GUSYNC
 	int x,y;
 	char swizzleflag = 0;
 	char vramflag = 0;

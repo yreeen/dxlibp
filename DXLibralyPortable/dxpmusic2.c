@@ -78,18 +78,6 @@ static MUSICDATA MusicTable[MusicTableMAX];
 
 //関数定義
 
-inline static int sample_per_frame(MUSICFILE_TYPE type)
-{
-	switch(type)
-	{
-	case DXPMFT_WAVE:
-		return 1024;
-	case DXPMFT_MP3:
-		return 1152;
-	default:
-		return -1;
-	}
-}
 
 MUSICDATA* Handle2MusicDataPtr(int handle)
 {
@@ -584,6 +572,7 @@ playendproc:
 	//スレッドの破棄処理追加 20090410
 	sceKernelExitDeleteThread(0);
 	return 0;
+#ifndef TEST09041600
 err:
 	if(reservedchannel >= 0)sceAudioChRelease(reservedchannel);
 	--ptr->md->count;
@@ -592,6 +581,19 @@ err:
 	//スレッドの破棄処理追加 20090410
 	sceKernelExitDeleteThread(0);
 	return -1;
+#endif
+}
+inline int sample_per_frame(MUSICFILE_TYPE type)
+{
+	switch(type)
+	{
+	case DXPMFT_WAVE:
+		return 1024;
+	case DXPMFT_MP3:
+		return 1152;
+	default:
+		return -1;
+	}
 }
 
 int decodeprepare(DXP_MUSICDECODECONTEXT *context)
@@ -599,6 +601,7 @@ int decodeprepare(DXP_MUSICDECODECONTEXT *context)
 	if(context == NULL)return -1;
 	if(context->src == NULL)return -1;
 	if(decodeprepare_mp3(context) != -1)return 0;
+	if(decodeprepare_wave(context) != -1)return 0;
 	return -1;
 }
 int decode(DXP_MUSICDECODECONTEXT *context)
@@ -608,6 +611,8 @@ int decode(DXP_MUSICDECODECONTEXT *context)
 	{
 	case DXPMFT_MP3:
 		return decode_mp3(context);
+	case DXPMFT_WAVE:
+		return decode_wave(context);
 	default:
 		return -1;
 	}
@@ -620,6 +625,8 @@ int decodefinish(DXP_MUSICDECODECONTEXT *context)
 	{
 	case DXPMFT_MP3:
 		return decodefinish_mp3(context);
+	case DXPMFT_WAVE:
+		return decodefinish_wave(context);
 	default:
 		return -1;
 	}

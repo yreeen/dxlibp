@@ -70,6 +70,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\dxpgu_3d.c"
+					>
+				</File>
+				<File
 					RelativePath=".\dxpgu_draw.c"
 					>
 				</File>
@@ -99,10 +103,6 @@
 				</File>
 				<File
 					RelativePath=".\dxpmusic_mp3stream.c"
-					>
-				</File>
-				<File
-					RelativePath=".\dxpmusic_wavedata.c"
 					>
 				</File>
 				<File

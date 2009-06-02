@@ -189,10 +189,10 @@ typedef	struct
 	float		x,y,z;
 }DXPVERTEX_2DTEX_F;
 
-#define DXP_VTYPE_3DTEX_F	(GU_VERTEX_32BITF | GU_TEXTURE_16BIT | GU_COLOR_8888)
+#define DXP_VTYPE_3DTEX_F	(GU_VERTEX_32BITF | GU_TEXTURE_32BITF | GU_COLOR_8888)
 typedef	struct
 {
-	u16			u,v;
+	float		u,v;
 	u32			color;
 	float		x,y,z;
 }DXPVERTEX_3DTEX_F;
@@ -212,15 +212,26 @@ extern u32 gulist[];
 		gusettings.flags[0] |= GPUSETTINGFLAGS_0_GUSTART;	\
 	}														\
 }
+
 #define GUFINISH											\
 {															\
 	if(gusettings.flags[0] & GPUSETTINGFLAGS_0_GUSTART)		\
 	{														\
 		sceGuFinish();										\
-		gusettings.flags[0] &= (~GPUSETTINGFLAGS_0_GUSTART);\
-		sceGuSync(GU_SYNC_FINISH,GU_SYNC_WHAT_DONE);		\
+		gusettings.flags[0] &= (~GPUSETTINGFLAGS_0_GUSTART);\ 
 	}														\
 }
+
+#define GUSYNC												\
+{															\
+	if(gusettings.flags[0] & GPUSETTINGFLAGS_0_GUSTART)		\
+	{														\
+		sceGuFinish();										\
+		gusettings.flags[0] &= (~GPUSETTINGFLAGS_0_GUSTART);\ 
+	}														\
+	sceGuSync(GU_SYNC_FINISH,GU_SYNC_WHAT_DONE);			\
+}
+
 
 int InitGUEngine();
 int EndGUEngine();
@@ -239,6 +250,7 @@ extern DXPGRAPHDATA	*GraphArray[GRAPHNUM_MAX];
 //void TextureList_Remove(DXPTEXTURE2 *ptr);
 //void GraphDataList_PushFront(DXPGRAPHDATA *ptr);
 DXPTEXTURE2* MakeTexture(int x,int y,int format);
+int DeleteTexture(DXPTEXTURE2 *texptr);
 int GenerateGraphHandle();//ハンドルの番号を生成する。
 //int PSM2BYTEx2(int psm);
 #define MALLOC		malloc

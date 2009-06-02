@@ -1,21 +1,20 @@
 #include "dxpmusic2.h"
-//
-//int preread_wave(DXP_MUSICDECODECONTEXT *context,STREAMDATA *src)
-//{
-//	if(context == NULL || src == NULL)return -1;
-//}
-//
+#define LINETRACE 	DrawFormatString(0,0,0xffffffff,"%d\n",__LINE__);ScreenFlip();
 int decodeprepare_wave(DXP_MUSICDECODECONTEXT *context)
 {
 	u8 headerbuf[16];
 	int csize;
+	LINETRACE
 	STSEEK(context->src,0,SEEK_SET);
 	if(STREAD(headerbuf,1,8,context->src) != 8)return -1;
+	LINETRACE
 	if(strncmp((char*)headerbuf,"RIFF",4))return -1;
+	LINETRACE
 	if(STREAD(headerbuf,1,4,context->src) != 4)return -1;
+	LINETRACE
 	if(strncmp((char*)headerbuf,"WAVE",4))return -1;
 	u8 fmt = 0;//fmtチャンクを取得したかどうかのフラグ
-	context->wavestream.flag = 0;
+	LINETRACE
 	while(1)
 	{
 		if(STREAD(headerbuf,1,8,context->src) != 8)return -1;
@@ -27,15 +26,16 @@ int decodeprepare_wave(DXP_MUSICDECODECONTEXT *context)
 			if(STREAD(&buf2,2,1,context->src) != 1)return -1;	//フォーマットタグを取得
 			if(buf2 != 1)return -1;		//フォーマットタグが1以外の場合は何かしらの圧縮がなされているので再生できない
 			if(STREAD(&buf2,2,1,context->src) != 1)return -1;	//チャンネル数を取得
-			if(buf2 == 1 || buf2 == 2)context->wavestream.channel_num = buf2;
+			if(buf2 == 1)context->wavestream.monoflag = 1;
+			else if(buf2 == 2)context->wavestream.monoflag = 0;
 			else return -1;
 			if(STREAD(&buf4,4,1,context->src) != 1)return -1;	//サンプリングレートを取得
-			if(buf4 == 44100 || buf4 == 48000)context->wavestream.samplerate = buf4;
-			else return -1;
+			if(buf4 != 44100)return -1;
 			STSEEK(context->src,6,SEEK_CUR);
 			if(STREAD(&buf2,2,1,context->src) != 1)return -1;	//１サンプル数あたりのビット数を取得
-			if(buf2 == 8)context->wavestream.flag |= MUSICFLAG_WAVE_8BIT;
-			else if(buf2 != 16)return -1;
+			if(buf2 == 8)context->wavestream.s8bitflag = 1;
+			else if(buf2 == 16)context->wavestream.s8bitflag = 0;
+			else return -1;
 			csize = headerbuf[4];
 			csize = (csize << 8) | headerbuf[5];
 			csize = (csize << 8) | headerbuf[6];
@@ -54,50 +54,75 @@ int decodeprepare_wave(DXP_MUSICDECODECONTEXT *context)
 			csize = (csize << 8) | headerbuf[6];
 			csize = (csize << 8) | headerbuf[7];
 			STSEEK(context->src,csize,SEEK_CUR);
+	LINETRACE
+			return 0;
 		}
 	}
 	return -1;
 }
 
+s16 s8tos16(u8 dat)
+{
+	s16 ret = dat;
+	ret -= 128;
+	ret *= 256;
+	return ret;
+}
+
 int decode_wave(DXP_MUSICDECODECONTEXT *context)
 {
 	if(context == NULL || context->src == NULL)return -1;
-//	if(context->nextframe != -1)waveseek(context);
+	if(context->filetype != DXPMFT_WAVE)return -1;
+	if(context->nextframe != -1)waveseek(context);
+
+	int readsize = (context->wavestream.s8bitflag + 1) * (context->wavestream.monoflag + 1) * sample_per_frame(DXPMFT_WAVE);
+	if(STREAD(context->out,1,readsize,context->src) != readsize){return -1;}
+	if(context->wavestream.s8bitflag)
+	{
+		if(context->wavestream.monoflag)
+		{
+			s16 *out = (s16*)context->out + (sample_per_frame(DXPMFT_WAVE) - 1);
+			u8 *in = (u8*)context->out + (sample_per_frame(DXPMFT_WAVE) - 1);
+			while((u16*)in >= context->out)*out-- = s8tos16(*in--);
+		}else
+		{
+			s16 *out = (s16*)context->out + (sample_per_frame(DXPMFT_WAVE) - 1) * 2;
+			u8 *in = (u8*)context->out + (sample_per_frame(DXPMFT_WAVE) - 1) * 2;
+			while((u16*)in >= context->out)*out-- = s8tos16(*in--);
+		}
+	}
+	if(context->wavestream.monoflag)
+	{
+		s16 *out = (s16*)context->out + (sample_per_frame(DXPMFT_WAVE) - 1);
+		s16 *in = (s16*)context->out + (sample_per_frame(DXPMFT_WAVE) - 1);
+		while((u16*)in >= context->out)
+		{
+			*out-- = *in;
+			*out-- = *in--;
+		}
+	}
 	return 0;
 }
-//
-//int readframe_wave(int handle,u16 *buf,int frame)
-//{
-//	if(handle < 0 || handle > MUSICHANDLE_MAX)return -1;
-//	if(musicarray[handle].src == NULL)return -1;
-//	if(frame != -1)waveseek(handle,frame);
-//	STREAD(musicarray[handle].playbuf[musicarray[handle].playingbuf],(musicarray[handle].flag & MUSICFLAG_WAVE_8BIT ? 1 : 2) * musicfile_settings[DXPMFT_WAVE].framesize,1,musicarray[handle].src);
-//	return 0;
-//}
-//
-//int decodefinish_wave(int handle)
-//{
-//	if(handle < 0 || handle > MUSICHANDLE_MAX)return -1;
-//	if(musicarray[handle].src == NULL)return -1;
-//	STCLOSE(musicarray[handle].src);
-//	musicarray[handle].src = NULL;
-//	return 0;
-//}
-//
-//int waveseek(int handle,int frame)
-//{
-//	if(handle < 0 || handle > MUSICHANDLE_MAX)return -1;
-//	if(musicarray[handle].src == NULL)return -1;
-//	STSEEK(musicarray[handle].src,12,SEEK_SET);
-//	char tagbuf[4];
-//	u32 buf4;
-//	while(1)
-//	{
-//		if(STREAD(tagbuf,1,4,musicarray[handle].src) != 4)return -1;
-//		if(STREAD(&buf4,4,1,musicarray[handle].src) != 1)return -1;
-//		if(!strncmp(tagbuf,"data",4))break;
-//		STSEEK(musicarray[handle].src,buf4,SEEK_CUR);
-//	}
-//	STSEEK(musicarray[handle].src,(musicarray[handle].flag & MUSICFLAG_WAVE_8BIT ? 1 : 2) * musicfile_settings[DXPMFT_WAVE].framesize * frame,SEEK_CUR);
-//	return 0;
-//}
+
+int decodefinish_wave(DXP_MUSICDECODECONTEXT *context)
+{
+	if(context->src == NULL)return -1;
+	STCLOSE(context->src);
+	context->src = NULL;
+	return 0;
+}
+
+int waveseek(DXP_MUSICDECODECONTEXT *context)
+{
+	if(context == NULL)return -1;
+	char buf[8];
+	while(1)
+	{
+		if(STREAD(buf,1,8,context->src) != 8)return -1;
+		if(strncmp(buf,"data",4) == 0)break;
+		if(strncmp(buf,"RIFF",4) == 0)STSEEK(context->src,4,SEEK_CUR);
+		else STSEEK(context->src,(*(int*)(buf + 4)),SEEK_CUR);
+	}
+	STSEEK(context->src,(context->wavestream.s8bitflag + 1) * (context->wavestream.monoflag + 1) * sample_per_frame(DXPMFT_WAVE),SEEK_CUR) * context->nextframe;
+	return 0;
+}

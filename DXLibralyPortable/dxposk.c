@@ -65,7 +65,7 @@ int GetTextOSK(char *buf,int buflen,int inputmode,const char *title,const char *
 	while(ProcessMessage() != -1 && !done)
 	{
 		ClearDrawScreen();
-		GUFINISH
+		GUSYNC
 		switch(sceUtilityOskGetStatus())
 		{
 			case PSP_UTILITY_DIALOG_INIT:
