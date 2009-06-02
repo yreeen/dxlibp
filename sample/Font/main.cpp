@@ -67,7 +67,7 @@
 
 
 #define GLOBAL_INSTANCE 
-#include "../../DXLibralyPortable/dxlibp.h"
+#include "../../DXLibraryPortable/dxlibp.h"
 
 PSP_MODULE_INFO("FontSample", 0, 1, 1);		//モジュール情報を設定
 PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER);		//ユーザーモードに設定
