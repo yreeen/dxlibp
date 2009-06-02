@@ -4,6 +4,7 @@ DXライブラリPortable　描画関数群
 */
 
 #include <pspgu.h>
+#include <pspgum.h>
 #include <pspdisplay.h>
 #include <pspdebug.h>
 #include "dxlibp.h"

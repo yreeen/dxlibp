@@ -27,7 +27,7 @@ pspDebugScreen系関数は使うと泣きを見るので使用禁止。VRAMの�
 /*大域変数定義部*/
 DXPGPUSETTING gusettings = 
 {
-	{{GU_PSM_8888,NULL,NULL,NULL,NULL,NULL,480,272,512,480,272,0x00000000,1,0,1,0,0},{GU_PSM_8888,NULL,NULL,NULL,NULL,NULL,480,272,512,480,272,0x00000000,1,0,1,0,0}},								/*フロントバッファ*/
+	{{GU_PSM_8888,NULL,NULL,NULL,480,272,512,480,272,0x00000000,1,0,1,0,0},{GU_PSM_8888,NULL,NULL,NULL,480,272,512,480,272,0x00000000,1,0,1,0,0}},								/*フロントバッファ*/
 	{GU_PSM_4444},									/*深度バッファのポインタ*/
 	NULL,									/*描画先グラフィック*/
 	NULL,										/*セットされているテクスチャ*/
@@ -74,7 +74,7 @@ void GuListSafety()
 {
 	if(sceGuCheckList() > GULIST_LIMIT)
 	{
-		GUFINISH
+		GUSYNC
 	}
 }
 
@@ -104,35 +104,6 @@ void ExpelTextureFromArray(DXPTEXTURE2 *texptr)
 	}
 	return;
 }
-
-//void TextureList_PushFront(DXPTEXTURE2 *ptr)
-//{
-//	ptr->next = texlist;
-//	ptr->prev = NULL;
-//	if(texlist != NULL)texlist->prev = ptr;
-//	texlist = ptr;
-//}
-//void TextureList_Remove(DXPTEXTURE2 *ptr)
-//{
-//	if(ptr->next != NULL)ptr->next->prev = ptr->prev;
-//	if(ptr->prev != NULL)ptr->prev->next = ptr->next;
-//	else texlist = ptr->next;
-//	ptr->next = ptr->prev = NULL;
-//}
-//void GraphDataList_PushFront(DXPGRAPHDATA *ptr)
-//{
-//	ptr->next = graphlist;
-//	ptr->prev = NULL;
-//	if(graphlist != NULL)graphlist->prev = ptr;
-//	graphlist = ptr;
-//}
-//void GraphDataList_Remove(DXPGRAPHDATA *ptr)
-//{
-//	if(ptr->next != NULL)ptr->next->prev = ptr->prev;
-//	if(ptr->prev != NULL)ptr->prev->next = ptr->next;
-//	else graphlist = ptr->next;
-//	ptr->next = ptr->prev = NULL;
-//}
 
 int GenerateGraphHandle()//ハンドルの番号を生成する。
 {
@@ -274,22 +245,8 @@ int DeleteGraph(int gh)
 	return 0;
 }
 
-int GetColor(int Red,int Green,int Blue)/*現在のカラーフォーマットで色を返す*/
+int GetColor(int Red,int Green,int Blue)
 {
-	//int psm = gusettings.rendertarget != NULL ? gusettings.rendertarget->psm : GU_PSM_8888;
-	//switch(psm)
-	//{
-	//	case GU_PSM_4444:
-	//		return 0x0000f000 | (Blue & 0x000000f0) << 4 | (Green & 0x000000f0) | (Red & 0x000000f0) >> 4;
-	//	case GU_PSM_5551:
-	//		return 0x00008000 | (Blue & 0x000000f8) << 7 | (Green & 0x000000f8) << 2| (Red & 0x000000f8) >> 3;
-	//	case GU_PSM_5650:
-	//		return 0x00008000 | (Blue & 0x000000f8) << 8 | (Green & 0x000000f8) << 3| (Red & 0x000000f8) >> 3;
-	//	case GU_PSM_8888:
-	//		return 0xff000000 | (Blue & 0x000000ff) << 16 | (Green & 0x000000ff) << 8 | (Red & 0x000000ff);
-	//	default:
-	//		return 0;
-	//}
 	return 0xff000000 | (Blue & 0x000000ff) << 16 | (Green & 0x000000ff) << 8 | (Red & 0x000000ff);
 }
 

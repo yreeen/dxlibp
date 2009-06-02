@@ -218,7 +218,7 @@ extern u32 gulist[];
 	if(gusettings.flags[0] & GPUSETTINGFLAGS_0_GUSTART)		\
 	{														\
 		sceGuFinish();										\
-		gusettings.flags[0] &= (~GPUSETTINGFLAGS_0_GUSTART);\ 
+		gusettings.flags[0] &= (~GPUSETTINGFLAGS_0_GUSTART);\
 	}														\
 }
 
@@ -227,7 +227,7 @@ extern u32 gulist[];
 	if(gusettings.flags[0] & GPUSETTINGFLAGS_0_GUSTART)		\
 	{														\
 		sceGuFinish();										\
-		gusettings.flags[0] &= (~GPUSETTINGFLAGS_0_GUSTART);\ 
+		gusettings.flags[0] &= (~GPUSETTINGFLAGS_0_GUSTART);\
 	}														\
 	sceGuSync(GU_SYNC_FINISH,GU_SYNC_WHAT_DONE);			\
 }
