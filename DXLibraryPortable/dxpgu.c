@@ -20,14 +20,14 @@ pspDebugScreen系関数は使うと泣きを見るので使用禁止。VRAMの�
 #include "zenkaku.h"
 #include <fastmath.h>
 /*定数定義*/
-#define GULIST_LEN	(262144)	/*(256 * 1024) 1MByte*/
-#define GULIST_LIMIT (240000)/*GULIST_LENの8割程度*/
+#define GULIST_LEN	262144	/*(256 * 1024) 1MByte*/
+#define GULIST_SIZE (GULIST_LEN << 2)
 /*マクロ定義*/
 
 /*大域変数定義部*/
 DXPGPUSETTING gusettings = 
 {
-	{{GU_PSM_8888,NULL,NULL,NULL,480,272,512,480,272,0x00000000,1,0,1,0,0},{GU_PSM_8888,NULL,NULL,NULL,480,272,512,480,272,0x00000000,1,0,1,0,0}},								/*フロントバッファ*/
+	{{GU_PSM_8888,NULL,NULL,NULL,NULL,NULL,480,272,512,480,272,0x00000000,1,0,1,0,0},{GU_PSM_8888,NULL,NULL,NULL,NULL,NULL,480,272,512,480,272,0x00000000,1,0,1,0,0}},								/*フロントバッファ*/
 	{GU_PSM_4444},									/*深度バッファのポインタ*/
 	NULL,									/*描画先グラフィック*/
 	NULL,										/*セットされているテクスチャ*/
@@ -42,17 +42,15 @@ DXPGPUSETTING gusettings =
 	DX_BLENDMODE_NOBLEND,					/*ブレンドモード*/
 	255,									/*ブレンドパラメータ*/
 	255,255,255,255,						/*RGBA*/
-	0xffffffff,								/*色設定*/
 	0,										/*2D描画時に使うZ値*/
 	64,										/*何バイトでsliceするか*/
 	0,										/*frontbufferのどちらが表示されているのか*/
 	{0,0,480,272},								/*シザー領域の設定値*/
+	0,
+	0,
 	{1,-1,0,0,0,0,0,-1,0}						/*GPU設定値の保持*/
 };
 u32 __attribute__((aligned(16))) gulist[GULIST_LEN];/*GPUに送る命令を溜め込むためのバッファ　とりあえず1MByte*/
-//DXPTEXTURE texarray[TEXTURE_MAX];
-//DXPTEXTURE2		*texlist	= NULL;
-//DXPGRAPHDATA	*graphlist	= NULL;
 
 u8 psm2bytex2table[]={
 	4,
@@ -63,55 +61,18 @@ u8 psm2bytex2table[]={
 	2,
 };
 
-DXPGRAPHDATA	*GraphArray[GRAPHNUM_MAX];
-DXPTEXTURE2		*TextureArray[GRAPHNUM_MAX];
 
 /*関数定義部*/
 //static int ApplyBrightAndBlendMode();
 
-
 void GuListSafety()
 {
-	if(sceGuCheckList() > GULIST_LIMIT)
+	if(sceGuCheckList() > GULIST_SIZE * 0.8f)
 	{
-		GUSYNC
+		GUFINISH
+		GUSTART
 	}
 }
-
-int EnrollTextureInArray(DXPTEXTURE2 *texptr);		//テクスチャ登録
-void ExpelTextureFromArray(DXPTEXTURE2 *texptr);	//テクスチャ登録解除
-
-int EnrollTextureInArray(DXPTEXTURE2 *texptr)
-{
-	if(texptr == NULL)return -1;
-	int i;
-	for(i = 0;i < GRAPHNUM_MAX;++i)if(TextureArray[i] == NULL)
-	{
-		TextureArray[i] = texptr;
-		return 0;
-	}
-	return -1;
-}
-
-void ExpelTextureFromArray(DXPTEXTURE2 *texptr)
-{
-	if(texptr == NULL)return;
-	int i;
-	for(i = 0;i < GRAPHNUM_MAX;++i)if(TextureArray[i] == texptr)
-	{
-		TextureArray[i] = NULL;
-		return;
-	}
-	return;
-}
-
-int GenerateGraphHandle()//ハンドルの番号を生成する。
-{
-	int i;
-	for(i = 0;i < GRAPHNUM_MAX;++i)if(GraphArray[i] == NULL)return i;
-	return -1;
-}
-
 
 DXPTEXTURE2* MakeTexture(int x,int y,int format)
 {
@@ -180,72 +141,95 @@ DXPTEXTURE2* MakeTexture(int x,int y,int format)
 	ptr->alphabit	= 0;
 	ptr->colorkey	= gusettings.colorkey;
 	ptr->refcount	= 0;
-	if(EnrollTextureInArray(ptr) == -1)
-	{
-		FREE(ptr->ppalette);
-		FREE(ptr);
-		return NULL;
-	}
+	TextureList_PushFront(ptr);
 	return ptr;
-}
-
-int DeleteTexture(DXPTEXTURE2 *texptr)
-{
-	if(texptr == NULL)return -1;
-	if(texptr->refcount > 0)return -1;
-	ExpelTextureFromArray(texptr);
-	if(texptr->pmemory != NULL)FREE(texptr->pmemory);
-	if(texptr->ppalette != NULL)FREE(texptr->ppalette);
-	if(texptr->pvram != NULL)FreeVRAM(texptr->pvram);
-	FREE(texptr);
-	return -1;
+	
 }
 
 int MakeGraph(int x,int y,int format)
 {
-	DXPTEXTURE2 *texptr = MakeTexture(x,y,format);
-	if(texptr == NULL)return -1;
+	int size;
+	int height,width,pitch;
+	DXPGRAPHDATA *ptr = GenerateGraphHandle();
+	if(ptr == NULL) return -1;
+	if((ptr->tex = (DXPTEXTURE2*)MALLOC(sizeof(DXPTEXTURE2))) == NULL)
+	{
+		GraphHandleFree(ptr->handle);
+		return -1;
+	}
+	//テクスチャのサイズ計算
+	x = MIN(x,512);
+	y = MIN(y,512);
+	if(x <= 0 || y <= 0)return -1;
+	height = width = 1;
+	while(height < y)height <<= 1;
+//	height = (y + 15) & 0xfffffff0;
+	while(width < x)width <<= 1;
+	pitch = width;
+	switch(format)
+	{
+	case GU_PSM_T4:
+		if(pitch < 32)pitch = 32;
+		ptr->tex->ppalette = MEMALIGN(16,sizeof(DXPPALETTE));
+		break;
+	case GU_PSM_T8:
+		if(pitch < 16)pitch = 16;
+		ptr->tex->ppalette = MEMALIGN(16,sizeof(DXPPALETTE));
+		break;
+	case GU_PSM_5650:
+	case GU_PSM_5551:
+	case GU_PSM_4444:
+		if(pitch < 8)pitch = 8;
+		ptr->tex->ppalette = NULL;
+		break;
+	case GU_PSM_8888:
+		if(pitch < 4)pitch = 4;
+		ptr->tex->ppalette = NULL;
+		break;
+	default:
+		FREE(ptr->tex);
+		GraphHandleFree(ptr->handle);
+		return -1;
+	}
+	if((size = GraphSize2DataSize(pitch,y,format)) == -1)
+	{
+		FREE(ptr->tex->ppalette);
+		FREE(ptr->tex);
+		GraphHandleFree(ptr->handle);
+		return -1;
+	}
 
-	DXPGRAPHDATA *ptr;
-	if((ptr = (DXPGRAPHDATA*)MALLOC(sizeof(DXPGRAPHDATA))) == NULL)
+	//テクスチャのメモリ確保
+	if((ptr->tex->pmemory = MEMALIGN(16,size)) == NULL)
 	{
-		DeleteTexture(texptr);
+		FREE(ptr->tex->ppalette);
+		FREE(ptr->tex);
+		GraphHandleFree(ptr->handle);
 		return -1;
 	}
-	ptr->handle = GenerateGraphHandle();
-	if(ptr->handle == -1)
-	{
-		DeleteTexture(texptr);
-		FREE(ptr);
-		return -1;
-	}
-	GraphArray[ptr->handle] = ptr;
-	ptr->tex = texptr;
-	texptr->refcount += 1;
-	ptr->u0 = ptr->v0 = 0;
-	ptr->u1 = x;
-	ptr->v1 = y;
+	memset(ptr->tex->pmemory,0x00,size);
+	ptr->tex->pvram		= NULL;
+	ptr->tex->height		= height;
+	ptr->tex->width		= width;
+	ptr->tex->pitch		= pitch;
+	ptr->tex->umax		= x;
+	ptr->tex->vmax		= y;
+	ptr->tex->psm		= format;
+	ptr->u0			= 0;
+	ptr->v0			= 0;
+	ptr->u1			= x;
+	ptr->v1			= y;
+	ptr->tex->vramflag	= 0;
+	ptr->tex->swizzledflag= 0;
+	ptr->tex->reloadflag	= 1;
+	ptr->tex->alphabit	= 0;
+	ptr->tex->colorkey	= gusettings.colorkey;
+	ptr->tex->refcount	= 1;
+	TextureList_PushFront(ptr->tex);
 	return ptr->handle;
 }
 
-int DeleteGraph(int gh)
-{
-	if(gh < 0 || GRAPHNUM_MAX <= gh)return -1;
-	
-	DXPGRAPHDATA* gptr = GraphArray[gh];
-	if(gptr == NULL)return -1;
-	if(gptr->tex != NULL)
-	{
-		--gptr->tex->refcount;
-		if(gptr->tex->refcount <= 0)
-			DeleteTexture(gptr->tex);
-	}
-	GraphArray[gh] = NULL;
-	FREE(gptr);
-	return 0;
-}
-
-int GetColor(int Red,int Green,int Blue)
+int GetColor(int Red,int Green,int Blue)/*現在のカラーフォーマットで色を返す*/
 {
 	return 0xff000000 | (Blue & 0x000000ff) << 16 | (Green & 0x000000ff) << 8 | (Red & 0x000000ff);
 }
@@ -282,12 +266,6 @@ int SetCreateSwizzledGraphFlag(int Flag)
 
 int InitGUEngine()
 {
-	int i;
-	for(i = 0;i < GRAPHNUM_MAX;++i)
-	{
-		GraphArray[i] = NULL;
-		TextureArray[i] = NULL;
-	}
 //	AppLogAdd2("GPU関連の初期化を開始します。");
 AppLogAdd2("");
 	gusettings.rendertarget		= NULL;
@@ -310,6 +288,7 @@ AppLogAdd2("");
 	gusettings.z_2d				= 0x0000;
 	gusettings.backbuffer		= 0;
 	gusettings.bc.forceupdate	= 1;
+	//texlist = NULL;
 	AppLogAdd2("テクスチャ管理データを初期化しました。");
 
 	InitVRAM();	/*VRAM領域の初期化*/
@@ -317,9 +296,11 @@ AppLogAdd2("");
 	/*フロントバッファとバックバッファの取得*/
 	gusettings.displaybuffer[0].colorkey	= 0;
 	gusettings.displaybuffer[0].height		= 272;
+	gusettings.displaybuffer[0].next		= NULL;
 	gusettings.displaybuffer[0].pitch		= 512;
 	gusettings.displaybuffer[0].pmemory		= NULL;
 	gusettings.displaybuffer[0].ppalette	= NULL;
+	gusettings.displaybuffer[0].prev		= NULL;
 //	gusettings.displaybuffer[0].psm			= GU_PSM_8888;
 	gusettings.displaybuffer[0].pvram		= AllocVRAM(GraphSize2DataSize(512,272,gusettings.displaybuffer[0].psm),1);
 	gusettings.displaybuffer[0].refcount	= 0xffffffff;
@@ -333,9 +314,11 @@ AppLogAdd2("");
 
 	gusettings.displaybuffer[1].colorkey	= 0;
 	gusettings.displaybuffer[1].height		= 272;
+	gusettings.displaybuffer[1].next		= NULL;
 	gusettings.displaybuffer[1].pitch		= 512;
 	gusettings.displaybuffer[1].pmemory		= NULL;
 	gusettings.displaybuffer[1].ppalette	= NULL;
+	gusettings.displaybuffer[1].prev		= NULL;
 //	gusettings.displaybuffer[1].psm			= GU_PSM_8888;
 	gusettings.displaybuffer[1].pvram		= AllocVRAM(GraphSize2DataSize(512,272,gusettings.displaybuffer[1].psm),1);
 	gusettings.displaybuffer[1].refcount	= 0xffffffff;
@@ -401,15 +384,11 @@ AppLogAdd2("");
 	sceGuShadeModel(GU_FLAT);
 	sceGuTexScale(1.0f,1.0f);
 	sceGuTexOffset(0.0f,0.0f);
-	sceGuAmbientColor(0xffffffff);
+		sceGuAmbientColor(0xffffffff);
 
-
-	gumInit();
-//	sceGuTexProjMapMode(GU_UV);
-//	sceGuTexMapMode(GU_TEXTURE_COORDS,0,0);
 	sceGumMatrixMode(GU_PROJECTION);
 	sceGumLoadIdentity();
-	sceGumOrtho(0,480,0,272,-1000,1000);
+	sceGumOrtho(0,480,0,272,1,1000);
 	//{
 	//	ScePspFMatrix4 m;
 	//	m.x.x = 1;	m.x.y = 0;	m.x.z = 0;	m.x.w = 0;
@@ -418,7 +397,7 @@ AppLogAdd2("");
 	//	m.w.x = 0;	m.w.y = 0;	m.w.z = 0;	m.w.w = 1;
 	//	sceGumLoadMatrix(&m);
 	//}
-//	sceGumPerspective(90.0f,16.0f/9.0f,1.0f,2000.0f);
+//	sceGumPerspective(90.0f,16.0f/9.0f,-1000.0f,1000.0f);
 
 	sceGumMatrixMode(GU_VIEW);
 	sceGumLoadIdentity();
@@ -428,7 +407,7 @@ AppLogAdd2("");
 		m.y.x = 0;	m.y.y = 1;	m.y.z = 0;	m.y.w = 0;
 		m.z.x = 0;	m.z.y = 0;	m.z.z = 1;	m.z.w = 0;
 		m.w.x = 0;	m.w.y = 0;	m.w.z = 0;	m.w.w = 1;
-		sceGumMultMatrix(&m);
+		sceGumLoadMatrix(&m);
 //		ScePspFVector3 pos = { -240.0f, -136.0f, 0.0f };
 //		sceGumTranslate(&pos);
 	}
@@ -440,7 +419,8 @@ AppLogAdd2("");
 /*	sceGuShadeModel(GU_SMOOTH);*/
 //	ApplyBrightAndBlendMode();
 	SetDrawMode(DX_DRAWMODE_NEAREST);
-	GUSYNC
+	GUFINISH
+	DxpGuAdminInit();
 	sceDisplayWaitVblankStart();
 	sceGuDisplay(GU_TRUE);
 	ScreenFlip();
@@ -449,38 +429,61 @@ AppLogAdd2("");
 
 int EndGUEngine()
 {
-	GUSYNC;
+	GUFINISH;
 	sceGuTerm();
-	int i;
-	for(i = 0;i < GRAPHNUM_MAX;++i)if(GraphArray[i] != NULL)DeleteGraph(GraphArray[i]->handle);
+	DxpGuAdminEnd();
 	FreeVRAM(gusettings.displaybuffer[0].pvram);
 	FreeVRAM(gusettings.displaybuffer[1].pvram);
 	InitVRAM();
 	return 0;
 }
 
-void DisplayWait()
+void	dxlpDisplayWaitVblankStart()
 {
-	unsigned int newVcount;
-	static unsigned int oldVcount = 0;
 	while(1)
 	{
-		newVcount = sceDisplayGetVcount();
-		if (newVcount >= (oldVcount + /*FpsMode*/1))
+		int	newVcount = sceDisplayGetVcount();
+		if (newVcount >= (gusettings.vsynccount + gusettings.flipmode))
 		{
-			oldVcount = newVcount;
+			gusettings.vsynccount = newVcount;
 			return;
 		}
 	}
 	return;
 }
 
-int ScreenFlip()
+void	AccumulatedDrawCommandDispose()
+{
+	if(gusettings.flags[0] & GPUSETTINGFLAGS_0_GUSTART)		
+	{														
+		sceGuFinish();										
+		gusettings.flags[0] &= (~GPUSETTINGFLAGS_0_GUSTART);
+		sceGuSync(3,0);										
+	}	
+	return;
+}
+
+int		ScreenFlipMode(int Mode)
+{
+	if(Mode < 0) return -1;
+	if(Mode > 4) return -1;
+	gusettings.flipmode		= Mode;
+	gusettings.vsynccount	= sceDisplayGetVcount();
+	return 0;
+}
+
+int		ScreenFlip()
 {
 	void *p;
-	GUSYNC
-//	sceDisplayWaitVblankStart();//垂直同期を待つ
-	DisplayWait();
+	GUFINISH
+	if(gusettings.flipmode == 0)
+	{
+		sceDisplayWaitVblankStart();//垂直同期を待つ
+	}
+	else
+	{
+		dxlpDisplayWaitVblankStart();
+	}
 	//スワップするときにデバッグ用のスクリーンのオフセットを指定する。
 	DrawDebugScreen();
 	p = sceGuSwapBuffers();
@@ -495,6 +498,7 @@ int ScreenCopy()
 {
 	if(ScreenFlip() != 0)return -1;
 	void *src = sceGeEdramGetAddr(),*dst;
+	GUFINISH
 	dst = src;
 	src += gusettings.displaybuffer[gusettings.backbuffer^1].pvram->offset;
 	dst += gusettings.displaybuffer[gusettings.backbuffer].pvram->offset;
@@ -521,18 +525,19 @@ int ClearDrawScreen()
 
 int SetTexture(int handle,int TransFlag)//テクスチャを使う描画関数で呼ぶ。テクスチャ使わない描画関数ではSetBaseColorを使う事。
 {
-	return SetTexture2(GraphHandle2TexPtr(handle),TransFlag);
-}
-
-int SetTexture2(DXPTEXTURE2 *texptr,int TransFlag)//テクスチャを使う描画関数で呼ぶ。テクスチャ使わない描画関数ではSetBaseColorを使う事。
-{
 	GUSTART;
-	if(texptr == NULL)
+	if(handle == -1)
 	{
 		/*テクスチャを解除する。*/
 		gusettings.texture = NULL;
 		sceGuDisable(GU_TEXTURE_2D);
 		return 0;
+	}
+	DXPTEXTURE2 *texptr = GraphHandle2TexPtr(handle);
+	if(texptr == NULL)
+	{
+		gusettings.texture = NULL;
+		return -1;
 	}
 	if(!sceGuGetStatus(GU_TEXTURE_2D))sceGuEnable(GU_TEXTURE_2D);
 	if(gusettings.texture != texptr || texptr->reloadflag )/*同じテクスチャがセットされている場合はなにもしない。パフォーマンス落ちちゃうからｗ*/
@@ -690,10 +695,13 @@ int SetTexture2(DXPTEXTURE2 *texptr,int TransFlag)//テクスチャを使う描�
 		}
 	}
 //色を設定
+	unsigned int color;
 	int tfx,tcc;
-	if(gusettings.bc.color != gusettings.color_graph || gusettings.bc.forceupdate)
+	color = (u32)(gusettings.blendmode == DX_BLENDMODE_NOBLEND ? 255 : gusettings.alpha) << 24 | (u32)(gusettings.blue) << 16 | (u32)(gusettings.green) << 8 | (u32)(gusettings.red);
+	if(gusettings.bc.color != color || gusettings.bc.forceupdate)
 	{
-		sceGuColor(gusettings.bc.color = gusettings.color_graph);
+		sceGuColor(color);
+		gusettings.bc.color = color;
 	}
 
 	switch(gusettings.blendmode)
@@ -701,9 +709,9 @@ int SetTexture2(DXPTEXTURE2 *texptr,int TransFlag)//テクスチャを使う描�
 	case DX_BLENDMODE_NOBLEND:
 	case DX_BLENDMODE_MUL:
 	case DX_BLENDMODE_DESTCOLOR:
-//		if(AlphaChannel)tcc = GU_TCC_RGBA;
-		tcc = GU_TCC_RGB + AlphaChannel;
+		tcc = GU_TCC_RGB;
 		tfx = GU_TFX_MODULATE;
+		if(AlphaChannel)tcc = GU_TCC_RGBA;
 	break;
 	case DX_BLENDMODE_ALPHA:
 	case DX_BLENDMODE_ADD:
@@ -720,7 +728,7 @@ int SetTexture2(DXPTEXTURE2 *texptr,int TransFlag)//テクスチャを使う描�
 	default:
 		return -1;
 	}
-	if(gusettings.bc.forceupdate || gusettings.bc.tfx != tfx || gusettings.bc.tcc != tcc)
+	if(gusettings.bc.forceupdate || gusettings.bc.tfx != tfx || gusettings.bc.tcc)
 	{
 		sceGuTexFunc(tfx,tcc);
 		gusettings.bc.tfx = tfx;
@@ -885,7 +893,6 @@ int SetDrawBright(int Red,int Green,int Blue)
 	gusettings.red		= Red & 0x000000ff;
 	gusettings.green	= Green & 0x000000ff;
 	gusettings.blue		= Blue & 0x000000ff;
-	gusettings.color_graph = (u32)(gusettings.blendmode == DX_BLENDMODE_NOBLEND ? 255 : gusettings.alpha) << 24 | (u32)(gusettings.blue) << 16 | (u32)(gusettings.green) << 8 | (u32)(gusettings.red);
 	return 0;
 }
 
@@ -894,14 +901,370 @@ int SetDrawBlendMode(int BlendMode,int Param)
 	gusettings.blendmode = BlendMode;
 	gusettings.blendparam= Param;
 	gusettings.alpha = Param & 0x000000ff;
-
-	gusettings.color_graph = (u32)(gusettings.blendmode == DX_BLENDMODE_NOBLEND ? 255 : gusettings.alpha) << 24 | (u32)(gusettings.blue) << 16 | (u32)(gusettings.green) << 8 | (u32)(gusettings.red);
 	return 0;
 }
 
+int DrawExtendGraphCommon(int x1,int y1,int x2,int y2,DXPGRAPHDATA* gptr)
+{
+	int sw = gusettings.slice * 2 / PSM2BYTEx2(gptr->tex->psm);	/*何ピクセルごとにsliceするか*/
+	int u[2];
+	u[0] = gptr->u0;
+	int count = (gptr->u1 - gptr->u0 + sw - 1) / sw;
+	DXPVERTEX_2DTEX *vtxbuf = (DXPVERTEX_2DTEX*)sceGuGetMemory(sizeof(DXPVERTEX_2DTEX) * 2 * count);
+	if(vtxbuf == NULL)return -1;
+	int i = 0;
+	while(u[0] < gptr->u1)
+	{
+		u[1] = MIN(u[0] + sw,gptr->u1);
+		vtxbuf[(i<<1)+0].u = u[0];
+		vtxbuf[(i<<1)+0].v = gptr->v0;
+		vtxbuf[(i<<1)+0].x = x1 + (float)(x2 - x1) * (u[0] - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+0].y = y1;
+		vtxbuf[(i<<1)+0].z = gusettings.z_2d;
+		vtxbuf[(i<<1)+1].u = u[1];
+		vtxbuf[(i<<1)+1].v = gptr->v1;
+		vtxbuf[(i<<1)+1].x = x1 + (float)(x2 - x1) * (u[1] - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+1].y = y2;
+		vtxbuf[(i<<1)+1].z = gusettings.z_2d;
+		u[0] += sw;
+		++i;
+	}
+	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2DTEX) * 2 * count);
+	sceGuDrawArray(GU_SPRITES,DXP_VTYPE_2DTEX | GU_TRANSFORM_2D,2 * count,NULL,vtxbuf);
+	return 0;
+}
 
+DXPGRAPHDATA *bptr;
+ 
+int	DrawBoostGraphHandleSet(int gh)
+{
+	bptr = GraphHandle2Ptr(gh);
+	if(bptr			== NULL)	return -1;
+	if(bptr->tex	== NULL)	return -1;
+	return 0;
+}
+int DrawGraph(int x,int y,int gh,int trans)
+{
+	DXPGRAPHDATA *gptr = GraphHandle2Ptr(gh);
+	if(gptr			== NULL)	return -1;
+	if(gptr->tex	== NULL)	return -1;
+	GUSTART;
+	if(SetTexture(gptr->handle,trans) == -1)return -1;
+	DrawExtendGraphCommon(x,y,x + gptr->u1 - gptr->u0,y + gptr->v1 - gptr->v0,gptr);
+	GuListSafety();
+	return 0;
+}
 
-//int	DrawRotaGraph2(int x,int y,int cx,int cy,double ExtRate,double Angle,int gh,int trans,int turn);
+int DrawGraphBoost(int x,int y)
+{
+	DrawExtendGraphCommon(x,y,x + bptr->u1 - bptr->u0,y + bptr->v1 - bptr->v0,bptr);
+	return 0;
+}
+
+int DrawGraph2(int x,int y,int gh,int trans)
+{
+	DXPGRAPHDATA *gptr = GraphHandle2Ptr(gh);
+	if(gptr			== NULL)	return -1;
+	if(gptr->tex	== NULL)	return -1;
+	GUSTART;
+	if(SetTexture(gptr->handle,trans) == -1)return -1;
+	int	vx = (gptr->u1 - gptr->u0) / 2;
+	int	vy = (gptr->v1 - gptr->v0) / 2;
+	DrawExtendGraphCommon(x - vx ,y - vy,x + vx,y + vy,gptr);
+	GuListSafety();
+	return 0;
+}
+
+int DrawGraph2Boost(int x,int y)
+{
+	int	vx = (bptr->u1 - bptr->u0) / 2;
+	int	vy = (bptr->v1 - bptr->v0) / 2;
+	DrawExtendGraphCommon(x - vx ,y - vy,x + vx,y + vy,bptr);
+	return 0;
+}
+
+int DrawTurnGraph(int x,int y,int gh,int trans)
+{
+	DXPGRAPHDATA *gptr = GraphHandle2Ptr(gh);
+	if(gptr			== NULL)	return -1;
+	if(gptr->tex	== NULL)	return -1;
+	DrawExtendGraph(x + gptr->u1 - gptr->u0,y,x,y + gptr->v1 - gptr->v0,gh,trans);	
+	GuListSafety();
+	return 0;
+}
+
+int DrawExtendGraph(int x1,int y1,int x2,int y2,int gh,int trans)
+{
+	if((x2 < x1 || y2 < y1) && !(x2 < x1 && y2 < y1))return DrawModiGraph(x1,y1,x2,y1,x2,y2,x1,y2,gh,trans);//X方向反転画像がうまく動作しないので（GU_SPRITESを使ったのが原因と思われる）強引に回避
+	DXPGRAPHDATA* gptr = GraphHandle2Ptr(gh);
+	if(gptr			== NULL)	return -1;
+	if(gptr->tex	== NULL)	return -1;
+	GUSTART;
+	if(SetTexture(gptr->handle,trans) == -1)return -1;
+	DrawExtendGraphCommon(x1,y1,x2,y2,gptr);
+	GuListSafety();
+	return 0;
+}
+
+int DrawExtendGraphBoost(int x1,int y1,int x2,int y2)
+{
+	DrawExtendGraphCommon(x1,y1,x2,y2,bptr);
+	return 0;
+}
+
+int DrawModiGraph( int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, int gh, int TransFlag )
+{
+	//TRIANGLESTRIPで一括描画するようにすれば頂点及び描画コマンドの転送が大幅に減らせる。特に大きなグラフィックを表示するとき有用かな？
+	DXPGRAPHDATA* gptr = GraphHandle2Ptr(gh);
+	if(gptr == NULL)return -1;
+	if(gptr->tex == NULL)return -1;
+	GUSTART;
+	if(SetTexture(gh,TransFlag) == -1)return -1;
+	int sw = gusettings.slice * 2 / PSM2BYTEx2(gptr->tex->psm);	/*何ピクセルごとにsliceするか*/
+	int count = (gptr->u1 - gptr->u0 + sw - 1) / sw;
+	int u = gptr->u0,i = 1;
+	DXPVERTEX_2DTEX *vtxbuf = (DXPVERTEX_2DTEX*)sceGuGetMemory(sizeof(DXPVERTEX_2DTEX) * 2 * (count + 1));
+	if(vtxbuf == NULL)return -1;
+
+	vtxbuf[0].u = u;
+	vtxbuf[0].v = gptr->v0;
+	vtxbuf[0].x = x1 + (float)(x2 - x1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+	vtxbuf[0].y = y1 + (float)(y2 - y1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+	vtxbuf[0].z = gusettings.z_2d;
+	vtxbuf[1].u = u;
+	vtxbuf[1].v = gptr->v1;
+	vtxbuf[1].x = x4 + (float)(x3 - x4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+	vtxbuf[1].y = y4 + (float)(y3 - y4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+	vtxbuf[1].z = gusettings.z_2d;
+	while(u < gptr->u1)
+	{
+		u = MIN(u + sw,gptr->u1);
+		vtxbuf[(i<<1)+0].u = u;
+		vtxbuf[(i<<1)+0].v = gptr->v0;
+		vtxbuf[(i<<1)+0].x = x1 + (float)(x2 - x1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+0].y = y1 + (float)(y2 - y1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+0].z = gusettings.z_2d;
+		vtxbuf[(i<<1)+1].u = u;
+		vtxbuf[(i<<1)+1].v = gptr->v1;
+		vtxbuf[(i<<1)+1].x = x4 + (float)(x3 - x4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+1].y = y4 + (float)(y3 - y4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+1].z = gusettings.z_2d;
+		++i;
+	}
+	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2DTEX) * 2 * (count + 1));
+	sceGuDrawArray(GU_TRIANGLE_STRIP,DXP_VTYPE_2DTEX | GU_TRANSFORM_2D,2 * (count + 1),NULL,vtxbuf);
+	GuListSafety();
+	return 0;
+}
+int DrawModiGraphFCommon( float x1,float y1,float x2,float y2,float x3,float y3,float x4,float y4, DXPGRAPHDATA* gptr)
+{
+	int sw = gusettings.slice * 2 / PSM2BYTEx2(gptr->tex->psm);	/*何ピクセルごとにsliceするか*/
+	int count = (gptr->u1 - gptr->u0 + sw - 1) / sw;
+	int u = gptr->u0,i = 1;
+	DXPVERTEX_2DTEX_F *vtxbuf = (DXPVERTEX_2DTEX_F*)sceGuGetMemory(sizeof(DXPVERTEX_2DTEX_F) * 2 * (count + 1));
+	if(vtxbuf == NULL)return -1;
+
+	vtxbuf[0].u = u;
+	vtxbuf[0].v = gptr->v0;
+	vtxbuf[0].x = x1 + (float)(x2 - x1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+	vtxbuf[0].y = y1 + (float)(y2 - y1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+	vtxbuf[0].z = gusettings.z_2d;
+	vtxbuf[1].u = u;
+	vtxbuf[1].v = gptr->v1;
+	vtxbuf[1].x = x4 + (float)(x3 - x4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+	vtxbuf[1].y = y4 + (float)(y3 - y4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+	vtxbuf[1].z = gusettings.z_2d;
+	while(u < gptr->u1)
+	{
+		u = MIN(u + sw,gptr->u1);
+		vtxbuf[(i<<1)+0].u = u;
+		vtxbuf[(i<<1)+0].v = gptr->v0;
+		vtxbuf[(i<<1)+0].x = x1 + (float)(x2 - x1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+0].y = y1 + (float)(y2 - y1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+0].z = gusettings.z_2d;
+		vtxbuf[(i<<1)+1].u = u;
+		vtxbuf[(i<<1)+1].v = gptr->v1;
+		vtxbuf[(i<<1)+1].x = x4 + (float)(x3 - x4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+1].y = y4 + (float)(y3 - y4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+1].z = gusettings.z_2d;
+		++i;
+	}
+	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2DTEX_F) * 2 * (count + 1));
+	sceGuDrawArray(GU_TRIANGLE_STRIP,DXP_VTYPE_2DTEX_F | GU_TRANSFORM_2D,2 * (count + 1),NULL,vtxbuf);
+	return 0;
+}
+int DrawModiGraphF( float x1,float y1,float x2,float y2,float x3,float y3,float x4,float y4, int gh, int TransFlag )
+{
+	DXPGRAPHDATA* gptr = GraphHandle2Ptr(gh);
+	if(gptr			== NULL)	return -1;
+	if(gptr->tex	== NULL)	return -1;
+	GUSTART;
+	if(SetTexture(gptr->handle,TransFlag) == -1)return -1;
+	DrawModiGraphFCommon(x1,y1,x2,y2,x3,y3,x4,y4,gptr);
+	GuListSafety();
+	return 0;
+}
+
+int	DrawRotaGraphCompatible(int x,int y,double ExtRate,double Angle,int gh,int trans,int turn)
+{
+	return DrawRotaGraph(x,y,ExtRate,Angle,gh,trans,turn);
+}
+
+int	DrawRotaGraph(int x,int y,float ExtRate,float Angle,int gh,int trans,int turn)
+{
+	return DrawRotaGraphF(x,y,ExtRate,Angle,gh,trans,turn);
+}
+
+int	DrawRotaGraphFCompatible(float x,float y,double ExtRate,double Angle,int gh,int trans,int turn)
+{
+	return DrawRotaGraphF(x,y,ExtRate,Angle,gh,trans,turn);
+}
+
+int	DrawRotaGraphF(float x,float y,float ExtRate,float Angle,int gh,int trans,int turn)
+{
+	DXPGRAPHDATA* gptr = GraphHandle2Ptr(gh);
+	if(gptr			== NULL)	return -1;
+	if(gptr->tex	== NULL)	return -1;
+	GUSTART;
+	if(SetTexture(gptr->handle,trans) == -1)return -1;
+	register float x1,x2,x3,x4,y1,y2,y3,y4;
+	register float x1_,x2_,x3_,x4_,y1_,y2_,y3_,y4_;
+	x2 = x3 = (gptr->u1 - gptr->u0) / 2;
+	x1 = x4 = -x3;
+	y3 = y4 = (gptr->v1 - gptr->v0) / 2;
+	y1 = y2 = -y3;
+	register float extrate = ExtRate;
+	x1 *= extrate;
+	x2 *= extrate;
+	x3 *= extrate;
+	x4 *= extrate;
+	y1 *= extrate;
+	y2 *= extrate;
+	y3 *= extrate;
+	y4 *= extrate;
+	float s,c;
+	s = sinf(Angle);
+	c = cosf(Angle);
+
+#define XROT(VARNUM)	\
+	{	\
+	x##VARNUM##_ = x##VARNUM * c - y##VARNUM * s + x;	\
+	y##VARNUM##_ = x##VARNUM * s + y##VARNUM * c + y;	\
+	}
+
+	XROT(1)
+	XROT(2)
+	XROT(3)
+	XROT(4)
+#undef XROT
+	if(turn)
+		DrawModiGraphFCommon(x2_,y2_,x1_,y1_,x4_,y4_,x3_,y3_,gptr);
+	else
+		DrawModiGraphFCommon(x1_,y1_,x2_,y2_,x3_,y3_,x4_,y4_,gptr);
+	GuListSafety();
+	return 0;
+//ｘ’＝ｘcosθ-ysinθ
+//ｙ’＝ｘsinθ+ycosθ
+}
+int	DrawRotaGraphFBoost(float x,float y,float ExtRate,float Angle,int turn)
+{
+	register float x1,x2,x3,x4,y1,y2,y3,y4;
+	register float x1_,x2_,x3_,x4_,y1_,y2_,y3_,y4_;
+	x2 = x3 = (bptr->u1 - bptr->u0) / 2;
+	x1 = x4 = -x3;
+	y3 = y4 = (bptr->v1 - bptr->v0) / 2;
+	y1 = y2 = -y3;
+	register float extrate = ExtRate;
+	x1 *= extrate;
+	x2 *= extrate;
+	x3 *= extrate;
+	x4 *= extrate;
+	y1 *= extrate;
+	y2 *= extrate;
+	y3 *= extrate;
+	y4 *= extrate;
+	float s,c;
+	s = sinf(Angle);
+	c = cosf(Angle);
+
+#define XROT(VARNUM)	\
+	{	\
+	x##VARNUM##_ = x##VARNUM * c - y##VARNUM * s + x;	\
+	y##VARNUM##_ = x##VARNUM * s + y##VARNUM * c + y;	\
+	}
+
+	XROT(1)
+	XROT(2)
+	XROT(3)
+	XROT(4)
+#undef XROT
+	if(turn)
+		DrawModiGraphFCommon(x2_,y2_,x1_,y1_,x4_,y4_,x3_,y3_,bptr);
+	else
+		DrawModiGraphFCommon(x1_,y1_,x2_,y2_,x3_,y3_,x4_,y4_,bptr);
+	return 0;
+//ｘ’＝ｘcosθ-ysinθ
+//ｙ’＝ｘsinθ+ycosθ
+}
+int DrawRotaGraph2Compatible(int x,int y,int cx,int cy,double ExtRate,double Angle,int gh,int trans,int turn)
+{
+	return DrawRotaGraph2(x,y,cx,cy,ExtRate,Angle,gh,trans,turn);
+}
+int DrawRotaGraph2(int x,int y,int cx,int cy,float ExtRate,float Angle,int gh,int trans,int turn)
+{
+	return DrawRotaGraph2F(x,y,cx,cy,ExtRate,Angle,gh,trans,turn);
+}
+
+int	DrawRotaGraph2FCompatible(float x,float y,float cx,float cy,double ExtRate,double Angle,int gh,int trans,int turn)
+{
+	return DrawRotaGraph2F(x,y,cx,cy,ExtRate,Angle,gh,trans,turn);
+}
+int	DrawRotaGraph2F(float x,float y,float cx,float cy,float ExtRate,float Angle,int gh,int trans,int turn)
+{
+	DXPGRAPHDATA* gptr = GraphHandle2Ptr(gh);
+	if(gptr			== NULL)	return -1;
+	if(gptr->tex	== NULL)	return -1;
+	GUSTART;
+	if(SetTexture(gptr->handle,trans) == -1)return -1;
+	register float x1,x2,x3,x4,y1,y2,y3,y4;
+	register float x1_,x2_,x3_,x4_,y1_,y2_,y3_,y4_;
+	x2 = x3 = (gptr->u1 - gptr->u0) - cx;
+	x1 = x4 = -cx;
+	y3 = y4 = (gptr->v1 - gptr->v0) - cy;
+	y1 = y2 = -cy;
+	register float extrate = ExtRate;
+	x1 *= extrate;
+	x2 *= extrate;
+	x3 *= extrate;
+	x4 *= extrate;
+	y1 *= extrate;
+	y2 *= extrate;
+	y3 *= extrate;
+	y4 *= extrate;
+	float s,c;
+	s = sinf(Angle);
+	c = cosf(Angle);
+
+#define XROT(VARNUM)	\
+	{	\
+	x##VARNUM##_ = x##VARNUM * c - y##VARNUM * s + x;	\
+	y##VARNUM##_ = x##VARNUM * s + y##VARNUM * c + y;	\
+	}
+
+	XROT(1)
+	XROT(2)
+	XROT(3)
+	XROT(4)
+#undef XROT
+	if(turn)
+		DrawModiGraphFCommon(x2_,y2_,x1_,y1_,x4_,y4_,x3_,y3_,gptr);
+	else
+		DrawModiGraphFCommon(x1_,y1_,x2_,y2_,x3_,y3_,x4_,y4_,gptr);
+	GuListSafety();
+	return 0;
+//ｘ’＝ｘcosθ-ysinθ
+//ｙ’＝ｘsinθ+ycosθ
+}
 /*
 テクスチャ関連の関数概略
 sceGuTexEnvColor	テクスチャブレンディングの定数を設定
@@ -950,8 +1313,134 @@ sceGuTexLevelMode	みっぷマップの設定　当分使わないつもり
 
 */
 
+int	DrawLine( int x1, int y1, int x2, int y2, int Color)
+{
+	GUSTART;
+	SetTexture(-1,0);
+	SetBaseColor(Color);
+	DXPVERTEX_2D *vtxbuf = sceGuGetMemory(sizeof(DXPVERTEX_2D) * 2);
+	if(vtxbuf == NULL)return -1;
+	vtxbuf[0].x = x1;
+	vtxbuf[0].y = y1;
+	vtxbuf[0].z = gusettings.z_2d;
+	vtxbuf[1].x = x2;
+	vtxbuf[1].y = y2;
+	vtxbuf[1].z = gusettings.z_2d;
+	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 2);
+	sceGuDrawArray(GU_LINES,DXP_VTYPE_2D | GU_TRANSFORM_2D,2,0,vtxbuf);
+	return 0;
+}
+
+int DrawBox(int x1,int y1,int x2,int y2,int color,int fillflag)
+{
+	GUSTART
+	SetTexture(-1,0);
+	SetBaseColor(color);
+	if(fillflag)
+	{
+		DXPVERTEX_2D *vtxbuf = sceGuGetMemory(sizeof(DXPVERTEX_2D) * 2);
+		if(vtxbuf == NULL)return -1;
+		vtxbuf[0].x = x1;
+		vtxbuf[0].y = y1;
+		vtxbuf[0].z = gusettings.z_2d;
+		vtxbuf[1].x = x2;
+		vtxbuf[1].y = y2;
+		vtxbuf[1].z = gusettings.z_2d;
+		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 2);
+		sceGuDrawArray(GU_SPRITES,DXP_VTYPE_2D | GU_TRANSFORM_2D,2,0,vtxbuf);
+	}
+	else
+	{
+		DXPVERTEX_2D *vtxbuf = sceGuGetMemory(sizeof(DXPVERTEX_2D) * 5);
+		if(vtxbuf == NULL)return -1;
+		vtxbuf[0].x = x1;
+		vtxbuf[0].y = y1;
+		vtxbuf[0].z = gusettings.z_2d;
+		vtxbuf[1].x = x2;
+		vtxbuf[1].y = y1;
+		vtxbuf[1].z = gusettings.z_2d;
+		vtxbuf[2].x = x2;
+		vtxbuf[2].y = y2;
+		vtxbuf[2].z = gusettings.z_2d;
+		vtxbuf[3].x = x1;
+		vtxbuf[3].y = y2;
+		vtxbuf[3].z = gusettings.z_2d;
+		vtxbuf[4].x = x1;
+		vtxbuf[4].y = y1;
+		vtxbuf[4].z = gusettings.z_2d;
+		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 5);
+		sceGuDrawArray(GU_LINE_STRIP,DXP_VTYPE_2D | GU_TRANSFORM_2D,5,0,vtxbuf);
+	}
+	return 0;
+}
+
+int	DrawPixel( int x, int y, int Color)
+{
+	GUSTART
+	SetTexture(-1,0);
+	SetBaseColor(Color);
+	DXPVERTEX_2D *vtxbuf = sceGuGetMemory(sizeof(DXPVERTEX_2D) * 2);
+	if(vtxbuf == NULL)return -1;
+	vtxbuf[0].x = x;
+	vtxbuf[0].y = y;
+	vtxbuf[0].z = gusettings.z_2d;
+	vtxbuf[1].x = x + 1;
+	vtxbuf[1].y = y + 1;
+	vtxbuf[1].z = gusettings.z_2d;
+	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 2);
+	sceGuDrawArray(GU_LINES,DXP_VTYPE_2D | GU_TRANSFORM_2D,2,0,vtxbuf);
+	return 0;
+
+}
+
+#define DXPOVAL_DIV	128
+int	DrawCircle( int x, int y, int r, int Color,int fill)
+{
+	GUSTART;
+	SetTexture(-1,0);
+	SetBaseColor(Color);
+	DXPVERTEX_2D *vtxbuf = sceGuGetMemory(sizeof(DXPVERTEX_2D) * (DXPOVAL_DIV + 2));
+	if(vtxbuf == NULL)return -1;
+	int i;
+	vtxbuf[0].x = x;
+	vtxbuf[0].y = y;
+	vtxbuf[0].z = gusettings.z_2d;
+
+	for(i = 1;i <= DXPOVAL_DIV + 1;++i)
+	{
+		vtxbuf[i].x = x + r * cosf(M_PI * 2 / DXPOVAL_DIV * i);
+		vtxbuf[i].y = y + r * sinf(M_PI * 2 / DXPOVAL_DIV * i);
+		vtxbuf[i].z = gusettings.z_2d;
+	}
+
+	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * (2 + DXPOVAL_DIV));
+	if(fill)
+		sceGuDrawArray(GU_TRIANGLE_FAN,DXP_VTYPE_2D | GU_TRANSFORM_2D,DXPOVAL_DIV + 2,0,vtxbuf);
+	else
+		sceGuDrawArray(GU_LINE_STRIP,DXP_VTYPE_2D | GU_TRANSFORM_2D,DXPOVAL_DIV + 1,0,vtxbuf + 1);
+	return 0;
+}
 
 
+int DeleteGraph(int gh)
+{
+	DXPGRAPHDATA* gptr = GraphHandle2Ptr(gh);
+	if(gptr == NULL)return -1;
+	if(gptr->tex != NULL)
+	{
+		--gptr->tex->refcount;
+		if(gptr->tex->refcount <= 0)
+		{
+			FREE(gptr->tex->pmemory);
+			FREE(gptr->tex->ppalette);
+			FreeVRAM(gptr->tex->pvram);
+			TextureList_Remove(gptr->tex);
+			FREE(gptr->tex);
+		}
+	}
+	GraphHandleFree(gptr->handle);
+	return 0;
+}
 
 int SetSliceSize(int size)
 {
@@ -986,7 +1475,7 @@ int SetTransColor(int red,int green,int blue)
 
 void WaitGPUSync()
 {
-	GUSYNC
+	GUFINISH
 }
 
 int SetDrawArea(int x1,int y1,int x2,int y2)
@@ -1001,12 +1490,54 @@ int SetDrawArea(int x1,int y1,int x2,int y2)
 	return 0;
 }
 
+int DrawTriangle(int x1,int y1,int x2,int y2,int x3,int y3,int color,int fill)
+{
+	GUSTART
+	SetTexture(-1,0);
+	SetBaseColor(color);
+	if(fill)
+	{
+		DXPVERTEX_2D *vtxbuf = sceGuGetMemory(sizeof(DXPVERTEX_2D) * 3);
+		if(vtxbuf == NULL)return -1;
+		vtxbuf[0].x = x1;
+		vtxbuf[0].y = y1;
+		vtxbuf[0].z = gusettings.z_2d;
+		vtxbuf[1].x = x2;
+		vtxbuf[1].y = y2;
+		vtxbuf[1].z = gusettings.z_2d;
+		vtxbuf[2].x = x3;
+		vtxbuf[2].y = y3;
+		vtxbuf[2].z = gusettings.z_2d;
+		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 3);
+		sceGuDrawArray(GU_TRIANGLES,DXP_VTYPE_2D | GU_TRANSFORM_2D,3,0,vtxbuf);
+	}
+	else
+	{
+		DXPVERTEX_2D *vtxbuf = sceGuGetMemory(sizeof(DXPVERTEX_2D) * 4);
+		if(vtxbuf == NULL)return -1;
+		vtxbuf[0].x = x1;
+		vtxbuf[0].y = y1;
+		vtxbuf[0].z = gusettings.z_2d;
+		vtxbuf[1].x = x2;
+		vtxbuf[1].y = y2;
+		vtxbuf[1].z = gusettings.z_2d;
+		vtxbuf[2].x = x3;
+		vtxbuf[2].y = y3;
+		vtxbuf[2].z = gusettings.z_2d;
+		vtxbuf[3].x = x1;
+		vtxbuf[3].y = y1;
+		vtxbuf[3].z = gusettings.z_2d;
+		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 4);
+		sceGuDrawArray(GU_LINE_STRIP,DXP_VTYPE_2D | GU_TRANSFORM_2D,4,0,vtxbuf);
+	}
+	return 0;
+}
 
 int SetDrawScreen(int ghandle)
 {
 	GUSTART
 	if(ghandle == -1)return -1;
-	if(ghandle == DX_SCREEN_BACK)
+	if(ghandle == DXP_SCREEN_BACK)
 	{
 		gusettings.rendertarget = &gusettings.displaybuffer[gusettings.backbuffer];
 	}
@@ -1075,3 +1606,28 @@ int GetDisplayFormat()
 	return gusettings.displaybuffer[0].psm;
 }
 
+int DrawPolygon3D(VERTEX_3D *Vertex,int PolygonNum,int gh,int trans)
+{
+	GUSTART
+	DXPGRAPHDATA *pg = GraphHandle2Ptr(gh);
+	if(pg == NULL)return -1;
+	SetTexture(gh,trans);
+	DXPVERTEX_3DTEX_F *vtxbuf = sceGuGetMemory(sizeof(DXPVERTEX_3DTEX_F) * PolygonNum * 3);
+	if(vtxbuf == NULL)return -1;
+	int i,j;
+	for(i = 0;i < PolygonNum;++i)
+	{
+		for(j = 0;j < 3;++j)
+		{
+			vtxbuf[i * 3 + j].u = pg->u0 + (pg->u1 - pg->u0) * Vertex[i * 3 + j].u;
+			vtxbuf[i * 3 + j].v = pg->v0 + (pg->v1 - pg->v0) * Vertex[i * 3 + j].v;
+			vtxbuf[i * 3 + j].color = ((u32)Vertex[i * 3 + j].a << 24) | ((u32)Vertex[i * 3 + j].b << 16) | ((u32)Vertex[i * 3 + j].g << 8) | ((u32)Vertex[i * 3 + j].r);
+			vtxbuf[i * 3 + j].x = Vertex[i * 3 + j].pos.x;
+			vtxbuf[i * 3 + j].y = Vertex[i * 3 + j].pos.y;
+			vtxbuf[i * 3 + j].z = Vertex[i * 3 + j].pos.z;
+		}
+	}
+	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_3DTEX_F) * PolygonNum * 3);
+	sceGumDrawArray(GU_TRIANGLES,DXP_VTYPE_3DTEX_F | GU_TRANSFORM_3D,PolygonNum * 3,0,vtxbuf);
+	return 0;
+}

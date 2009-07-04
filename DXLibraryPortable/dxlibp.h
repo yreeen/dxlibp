@@ -59,9 +59,6 @@ extern "C" {
 #include <pspkernel.h>
 //#include <stdio.h>
 
-//#define DXP_USE_COMPATIBLEPARAMATERS	//DrawRotaGraph系の描画関数の引数を本家に合わせる。dxlibpの実装は引数にdoubleが存在しない
-
-
 #ifndef	TRUE
 #define	TRUE	(1)
 #endif
@@ -96,7 +93,7 @@ extern "C" {
 	#define DXP_FILEREAD_DOS	0x00000000
 	#define DXP_FILEREAD_UNIX	0x00000001
 	/*描画*/
-	#define DX_SCREEN_BACK		0xfffffffe
+	#define DXP_SCREEN_BACK		0xfffffffe
 
 	/*グラフィックのフォーマット定義*/
 	#define DXP_FMT_5650		(0)	/* テクスチャ、パレット、描画先*/
@@ -193,13 +190,6 @@ extern "C" {
 		unsigned char			b, g, r, a ;
 		float					u, v ;
 	}VERTEX_3D,*LPVERTEX_3D;
-
-	typedef struct tagMATRIX
-	{
-		float					m[4][4] ;
-	} MATRIX, *LPMATRIX ;
-
-
 /*関数定義部*/
 	/*必須関数*/
 		int DxLib_IsInit();
@@ -250,8 +240,6 @@ extern "C" {
 		int SetSliceSize(int size);						/*描画時にsliceが可能な場合、何バイト境界で行うか指定*/
 		int SetTransColor( int Red , int Green , int Blue );
 		int SetDrawArea(int x1,int y1,int x2,int y2);
-		int ChangeWindowMode(int mode);
-		int SetGraphMode(int x,int y,int colordepth,int pconly DXPDEFARG(60));
 		/*取得系*/
 		int GetDisplayFormat();
 		int GetColor(int red,int green,int blue);
@@ -272,6 +260,7 @@ extern "C" {
 			PSPのハードウェアの制約上、内部的に指定される座標が±4000付近を超えるとおかしな描画になります。
 			特に、DrawRotaGraphでは拡大率の上げすぎに注意してください。うまいこと回避する方法を現在考え中です。
 		*/
+		int	ScreenFlipMode(int Mode);
 		int ScreenFlip();
 		int ScreenCopy();
 		int ClearDrawScreen();
@@ -281,6 +270,7 @@ extern "C" {
 		int DrawBox(int x1,int y1,int x2,int y2,int color,int fillflag);
 		int	DrawCircle( int x, int y, int r, int Color,int fill);
 		int	DrawGraph(int x,int y,int gh,int trans);
+		int DrawGraph2(int x,int y,int gh,int trans);
 		int DrawExtendGraph(int x1,int y1,int x2,int y2,int gh,int trans);
 		int	DrawModiGraph(int x1,int y1,int x2,int y2,int x3,int y3,int x4,int y4,int gh,int trans);
 		int	DrawTurnGraph(int x,int y,int gh,int trans);
@@ -291,7 +281,15 @@ extern "C" {
 		int	DrawRotaGraphF(float x,float y,float ExtRate,float Angle,int gh,int trans,int turn DXPDEFARG(0));
 		int	DrawRotaGraph2F(float x,float y,float cx,float cy,float ExtRate,float Angle,int gh,int trans,int turn DXPDEFARG(0));
 		int DrawPolygon3D(VERTEX_3D *Vertex,int PolygonNum,int GrHandle,int TransFlag);//テスト中です…
-
+		/*処理速度アップ用関数(使用にはライブラリ周りのスキルが必要)*/
+		int SetTexture(int handle,int TransFlag);
+		int SetBaseColor(u32 color);
+		void AccumulatedDrawCommandDispose();
+		int	DrawBoostGraphHandleSet(int gh);
+		int DrawGraphBoost(int x,int y);
+		int DrawGraph2Boost(int x,int y);
+		int DrawExtendGraphBoost(int x1,int y1,int x2,int y2);
+		int	DrawRotaGraphFBoost(float x,float y,float ExtRate,float Angle,int turn DXPDEFARG(0));
 		/*引数を本家に合わせたバージョン*/
 		int	DrawRotaGraphCompatible(int x,int y,double ExtRate,double Angle,int gh,int trans,int turn DXPDEFARG(0));
 		int DrawRotaGraph2Compatible(int x,int y,int cx,int cy,double ExtRate,double Angle,int gh,int trans,int turn DXPDEFARG(0));
@@ -363,8 +361,6 @@ extern "C" {
 	/*マイナー系*/
 		int SaveDrawScreen( int x1, int y1, int x2, int y2, char *FileName );
 	/*デバッグ用*/
-		void*	TsFileLoad(const char* filename,int* FileSize);
-		int	TsFileSave(const char* filename,unsigned int FileSize,const char* writedata);
 		//int GetCpuUsage();//製作中
 
 /*DXライブラリからコピペ*/
@@ -450,16 +446,7 @@ int SetupSTREAMDATA(const char *FileName,STREAMDATA *DataPtr);	/*ファイル名
 };
 #endif
 
-#ifdef DXP_USE_COMPATIBLEPARAMATERS
-#define DrawRotaGraph DrawRotaGraphCompatible
-#define DrawRotaGraphF DrawRotaGraphFCompatible
-#define DrawRotaGraph2 DrawRotaGraph2Compatible
-#define DrawRotaGraph2F DrawRotaGraph2FCompatible
 #endif
-
-#endif
-
-
 
 /*
 更新履歴

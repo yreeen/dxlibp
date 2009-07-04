@@ -78,51 +78,29 @@ static MUSICDATA MusicTable[MusicTableMAX];
 
 //関数定義
 
+inline static int sample_per_frame(MUSICFILE_TYPE type)
+{
+	switch(type)
+	{
+	case DXPMFT_WAVE:
+		return 1024;
+	case DXPMFT_MP3:
+		return 1152;
+	default:
+		return -1;
+	}
+}
 
 MUSICDATA* Handle2MusicDataPtr(int handle)
 {
 	if ( handle <				0 ) return NULL;
 	if ( handle >=	MusicTableMAX ) return NULL;
-	//20090410
-	//音ファイル管理用域の変更
-	/*MUSICDATA *ptr = musicdataroot;
-	while(ptr != NULL)
-	{
-		if(ptr->handle == handle)return ptr;
-		ptr = ptr->next;
-	}
-	return ptr;*/
-	//20090412
-	//管理に関するエリアをメモリ断片化を防ぐためにmallocで
-	//確保しない方式に変更
-	//return MusicTable[handle];
 	return &MusicTable[handle];
 }
 
 MUSICDATA* AddMusicData()
 {
-	//20090412
-	//管理に関するエリアをメモリ断片化を防ぐためにmallocで
-	//確保しない方式に変更
-	//MUSICDATA *ptr = (MUSICDATA*)malloc(sizeof(MUSICDATA));
-	//if(ptr == NULL)return NULL;
-	//20090410
-	//音ファイル管理用域の変更
-	//MUSICDATA *ptr2 = musicdataroot;
-	//ptr->handle = 0;
-	//while(ptr2 != NULL)
-	//{
-	//	if(ptr->handle < ptr2->handle)ptr->handle = ptr2->handle + 1;
-	//	ptr2 = ptr2->next;
-	//}
 	int i;
-	//20090412
-	//管理に関するエリアをメモリ断片化を防ぐためにmallocで
-	//確保しない方式に変更
-	//for(i=0;i<MusicTableMAX;i++)
-	//{
-	//	if(MusicTable[i] == NULL) break;
-	//}
 	for(i=0;i<MusicTableMAX;i++)
 	{
 		if(MusicTable[i].useflg == 0) break;
@@ -132,20 +110,9 @@ MUSICDATA* AddMusicData()
 	//下の行は将来的に削除の方向で？
 	memset(&MusicTable[i],0x00,sizeof(MusicTable[0]));
 	ptr->handle = i;
-	//ptr->apos = ptr->bpos = 0;
-	//ptr->flag = 0;
-	//ptr->pcm = NULL;
-	//ptr->pcmlen = 0;
-	//下の行は将来的に削除の方向で
-	//ptr->next = NULL;//musicdataroot;
 	ptr->volume[0] = ptr->volume[1] = ptr->volume[2] = 100;
-	//ptr->count = 0;
 	ptr->useflg = 1;
-	//musicdataroot = ptr;
-	//20090412
-	//管理に関するエリアをメモリ断片化を防ぐためにmallocで
-	//確保しない方式に変更
-	//MusicTable[i] = ptr;
+	ptr->channels = 2; //20090505
 	return ptr;
 }
 int AddMusicDataH()
@@ -158,36 +125,9 @@ int RemoveMusicDataH(int handle)
 {
 	if ( handle <				0 ) return -1;
 	if ( handle >=	MusicTableMAX ) return -2;
-	//20090412
-	//管理に関するエリアをメモリ断片化を防ぐためにmallocで
-	//確保しない方式に変更
-	//if ( MusicTable[handle] != NULL) goto rm;
 	if ( MusicTable[handle].useflg == 0) return -3;
-	//20090410
-	//音ファイル管理用域の変更
-	//MUSICDATA *ptr = musicdataroot;
-	//MUSICDATA *ptr2 = NULL;
-	//while(ptr != NULL)
-	//{
-	//	if(ptr->handle == handle)goto rm;
-	//	ptr2 = ptr;
-	//	ptr = ptr->next;
-	//}
-	//return -3;
-//rm:
-	//20090410
-	//音ファイル管理用域の変更
-	//if(ptr2 != NULL)ptr2->next = ptr->next;
-	//else musicdataroot = ptr->next;
-	//free(ptr->pcm);
-	//free(ptr);
-	//free(MusicTable[handle]->pcm);
-	free(MusicTable[handle].pcm);
-	//20090412
-	//管理に関するエリアをメモリ断片化を防ぐためにmallocで
-	//確保しない方式に変更
-	//free(MusicTable[handle]);
-	//MusicTable[handle] = NULL;
+	if(MusicTable[handle].pcm != NULL)
+		free(MusicTable[handle].pcm);
 	MusicTable[handle].useflg = 0;
 	return 0;
 }
@@ -201,15 +141,38 @@ int LoadSoundMem(const char* filename)
 {
 	MUSICDATA *md = NULL;
 	int length = 0;
+	int channel = 0;
 	u16 *data = NULL;
 	//デコード処理
 	DXP_MUSICDECODECONTEXT context;
 	STREAMDATA Src;
 	context.src = &Src;
 	SetupSTREAMDATA(filename,context.src);
-	if(decodeprepare_mp3(&context) != -1)goto mp3dec;
-	
+	if(decodeprepare_mp3(&context) != -1)	goto mp3dec;
+	if(decodeprepare_wave(&context) != -1)	goto wavdec;
 	return -1;
+wavdec:
+	length = context.wavestream.datalen;
+	data = (u16*)memalign(64,length);
+	if(data == NULL)
+	{
+		decodefinish_wave(&context);
+		return -1;
+	}
+	//STSEEK(context.src,0,SEEK_SET);
+	if(STREAD(data,1,length,context.src) != length)return -1;
+	if(context.wavestream.channel_num == 1)
+	{
+		length	= length / 2;
+		channel	= 1;
+	}
+	else
+	{
+		length = length / 4;
+		channel	= 2;
+	}
+	decodefinish_wave(&context);
+	goto lad;
 mp3dec:
 	length = mp3len(context.src);
 	if(length <= 0)
@@ -245,6 +208,8 @@ lad:
 	}
 	md->pcm = data;
 	md->bpos = md->pcmlen = length;
+	if(channel != 0)
+		md->channels = channel; 
 	return md->handle;
 }
 
@@ -320,8 +285,18 @@ int musicthread_normal(SceSize arglen,void* argp)
 				else
 					break;
 			}
-			buf[i * 2] = ptr->pcm[pos * 2];
-			buf[i * 2 + 1] = ptr->pcm[pos * 2 + 1];
+			//20090505
+			//モノラル・ステレオの判定(モノラルはwavフォーマットのみ指定可能)
+			if(ptr->channels == 1)
+			{
+				buf[i * 2 + 0] = ptr->pcm[pos];
+				buf[i * 2 + 1] = ptr->pcm[pos];
+			}
+			else
+			{
+				buf[i * 2 + 0] = ptr->pcm[pos * 2];
+				buf[i * 2 + 1] = ptr->pcm[pos * 2 + 1];
+			}
 			++pos;
 		}
 		if(i < SAMPLECOUNT_DEFAULT)
@@ -485,16 +460,6 @@ int musicthread_stream(SceSize arglen,void *argp)
 	playbuf = buf;
 	outbuf = buf + spf * 2;
 	++ptr->md->count;
-	/*ClearDrawScreen();
-	clsDx();
-	printfDx("spf    = %d\n",spf);
-	printfDx("count  = %d\n",ptr->md->count);
-	printfDx("pos    = %d\n",pos);
-	printfDx("apos   = %d\n",ptr->md->apos);
-	printfDx("bpos   = %d\n",ptr->md->bpos);
-	printfDx("pcmlen = %d\n",ptr->md->pcmlen);
-	printfDx("next f = %d\n",ptr->context.nextframe);
-	ScreenFlip();*/
 	while( reservedchannel >= 0)
 	{
 		if(ptr->md->flag & DXP_MUSICCOMMAND_QUIT)break;
@@ -572,8 +537,7 @@ playendproc:
 	//スレッドの破棄処理追加 20090410
 	sceKernelExitDeleteThread(0);
 	return 0;
-#ifndef TEST09041600
-err:
+//err:
 	if(reservedchannel >= 0)sceAudioChRelease(reservedchannel);
 	--ptr->md->count;
 	decodefinish(&ptr->context);
@@ -581,19 +545,6 @@ err:
 	//スレッドの破棄処理追加 20090410
 	sceKernelExitDeleteThread(0);
 	return -1;
-#endif
-}
-inline int sample_per_frame(MUSICFILE_TYPE type)
-{
-	switch(type)
-	{
-	case DXPMFT_WAVE:
-		return 1024;
-	case DXPMFT_MP3:
-		return 1152;
-	default:
-		return -1;
-	}
 }
 
 int decodeprepare(DXP_MUSICDECODECONTEXT *context)
@@ -601,7 +552,6 @@ int decodeprepare(DXP_MUSICDECODECONTEXT *context)
 	if(context == NULL)return -1;
 	if(context->src == NULL)return -1;
 	if(decodeprepare_mp3(context) != -1)return 0;
-	if(decodeprepare_wave(context) != -1)return 0;
 	return -1;
 }
 int decode(DXP_MUSICDECODECONTEXT *context)
@@ -611,8 +561,6 @@ int decode(DXP_MUSICDECODECONTEXT *context)
 	{
 	case DXPMFT_MP3:
 		return decode_mp3(context);
-	case DXPMFT_WAVE:
-		return decode_wave(context);
 	default:
 		return -1;
 	}
@@ -625,8 +573,6 @@ int decodefinish(DXP_MUSICDECODECONTEXT *context)
 	{
 	case DXPMFT_MP3:
 		return decodefinish_mp3(context);
-	case DXPMFT_WAVE:
-		return decodefinish_wave(context);
 	default:
 		return -1;
 	}
@@ -644,11 +590,6 @@ int	CheckSoundMem( int handle )
 {
 	if( handle <	0				)	return -1;
 	if( handle >=	MusicTableMAX	)	return -2;
-	//20090412
-	//管理に関するエリアをメモリ断片化を防ぐためにmallocで
-	//確保しない方式に変更
-	//if( MusicTable[handle]	== NULL)	return -3;
-	//if( MusicTable[handle]->flag & DXP_MUSICFLAG_PLAYING) return 1;
 	if( MusicTable[handle].useflg == 0)	return -3;
 	if( MusicTable[handle].flag & DXP_MUSICFLAG_PLAYING) return 1;
 	return 0;
@@ -664,6 +605,8 @@ int	ChangeVolumeSoundMem( int VolumePal, int SoundHandle )
 
 int	DeleteSoundMem( int SoundHandle, int LogOutFlag )
 {
+	if(StopSoundMem(SoundHandle) == -1) return -1;
+	RemoveMusicDataH(SoundHandle);
 	return 0;
 }
 

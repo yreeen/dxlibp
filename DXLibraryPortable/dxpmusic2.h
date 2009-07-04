@@ -62,6 +62,11 @@ typedef enum
 }MUSICFILE_TYPE;
 
 
+typedef struct
+{
+	int pos;
+	int samples;
+}DXP_MUSICUNION_WAVEDATA;
 
 typedef struct
 {
@@ -70,15 +75,17 @@ typedef struct
 
 typedef struct
 {
-	//44.1kHz前提とする。それ以外は弾く。
-	unsigned monoflag:1;
-	unsigned s8bitflag:1;
+	u16 flag;	//データがモノラルかステレオか、8bitか16bitか
+	int samplerate;//サンプルレート
+	int channel_num;//ステレオかモノラルか
+	int datalen;
 }DXP_MUSICUNION_WAVESTREAM;
 
 #define MUSICHANDLE_MAX	64
 #define SOUNDDATA_INDEX MUSICHANDLE_MAX
 
 #define MUSICFLAG_USED		0x0001	//使用中
+#define MUSICFLAG_WAVE_8BIT	0x0002	//１サンプルあたり8bitのWAVEだ。
 
 
 typedef struct
@@ -90,6 +97,7 @@ typedef struct
 	u16 *pcm;
 	union
 	{
+		DXP_MUSICUNION_WAVEDATA		wavedata;
 		DXP_MUSICUNION_WAVESTREAM	wavestream;
 		DXP_MUSICUNION_MP3STREAM	mp3stream;
 	};
@@ -134,6 +142,7 @@ typedef struct MUSICDATA__	//音楽データのハンドル用構造体
 	int count;		//参照カウンタ
 	u16 *pcm;		//通常ストリームの場合のみ非NULL;
 	int pcmlen;		//何サンプルあるのか
+	int channels;	//
 	u8 volume[4];	//ボリューム 全体、左、右の順 最大100
 	STREAMDATA Src;
 }MUSICDATA;
@@ -160,9 +169,9 @@ int releaseoutchannel(int handle);
 int musicthread(SceSize arglen,void* argp);
 int id3skip(STREAMDATA *src);
 
-int waveseek(DXP_MUSICDECODECONTEXT *context);
+int waveseek(DXP_MUSICDECODECONTEXT *context,int frame);
 int decodeprepare_wave(DXP_MUSICDECODECONTEXT *context);
-int decode_wave(DXP_MUSICDECODECONTEXT *context);
+int readframe_wave(DXP_MUSICDECODECONTEXT *context);
 int decodefinish_wave(DXP_MUSICDECODECONTEXT *context);
 
 int mp3seek(STREAMDATA *src,int frame);
@@ -174,7 +183,5 @@ int decodefinish_mp3(DXP_MUSICDECODECONTEXT *context);
 
 
 int readframe(DXP_MUSICDECODECONTEXT *context);
-
-inline int sample_per_frame(MUSICFILE_TYPE type);
 
 #endif

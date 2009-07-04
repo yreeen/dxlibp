@@ -119,7 +119,8 @@ int DxLib_Init()
 {
 	if(DxLib_IsInit())return -1;
 	dxpdata.flags[0] |= DXPDATAFLAGS_0_INITIALIZING;
-	sceUtilityLoadAvModule(PSP_AV_MODULE_AVCODEC);//MP3やJpegのデコードにつかうモジュールをロードする。
+	//sceUtilityLoadAvModule(PSP_AV_MODULE_AVCODEC);//MP3やJpegのデコードにつかうモジュールをロードする。
+	if(DxpAvModuleInit() != 1) return -2;
 
 	SetExitCallback();/*HOMEボタンコールバック関数のセット*/
 	InitInput();/*入力の初期化*/
@@ -137,7 +138,8 @@ int DxLib_End()
 {
 //	StopMusic();
 	dxpdata.flags[0] &= (~DXPDATAFLAGS_0_INITIALIZED);
-	sceUtilityUnloadAvModule(PSP_AV_MODULE_AVCODEC);
+	//sceUtilityUnloadAvModule(PSP_AV_MODULE_AVCODEC);
+	DxpAvModuleFree();
 	EndGUEngine();
 	return 0;
 }

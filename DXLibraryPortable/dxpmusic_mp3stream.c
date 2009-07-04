@@ -1,9 +1,11 @@
 #include "dxpmusic2.h"
-//#define TRACE		printfDx("%s::%d\n",__FILE__,__LINE__);
+#include "dxpstatic.h"
+#define TRACE		printfDx("%s::%d\n",__FILE__,__LINE__);
 
 int decodeprepare_mp3(DXP_MUSICDECODECONTEXT *context)
 {
-	sceUtilityLoadAvModule(PSP_AV_MODULE_AVCODEC);
+	//sceUtilityLoadAvModule(PSP_AV_MODULE_AVCODEC);
+	if(DxpAvModuleInit() != 1) return -2;
 	if(context == NULL)return -1;
 	if(context->src == NULL)return -1;
 	context->nextframe = -1;
