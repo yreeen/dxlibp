@@ -111,23 +111,22 @@ int	DrawRotaGraphFCompatible(float x,float y,double ExtRate,double Angle,int gh,
 int	DrawRotaGraphF(float x,float y,float ExtRate,float Angle,int gh,int trans,int turn)
 {
 	DXPGRAPHDATA* gptr = GraphHandle2Ptr(gh);
-	if(gptr == NULL)return -1;
+	if(!gptr)return -1;
 	register float x1,x2,x3,x4,y1,y2,y3,y4;
 	register float x1_,x2_,x3_,x4_,y1_,y2_,y3_,y4_;
 	x2 = x3 = (gptr->u1 - gptr->u0) / 2;
 	x1 = x4 = -x3;
 	y3 = y4 = (gptr->v1 - gptr->v0) / 2;
 	y1 = y2 = -y3;
-	register float extrate = ExtRate;
-	x1 *= extrate;
-	x2 *= extrate;
-	x3 *= extrate;
-	x4 *= extrate;
-	y1 *= extrate;
-	y2 *= extrate;
-	y3 *= extrate;
-	y4 *= extrate;
-	float s,c;
+	x1 *= ExtRate;
+	x2 *= ExtRate;
+	x3 *= ExtRate;
+	x4 *= ExtRate;
+	y1 *= ExtRate;
+	y2 *= ExtRate;
+	y3 *= ExtRate;
+	y4 *= ExtRate;
+	register float s,c;
 	s = sinf(Angle);
 	c = cosf(Angle);
 
@@ -203,23 +202,22 @@ int	DrawRotaGraph2FCompatible(float x,float y,float cx,float cy,double ExtRate,d
 int	DrawRotaGraph2F(float x,float y,float cx,float cy,float ExtRate,float Angle,int gh,int trans,int turn)
 {
 	DXPGRAPHDATA* gptr = GraphHandle2Ptr(gh);
-	if(gptr == NULL)return -1;
+	if(!gptr)return -1;
 	register float x1,x2,x3,x4,y1,y2,y3,y4;
 	register float x1_,x2_,x3_,x4_,y1_,y2_,y3_,y4_;
 	x2 = x3 = (gptr->u1 - gptr->u0) - cx;
 	x1 = x4 = -cx;
 	y3 = y4 = (gptr->v1 - gptr->v0) - cy;
 	y1 = y2 = -cy;
-	register float extrate = ExtRate;
-	x1 *= extrate;
-	x2 *= extrate;
-	x3 *= extrate;
-	x4 *= extrate;
-	y1 *= extrate;
-	y2 *= extrate;
-	y3 *= extrate;
-	y4 *= extrate;
-	float s,c;
+	x1 *= ExtRate;
+	x2 *= ExtRate;
+	x3 *= ExtRate;
+	x4 *= ExtRate;
+	y1 *= ExtRate;
+	y2 *= ExtRate;
+	y3 *= ExtRate;
+	y4 *= ExtRate;
+	register float s,c;
 	s = sinf(Angle);
 	c = cosf(Angle);
 
@@ -253,7 +251,7 @@ int	DrawLine( int x1, int y1, int x2, int y2, int Color)
 	vtxbuf[1].x = x2;
 	vtxbuf[1].y = y2;
 	vtxbuf[1].z = gusettings.z_2d;
-	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 2);
+//	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 2);
 	sceGuDrawArray(GU_LINES,DXP_VTYPE_2D | GU_TRANSFORM_2D,2,0,vtxbuf);
 	return 0;
 }
@@ -273,7 +271,7 @@ int DrawBox(int x1,int y1,int x2,int y2,int color,int fillflag)
 		vtxbuf[1].x = x2;
 		vtxbuf[1].y = y2;
 		vtxbuf[1].z = gusettings.z_2d;
-		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 2);
+//		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 2);
 		sceGuDrawArray(GU_SPRITES,DXP_VTYPE_2D | GU_TRANSFORM_2D,2,0,vtxbuf);
 	}
 	else
@@ -295,7 +293,7 @@ int DrawBox(int x1,int y1,int x2,int y2,int color,int fillflag)
 		vtxbuf[4].x = x1;
 		vtxbuf[4].y = y1;
 		vtxbuf[4].z = gusettings.z_2d;
-		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 5);
+//		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 5);
 		sceGuDrawArray(GU_LINE_STRIP,DXP_VTYPE_2D | GU_TRANSFORM_2D,5,0,vtxbuf);
 	}
 	return 0;
@@ -314,7 +312,7 @@ int	DrawPixel( int x, int y, int Color)
 	vtxbuf[1].x = x + 1;
 	vtxbuf[1].y = y + 1;
 	vtxbuf[1].z = gusettings.z_2d;
-	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 2);
+//	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 2);
 	sceGuDrawArray(GU_LINES,DXP_VTYPE_2D | GU_TRANSFORM_2D,2,0,vtxbuf);
 	return 0;
 
@@ -340,7 +338,7 @@ int	DrawCircle( int x, int y, int r, int Color,int fill)
 		vtxbuf[i].z = gusettings.z_2d;
 	}
 
-	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * (2 + DXPOVAL_DIV));
+//	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * (2 + DXPOVAL_DIV));
 	if(fill)
 		sceGuDrawArray(GU_TRIANGLE_FAN,DXP_VTYPE_2D | GU_TRANSFORM_2D,DXPOVAL_DIV + 2,0,vtxbuf);
 	else
@@ -366,7 +364,7 @@ int DrawTriangle(int x1,int y1,int x2,int y2,int x3,int y3,int color,int fill)
 		vtxbuf[2].x = x3;
 		vtxbuf[2].y = y3;
 		vtxbuf[2].z = gusettings.z_2d;
-		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 3);
+//		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 3);
 		sceGuDrawArray(GU_TRIANGLES,DXP_VTYPE_2D | GU_TRANSFORM_2D,3,0,vtxbuf);
 	}
 	else
@@ -385,7 +383,7 @@ int DrawTriangle(int x1,int y1,int x2,int y2,int x3,int y3,int color,int fill)
 		vtxbuf[3].x = x1;
 		vtxbuf[3].y = y1;
 		vtxbuf[3].z = gusettings.z_2d;
-		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 4);
+//		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 4);
 		sceGuDrawArray(GU_LINE_STRIP,DXP_VTYPE_2D | GU_TRANSFORM_2D,4,0,vtxbuf);
 	}
 	return 0;
@@ -413,7 +411,7 @@ int DrawPolygon3D(VERTEX_3D *Vertex,int PolygonNum,int gh,int trans)
 			vtxbuf[i * 3 + j].z = Vertex[i * 3 + j].pos.z;
 		}
 	}
-	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_3DTEX_F) * PolygonNum * 3);
+//	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_3DTEX_F) * PolygonNum * 3);
 	sceGumDrawArray(GU_TRIANGLES,DXP_VTYPE_3DTEX_F | GU_TRANSFORM_3D,PolygonNum * 3,0,vtxbuf);
 	sceGuShadeModel(GU_FLAT);
 	GuListSafety();
@@ -423,141 +421,79 @@ int DrawPolygon3D(VERTEX_3D *Vertex,int PolygonNum,int gh,int trans)
 inline static int StaticDrawExtendGraph(int x1,int y1,int x2,int y2,DXPGRAPHDATA *gptr,int trans)
 {
 	if((x2 < x1 || y2 < y1) && !(x2 < x1 && y2 < y1))return StaticDrawModiGraph(x1,y1,x2,y1,x2,y2,x1,y2,gptr,trans);//X方向反転画像がうまく動作しないので（GU_SPRITESを使ったのが原因と思われる）強引に回避
-	if(gptr == NULL)return -1;
-	if(gptr->tex == NULL)return -1;
+	if(!gptr)return -1;
+	if(!gptr->tex)return -1;
 	if(SetTexture2(gptr->tex,trans) == -1)return -1;
 	int sw = gusettings.slice * 2 / PSM2BYTEx2(gptr->tex->psm);	/*何ピクセルごとにsliceするか*/
-	int u[2];
-	u[0] = gptr->u0;
-#ifdef USE_OPTIMIZED_VERTEXBUFFER090410
+	int u0,u1;
+	u0 = gptr->u0;
 	int count = (gptr->u1 - gptr->u0 + sw - 1) / sw;
 	DXPVERTEX_2DTEX *vtxbuf = (DXPVERTEX_2DTEX*)sceGuGetMemory(sizeof(DXPVERTEX_2DTEX) * 2 * count);
 	int i = 0;
-	while(u[0] < gptr->u1)
+	register float invu1_u0 = 1.0f / (gptr->u1 - gptr->u0);
+	while(u0 < gptr->u1)
 	{
-		u[1] = MIN(u[0] + sw,gptr->u1);
+		u1 = MIN(u0 + sw,gptr->u1);
 		if(vtxbuf == NULL)return -1;
-		vtxbuf[i<<1].u = u[0];
+		vtxbuf[i<<1].u = u0;
 		vtxbuf[i<<1].v = gptr->v0;
-		vtxbuf[i<<1].x = x1 + (float)(x2 - x1) * (u[0] - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[i<<1].x = x1 + (float)(x2 - x1) * (u0 - gptr->u0) * invu1_u0;
 		vtxbuf[i<<1].y = y1;
 		vtxbuf[i<<1].z = gusettings.z_2d;
-		vtxbuf[(i<<1)+1].u = u[1];
+		vtxbuf[(i<<1)+1].u = u1;
 		vtxbuf[(i<<1)+1].v = gptr->v1;
-		vtxbuf[(i<<1)+1].x = x1 + (float)(x2 - x1) * (u[1] - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+1].x = x1 + (float)(x2 - x1) * (u1 - gptr->u0) * invu1_u0;
 		vtxbuf[(i<<1)+1].y = y2;
 		vtxbuf[(i<<1)+1].z = gusettings.z_2d;
-		u[0] += sw;
+		u0 += sw;
 		++i;
 	}
-	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2DTEX) * 2 * count);
+//	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2DTEX) * 2 * count);
 	sceGuDrawArray(GU_SPRITES,DXP_VTYPE_2DTEX | GU_TRANSFORM_2D,2 * count,NULL,vtxbuf);
-#else
-	while(u[0] < gptr->u1)
-	{
-		u[1] = MIN(u[0] + sw,gptr->u1);
-		DXPVERTEX_2DTEX *vtxbuf = (DXPVERTEX_2DTEX*)sceGuGetMemory(sizeof(DXPVERTEX_2DTEX) * 2);
-		if(vtxbuf == NULL)return -1;
-		vtxbuf[0].u = u[0];
-		vtxbuf[0].v = gptr->v0;
-		vtxbuf[0].x = x1 + (float)(x2 - x1) * (u[0] - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[0].y = y1;
-		vtxbuf[0].z = gusettings.z_2d;
-		vtxbuf[1].u = u[1];
-		vtxbuf[1].v = gptr->v1;
-		vtxbuf[1].x = x1 + (float)(x2 - x1) * (u[1] - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[1].y = y2;
-		vtxbuf[1].z = gusettings.z_2d;
-		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2DTEX) * 2);
-		sceGuDrawArray(GU_SPRITES,DXP_VTYPE_2DTEX | GU_TRANSFORM_2D,2,NULL,vtxbuf);
-		u[0] += sw;
-	}
-#endif
 	GuListSafety();
 	return 0;
 }
 
 inline static int StaticDrawModiGraph( int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4,DXPGRAPHDATA* gptr, int TransFlag )
 {
-	//TRIANGLESTRIPで一括描画するようにすれば頂点及び描画コマンドの転送が大幅に減らせる。特に大きなグラフィックを表示するとき有用かな？
-	if(gptr == NULL)return -1;
-	if(gptr->tex == NULL)return -1;
+	if(!gptr)return -1;
+	if(!gptr->tex)return -1;
 	GUSTART;
 	if(SetTexture2(gptr->tex,TransFlag) == -1)return -1;
 	int sw = gusettings.slice * 2 / PSM2BYTEx2(gptr->tex->psm);	/*何ピクセルごとにsliceするか*/
-#ifdef USE_OPTIMIZED_VERTEXBUFFER090410
-
-//新しいコードここから----
 	int count = (gptr->u1 - gptr->u0 + sw - 1) / sw;
 	int u = gptr->u0,i = 1;
 	DXPVERTEX_2DTEX *vtxbuf = (DXPVERTEX_2DTEX*)sceGuGetMemory(sizeof(DXPVERTEX_2DTEX) * 2 * (count + 1));
 	if(vtxbuf == NULL)return -1;
+	register float invu1_u0 = 1.0f / (gptr->u1 - gptr->u0);
 
 	vtxbuf[0].u = u;
 	vtxbuf[0].v = gptr->v0;
-	vtxbuf[0].x = x1 + (float)(x2 - x1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
-	vtxbuf[0].y = y1 + (float)(y2 - y1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+	vtxbuf[0].x = x1 + (x2 - x1) * (u - gptr->u0) * invu1_u0;
+	vtxbuf[0].y = y1 + (y2 - y1) * (u - gptr->u0) * invu1_u0;
 	vtxbuf[0].z = gusettings.z_2d;
 	vtxbuf[1].u = u;
 	vtxbuf[1].v = gptr->v1;
-	vtxbuf[1].x = x4 + (float)(x3 - x4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
-	vtxbuf[1].y = y4 + (float)(y3 - y4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+	vtxbuf[1].x = x4 + (x3 - x4) * (u - gptr->u0) * invu1_u0;
+	vtxbuf[1].y = y4 + (y3 - y4) * (u - gptr->u0) * invu1_u0;
 	vtxbuf[1].z = gusettings.z_2d;
 	while(u < gptr->u1)
 	{
 		u = MIN(u + sw,gptr->u1);
 		vtxbuf[(i<<1)+0].u = u;
 		vtxbuf[(i<<1)+0].v = gptr->v0;
-		vtxbuf[(i<<1)+0].x = x1 + (float)(x2 - x1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[(i<<1)+0].y = y1 + (float)(y2 - y1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+0].x = x1 + (x2 - x1) * (u - gptr->u0) * invu1_u0;
+		vtxbuf[(i<<1)+0].y = y1 + (y2 - y1) * (u - gptr->u0) * invu1_u0;
 		vtxbuf[(i<<1)+0].z = gusettings.z_2d;
 		vtxbuf[(i<<1)+1].u = u;
 		vtxbuf[(i<<1)+1].v = gptr->v1;
-		vtxbuf[(i<<1)+1].x = x4 + (float)(x3 - x4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[(i<<1)+1].y = y4 + (float)(y3 - y4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+1].x = x4 + (x3 - x4) * (u - gptr->u0) * invu1_u0;
+		vtxbuf[(i<<1)+1].y = y4 + (y3 - y4) * (u - gptr->u0) * invu1_u0;
 		vtxbuf[(i<<1)+1].z = gusettings.z_2d;
 		++i;
 	}
-	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2DTEX) * 2 * (count + 1));
+//	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2DTEX) * 2 * (count + 1));
 	sceGuDrawArray(GU_TRIANGLE_STRIP,DXP_VTYPE_2DTEX | GU_TRANSFORM_2D,2 * (count + 1),NULL,vtxbuf);
-//ここまで----
-#else
-	int u[2];
-	u[0] = gptr->u0;
-	while(u[0] < gptr->u1)
-	{
-		u[1] = MIN(u[0] + sw,gptr->u1);
-		DXPVERTEX_2DTEX *vtxbuf = (DXPVERTEX_2DTEX*)sceGuGetMemory(sizeof(DXPVERTEX_2DTEX) * 4);
-		if(vtxbuf == NULL)return -1;
-		vtxbuf[0].u = u[0];
-		vtxbuf[0].v = gptr->v0;
-		vtxbuf[0].x = x1 + (float)(x2 - x1) * (u[0] - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[0].y = y1 + (float)(y2 - y1) * (u[0] - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[0].z = gusettings.z_2d;
-
-		vtxbuf[1].u = u[1];
-		vtxbuf[1].v = gptr->v0;
-		vtxbuf[1].x = x1 + (float)(x2 - x1) * (u[1] - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[1].y = y1 + (float)(y2 - y1) * (u[1] - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[1].z = gusettings.z_2d;
-
-		vtxbuf[2].u = u[1];
-		vtxbuf[2].v = gptr->v1;
-		vtxbuf[2].x = x4 + (float)(x3 - x4) * (u[1] - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[2].y = y4 + (float)(y3 - y4) * (u[1] - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[2].z = gusettings.z_2d;
-
-		vtxbuf[3].u = u[0];
-		vtxbuf[3].v = gptr->v1;
-		vtxbuf[3].x = x4 + (float)(x3 - x4) * (u[0] - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[3].y = y4 + (float)(y3 - y4) * (u[0] - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[3].z = gusettings.z_2d;
-
-		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2DTEX) * 4);
-		sceGuDrawArray(GU_TRIANGLE_FAN,DXP_VTYPE_2DTEX | GU_TRANSFORM_2D,4,NULL,vtxbuf);
-		u[0] += sw;
-	}
-#endif	
 	GuListSafety();
 	return 0;
 }
@@ -569,22 +505,21 @@ inline static int StaticDrawModiGraphF( float x1,float y1,float x2,float y2,floa
 	GUSTART;
 	if(SetTexture2(gptr->tex,TransFlag) == -1)return -1;
 	int sw = gusettings.slice * 2 / PSM2BYTEx2(gptr->tex->psm);	/*何ピクセルごとにsliceするか*/
-#ifdef USE_OPTIMIZED_VERTEXBUFFER090410
-//新しいコードここから----
 	int count = (gptr->u1 - gptr->u0 + sw - 1) / sw;
 	int u = gptr->u0,i = 1;
 	DXPVERTEX_2DTEX_F *vtxbuf = (DXPVERTEX_2DTEX_F*)sceGuGetMemory(sizeof(DXPVERTEX_2DTEX_F) * 2 * (count + 1));
 	if(vtxbuf == NULL)return -1;
+	register float invu1_u0 = 1.0f / (gptr->u1 - gptr->u0);
 
 	vtxbuf[0].u = u;
 	vtxbuf[0].v = gptr->v0;
-	vtxbuf[0].x = x1 + (float)(x2 - x1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
-	vtxbuf[0].y = y1 + (float)(y2 - y1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+	vtxbuf[0].x = x1 + (x2 - x1) * (u - gptr->u0) * invu1_u0;
+	vtxbuf[0].y = y1 + (y2 - y1) * (u - gptr->u0) * invu1_u0;
 	vtxbuf[0].z = gusettings.z_2d;
 	vtxbuf[1].u = u;
 	vtxbuf[1].v = gptr->v1;
-	vtxbuf[1].x = x4 + (float)(x3 - x4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
-	vtxbuf[1].y = y4 + (float)(y3 - y4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+	vtxbuf[1].x = x4 + (x3 - x4) * (u - gptr->u0) * invu1_u0;
+	vtxbuf[1].y = y4 + (y3 - y4) * (u - gptr->u0) * invu1_u0;
 	vtxbuf[1].z = gusettings.z_2d;
 	while(u < gptr->u1)
 	{
@@ -601,46 +536,8 @@ inline static int StaticDrawModiGraphF( float x1,float y1,float x2,float y2,floa
 		vtxbuf[(i<<1)+1].z = gusettings.z_2d;
 		++i;
 	}
-	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2DTEX_F) * 2 * (count + 1));
+//	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2DTEX_F) * 2 * (count + 1));
 	sceGuDrawArray(GU_TRIANGLE_STRIP,DXP_VTYPE_2DTEX_F | GU_TRANSFORM_2D,2 * (count + 1),NULL,vtxbuf);
-//ここまで----
-#else
-	int u[2];
-	u[0] = gptr->u0;
-	while(u[0] < gptr->u1)
-	{
-		u[1] = MIN(u[0] + sw,gptr->u1);
-		DXPVERTEX_2DTEX_F *vtxbuf = (DXPVERTEX_2DTEX_F*)sceGuGetMemory(sizeof(DXPVERTEX_2DTEX_F) * 4);
-		if(vtxbuf == NULL)return -1;
-		vtxbuf[0].u = u[0];
-		vtxbuf[0].v = gptr->v0;
-		vtxbuf[0].x = x1 + (float)(x2 - x1) * (u[0] - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[0].y = y1 + (float)(y2 - y1) * (u[0] - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[0].z = gusettings.z_2d;
-
-		vtxbuf[1].u = u[1];
-		vtxbuf[1].v = gptr->v0;
-		vtxbuf[1].x = x1 + (float)(x2 - x1) * (u[1] - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[1].y = y1 + (float)(y2 - y1) * (u[1] - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[1].z = gusettings.z_2d;
-
-		vtxbuf[2].u = u[1];
-		vtxbuf[2].v = gptr->v1;
-		vtxbuf[2].x = x4 + (float)(x3 - x4) * (u[1] - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[2].y = y4 + (float)(y3 - y4) * (u[1] - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[2].z = gusettings.z_2d;
-
-		vtxbuf[3].u = u[0];
-		vtxbuf[3].v = gptr->v1;
-		vtxbuf[3].x = x4 + (float)(x3 - x4) * (u[0] - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[3].y = y4 + (float)(y3 - y4) * (u[0] - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[3].z = gusettings.z_2d;
-
-		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2DTEX_F) * 4);
-		sceGuDrawArray(GU_TRIANGLE_FAN,DXP_VTYPE_2DTEX_F | GU_TRANSFORM_2D,4,NULL,vtxbuf);
-		u[0] += sw;
-	}
-#endif
 	GuListSafety();
 	return 0;
 }

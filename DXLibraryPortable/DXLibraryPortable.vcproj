@@ -59,6 +59,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\dxppsplib.c"
+				>
+			</File>
+			<File
 				RelativePath=".\zenkaku.c"
 				>
 			</File>
@@ -67,6 +71,10 @@
 				>
 				<File
 					RelativePath=".\dxpgu.c"
+					>
+				</File>
+				<File
+					RelativePath=".\dxpgu_admin.c"
 					>
 				</File>
 				<File
@@ -79,6 +87,14 @@
 				</File>
 				<File
 					RelativePath=".\dxpgu_load.c"
+					>
+				</File>
+				<File
+					RelativePath=".\dxpjpeg.c"
+					>
+				</File>
+				<File
+					RelativePath=".\dxppng.c"
 					>
 				</File>
 				<File
@@ -189,6 +205,10 @@
 		</File>
 		<File
 			RelativePath=".\TODO.txt"
+			>
+		</File>
+		<File
+			RelativePath=".\ソースコード構成.txt"
 			>
 		</File>
 	</Files>
