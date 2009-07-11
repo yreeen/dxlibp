@@ -114,18 +114,10 @@ int	DrawRotaGraphF(float x,float y,float ExtRate,float Angle,int gh,int trans,in
 	if(!gptr)return -1;
 	register float x1,x2,x3,x4,y1,y2,y3,y4;
 	register float x1_,x2_,x3_,x4_,y1_,y2_,y3_,y4_;
-	x2 = x3 = (gptr->u1 - gptr->u0) / 2;
-	x1 = x4 = -x3;
-	y3 = y4 = (gptr->v1 - gptr->v0) / 2;
-	y1 = y2 = -y3;
-	x1 *= ExtRate;
-	x2 *= ExtRate;
-	x3 *= ExtRate;
-	x4 *= ExtRate;
-	y1 *= ExtRate;
-	y2 *= ExtRate;
-	y3 *= ExtRate;
-	y4 *= ExtRate;
+
+	x1 = x4 = -(x2 = x3 = ((gptr->u1 - gptr->u0) >> 1) * ExtRate);
+	y1 = y2 = -(y3 = y4 = ((gptr->v1 - gptr->v0) >> 1) * ExtRate);
+	
 	register float s,c;
 	s = sinf(Angle);
 	c = cosf(Angle);
@@ -205,18 +197,10 @@ int	DrawRotaGraph2F(float x,float y,float cx,float cy,float ExtRate,float Angle,
 	if(!gptr)return -1;
 	register float x1,x2,x3,x4,y1,y2,y3,y4;
 	register float x1_,x2_,x3_,x4_,y1_,y2_,y3_,y4_;
-	x2 = x3 = (gptr->u1 - gptr->u0) - cx;
-	x1 = x4 = -cx;
-	y3 = y4 = (gptr->v1 - gptr->v0) - cy;
-	y1 = y2 = -cy;
-	x1 *= ExtRate;
-	x2 *= ExtRate;
-	x3 *= ExtRate;
-	x4 *= ExtRate;
-	y1 *= ExtRate;
-	y2 *= ExtRate;
-	y3 *= ExtRate;
-	y4 *= ExtRate;
+	x2 = x3 = ((gptr->u1 - gptr->u0) - cx) * ExtRate;
+	x1 = x4 = -cx * ExtRate;
+	y3 = y4 = ((gptr->v1 - gptr->v0) - cy) * ExtRate;
+	y1 = y2 = -cy * ExtRate;
 	register float s,c;
 	s = sinf(Angle);
 	c = cosf(Angle);
@@ -315,7 +299,6 @@ int	DrawPixel( int x, int y, int Color)
 //	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 2);
 	sceGuDrawArray(GU_LINES,DXP_VTYPE_2D | GU_TRANSFORM_2D,2,0,vtxbuf);
 	return 0;
-
 }
 
 #define DXPOVAL_DIV	128
@@ -480,11 +463,11 @@ inline static int StaticDrawModiGraph( int x1, int y1, int x2, int y2, int x3, i
 	while(u < gptr->u1)
 	{
 		u = MIN(u + sw,gptr->u1);
-		vtxbuf[(i<<1)+0].u = u;
-		vtxbuf[(i<<1)+0].v = gptr->v0;
-		vtxbuf[(i<<1)+0].x = x1 + (x2 - x1) * (u - gptr->u0) * invu1_u0;
-		vtxbuf[(i<<1)+0].y = y1 + (y2 - y1) * (u - gptr->u0) * invu1_u0;
-		vtxbuf[(i<<1)+0].z = gusettings.z_2d;
+		vtxbuf[i<<1].u = u;
+		vtxbuf[i<<1].v = gptr->v0;
+		vtxbuf[i<<1].x = x1 + (x2 - x1) * (u - gptr->u0) * invu1_u0;
+		vtxbuf[i<<1].y = y1 + (y2 - y1) * (u - gptr->u0) * invu1_u0;
+		vtxbuf[i<<1].z = gusettings.z_2d;
 		vtxbuf[(i<<1)+1].u = u;
 		vtxbuf[(i<<1)+1].v = gptr->v1;
 		vtxbuf[(i<<1)+1].x = x4 + (x3 - x4) * (u - gptr->u0) * invu1_u0;
@@ -524,15 +507,15 @@ inline static int StaticDrawModiGraphF( float x1,float y1,float x2,float y2,floa
 	while(u < gptr->u1)
 	{
 		u = MIN(u + sw,gptr->u1);
-		vtxbuf[(i<<1)+0].u = u;
-		vtxbuf[(i<<1)+0].v = gptr->v0;
-		vtxbuf[(i<<1)+0].x = x1 + (float)(x2 - x1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[(i<<1)+0].y = y1 + (float)(y2 - y1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[(i<<1)+0].z = gusettings.z_2d;
+		vtxbuf[i<<1].u = u;
+		vtxbuf[i<<1].v = gptr->v0;
+		vtxbuf[i<<1].x = x1 + (x2 - x1) * (u - gptr->u0) * invu1_u0;
+		vtxbuf[i<<1].y = y1 + (y2 - y1) * (u - gptr->u0) * invu1_u0;
+		vtxbuf[i<<1].z = gusettings.z_2d;
 		vtxbuf[(i<<1)+1].u = u;
 		vtxbuf[(i<<1)+1].v = gptr->v1;
-		vtxbuf[(i<<1)+1].x = x4 + (float)(x3 - x4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
-		vtxbuf[(i<<1)+1].y = y4 + (float)(y3 - y4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+1].x = x4 + (x3 - x4) * (u - gptr->u0) * invu1_u0;
+		vtxbuf[(i<<1)+1].y = y4 + (y3 - y4) * (u - gptr->u0) * invu1_u0;
 		vtxbuf[(i<<1)+1].z = gusettings.z_2d;
 		++i;
 	}

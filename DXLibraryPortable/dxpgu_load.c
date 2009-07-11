@@ -72,128 +72,6 @@ int DerivationGraph( int SrcX, int SrcY,int Width, int Height, int src )
 	++res->tex->refcount;
 	return res->handle;
 }
-//#define	CODE090405hvhkrhIMnI
-#ifdef	CODE090405hvhkrhIMnI
-//シューティング大好き氏のコード。大規模仕様変更のため使用不能になりました。
-u16	TextureGetColor16(DXPTEXTURE *texptr,int Sx,int Sy)
-{
-	if(texptr == NULL)return 0;
-	u16* TEXRAM = texptr->vramflag ? sceGeEdramGetAddr() + texptr->pvram->flags : texptr->pmemory;
-	return TEXRAM[texptr->pitch * Sy + Sx];
-}
-
-//32bitアルファ有りフォーマット固定
-u32	TextureGetColor32(DXPTEXTURE *texptr,int Sx,int Sy)
-{
-	if(texptr == NULL)return 0;
-	u32* TEXRAM = texptr->vramflag ? sceGeEdramGetAddr() + texptr->pvram->flags : texptr->pmemory;
-	return TEXRAM[texptr->pitch * Sy + Sx];
-}
-
-//指定したテクスチャの任意座標へ指定した色情報をセット
-void	TextureSetColor16(DXPTEXTURE *texptr,int Sx,int Sy,u16 color)
-{
-	if(texptr == NULL)return 0;
-	u16* TEXRAM = texptr->vramflag ? sceGeEdramGetAddr() + texptr->pvram->flags : texptr->pmemory;
-	TEXRAM[texptr->pitch * Sy + Sx] = color;
-}
-//32bitアルファ有りフォーマット固定
-void	TextureSetColor32(DXPTEXTURE *texptr,int Sx,int Sy,u32 color)
-{
-	if(texptr == NULL)return 0;
-	u32* TEXRAM = texptr->vramflag ? sceGeEdramGetAddr() + texptr->pvram->flags : texptr->pmemory;
-	TEXRAM[texptr->pitch * Sy + Sx] = color;
-}
-
-//範囲コピー用 Swizzleされていないこと前提
-int	TextureCopy16(int TextureNo1,int TextureNo2,int No1Sx,int No1Sy,int No2Sx,int No2Sy, int width, int height)
-{
-	//if (texarray[TextureNo1].flags != TEXTUREFLAGS_XXXX ) return -1;
-	//if (texarray[TextureNo2].flags != TEXTUREFLAGS_XXXX ) return -2;
-	DXPTEXTURE *texptr[2];
-	texptr[0] = GraphHandle2Ptr(TextureNo1);
-	texptr[1] = GraphHandle2Ptr(TextureNo2);
-	if(texptr[0] == NULL)return -1;
-	if(texptr[1] == NULL)return -1;
-	int i;
-	int j;
-	for(i=0;i<height;i++) {
-		for(j=0;j<width;j++) {
-			TextureSetColor16(texptr[0],No1Sx + j,No1Sy + i,TextureGetColor16(texptr[1],No2Sx + j,No2Sy + i));
-		}
-	}
-	return 0;
-}
-int	TextureCopy32(int TextureNo1,int TextureNo2,int No1Sx,int No1Sy,int No2Sx,int No2Sy, int width, int height)
-{
-	//if (texarray[TextureNo1].flags != TEXTUREFLAGS_XXXX ) return -1;
-	//if (texarray[TextureNo2].flags != TEXTUREFLAGS_XXXX ) return -2;
-	DXPTEXTURE *texptr[2];
-	texptr[0] = GraphHandle2Ptr(TextureNo1);
-	texptr[1] = GraphHandle2Ptr(TextureNo2);
-	if(texptr[0] == NULL)return -1;
-	if(texptr[1] == NULL)return -1;
-	int i;
-	int j;
-	for(i=0;i<height;i++) {
-		for(j=0;j<width;j++) {
-			TextureSetColor32(texptr[0],No1Sx + j,No1Sy + i,TextureGetColor32(texptr[1],No2Sx + j,No2Sy + i));
-		}
-	}
-	return 0;
-}
-
-int LoadDivGraph(const char *FileName , int AllNum , int XNum , int YNum , int XSize , int YSize , int *HandleBuf )
-{
-	int res = -1;
-
-	if(res == -1)res = LoadPngImage(FileName);
-	if(res == -1)res = LoadJpegImage(FileName);
-	//PSPのメモリの少なさから考えると先にDiv後の領域（XSizeｘYSizeｘカラーフォーマットｘAllNum）
-	//を確保したほうが歯抜けになりにくい
-	//でもとりあえずは読み込まないと画像のフォーマットがわからない
-	//妥協案としては
-	//（速度が速い方）
-	//LoadPngImageもしくはLoadJpegImageロードしたあと
-	//Div後の領域を確保してDivした後元の画像を破棄
-	//（速度が遅い方）
-	//LoadPngImageもしくはLoadJpegImageロードしたあと
-	//カラーフォーマットだけ取得した後一旦画像を破棄
-	//Div後の領域を確保して再度画像を読み込みdivしてから破棄
-
-	if(res == -1)return -1;
-	//int Wpsm = texarray[res].psm;
-	int i;
-	int j;
-	//for(i=0;i<AllNum;i++)
-	//{
-	//	HandleBuf[i] = MakeGraph(XSize,YSize,GU_PSM_8888);
-	//この関数でべき乗に確保してるようなので縦横サイズをそのまま渡してる
-	//}
-	//安全策はとりあえず省略（メモリ取れなかったら・・・
-	//まあPSP上でPC用素材をそのまま使うというのがそもそもだし
-	int k;
-	int wres;
-	for(i=0;i<YNum;i++)
-	{
-		for(j=0;j<XNum;j++)
-		{
-			k = i*XNum + j;
-			wres = MakeGraph(XSize,YSize,GU_PSM_8888);
-			TextureCopy32(wres,res,0,0,j*XSize,i*YSize,XSize,YSize);
-			if(gusettings.flags[0] & GPUSETTINGFLAGS_0_CREATESWIZZLEDGRAPH)
-				SwizzleGraph(wres);
-			if(gusettings.flags[0] & GPUSETTINGFLAGS_0_CREATEVRAMGRAPH)
-				MoveGraphToVRAM(wres);
-			HandleBuf[k] = wres;
-		}
-	}
-	DeleteGraph(res);
-	sceKernelDcacheWritebackAll();
-	return res == -1 ? -1 : 0;
-}
-
-#else
 int LoadDivGraph( const char *FileName, int AllNum, int XNum, int YNum, int XSize, int YSize, int *HandleBuf)
 {
 	DXPTEXTURE2 *tex = NULL;
@@ -236,29 +114,6 @@ int LoadDivGraph( const char *FileName, int AllNum, int XNum, int YNum, int XSiz
 		MoveGraphToVRAM(HandleBuf[0]);
 	return 0;
 }
-#endif
-
-
-
-
-//int PSM2BYTEx2(int psm)
-//{
-//	switch(psm)
-//	{
-//	case GU_PSM_T4:
-//		return 1;
-//	case GU_PSM_T8:
-//		return 2;
-//	case GU_PSM_4444:
-//	case GU_PSM_5551:
-//	case GU_PSM_5650:
-//		return 4;
-//	case GU_PSM_8888:
-//		return 8;
-//	default:
-//		return 0;
-//	}
-//}
 
 void swizzle_fast(u8* out, const u8* in, unsigned int width, unsigned int height)
 {
@@ -423,49 +278,6 @@ int MoveGraphToDDR(int gh)	/*グラフィックをメインメモリに移動す
 	return 0;
 }
 
-//int LoadRAWData(const char *FileName,int SizeX,int SizeY,int Format)
-//{
-//	int i;
-//	int fh;
-//	int gh;
-//	int depth;
-//	if((fh = FileRead_open(FileName)) == -1)return -1;
-//	if((gh = MakeGraph(SizeX,SizeY,Format)) == -1)
-//	{
-//		FileRead_close(fh);
-//		return -1;
-//	}
-//	DXPTEXTURE *texptr = GraphHandle2Ptr(gh);
-//	if(texptr == NULL)
-//	{
-//		DeleteGraph(gh);
-//		FileRead_close(fh);
-//		return -1;
-//	}
-//	depth = Format == GU_PSM_8888 ? 4 : 2;
-//	for(i = 0;i < texptr->mv;++i)
-//	{
-//		FileRead_seek(fh,i * SizeX * depth,SEEK_SET);
-//		FileRead_read(texptr->pmemory + i * texptr->pitch * depth,i * texptr->pitch * depth,fh);
-//	}
-////	FileRead_read(texarray[gh].pmemory,texarray[gh].mu * texarray[gh].mv * depth,fh);
-//	FileRead_close(fh);
-//	sceKernelDcacheWritebackAll();
-////	sceKernelDcacheWritebackRange(texarray[gh].pmemory,texarray[gh].pitch * texarray[gh].height * depth);
-//
-//	/*必要があり、かつ可能ならばswizzleする*/
-//	if(gusettings.flags[0] & GPUSETTINGFLAGS_0_CREATESWIZZLEDGRAPH)
-//	{
-//		//swizzleする
-//		SwizzleGraph(gh);
-//	}
-//	/*必要があり、かつ可能ならばVRAMに転送する*/
-//	if(gusettings.flags[0] & GPUSETTINGFLAGS_0_CREATEVRAMGRAPH)
-//	{
-//		MoveGraphToVRAM(gh);
-//	}
-//	return gh;
-//}
 
 int ConvertGraphFormat(int gh,int psm)
 /*
