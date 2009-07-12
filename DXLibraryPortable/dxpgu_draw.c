@@ -113,28 +113,30 @@ int	DrawRotaGraphF(float x,float y,float ExtRate,float Angle,int gh,int trans,in
 	DXPGRAPHDATA* gptr = GraphHandle2Ptr(gh);
 	if(!gptr)return -1;
 	register float x1,x2,x3,x4,y1,y2,y3,y4;
-	register float x1_,x2_,x3_,x4_,y1_,y2_,y3_,y4_;
-
-	x1 = x4 = -(x2 = x3 = ((gptr->u1 - gptr->u0) >> 1) * ExtRate);
-	y1 = y2 = -(y3 = y4 = ((gptr->v1 - gptr->v0) >> 1) * ExtRate);
-	
 	register float s,c;
+	register float eus,euc,evs,evc;
 	s = sinf(Angle);
 	c = cosf(Angle);
-
-#define XROT(VARNUM)	\
-	{	\
-	x##VARNUM##_ = x##VARNUM * c - y##VARNUM * s + x;	\
-	y##VARNUM##_ = x##VARNUM * s + y##VARNUM * c + y;	\
-	}
-
-	XROT(1)
-	XROT(2)
-	XROT(3)
-	XROT(4)
-#undef XROT
-	if(turn)return StaticDrawModiGraphF(x2_,y2_,x1_,y1_,x4_,y4_,x3_,y3_,gptr,trans);
-	return StaticDrawModiGraphF(x1_,y1_,x2_,y2_,x3_,y3_,x4_,y4_,gptr,trans);
+	eus = ((gptr->u1 - gptr->u0) >> 1) * ExtRate;
+	evs = ((gptr->v1 - gptr->v0) >> 1) * ExtRate;
+	euc = eus * c;
+	evc = evs * c;
+	eus *= s;
+	evs *= s;
+	x3 = -(x1 = evs - euc);
+	x4 = -(x2 = euc + evs);
+	y1 = -(y3 = eus + evc);
+	y4 = -(y2 = eus - evc);
+	x1 += x;
+	x2 += x;
+	x3 += x;
+	x4 += x;
+	y1 += y;
+	y2 += y;
+	y3 += y;
+	y4 += y;
+	if(turn)return StaticDrawModiGraphF(x2,y2,x1,y1,x4,y4,x3,y3,gptr,trans);
+	return StaticDrawModiGraphF(x1,y1,x2,y2,x3,y3,x4,y4,gptr,trans);
 //ｘ’＝ｘcosθ-ysinθ
 //ｙ’＝ｘsinθ+ycosθ
 }
