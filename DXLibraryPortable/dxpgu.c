@@ -438,7 +438,7 @@ int EndGUEngine()
 	return 0;
 }
 
-void	dxpDisplayWaitVblankStart()
+static void	dxpDisplayWaitVblankStart()
 {
 	while(1)
 	{
@@ -452,7 +452,7 @@ void	dxpDisplayWaitVblankStart()
 	return;
 }
 
-void	WaitDrawProcess()
+static void	WaitDrawProcess()
 {
 	if(gusettings.flags[0] & GPUSETTINGFLAGS_0_GUSTART)		
 	{														
@@ -463,7 +463,7 @@ void	WaitDrawProcess()
 	return;
 }
 
-int		ScreenFlipMode(int Mode)
+int	ScreenFlipMode(int Mode)
 {
 	if(Mode < 0) return -1;
 	if(Mode > 4) return -1;
@@ -472,7 +472,7 @@ int		ScreenFlipMode(int Mode)
 	return 0;
 }
 
-int		ScreenFlip()
+int	ScreenFlip()
 {
 	void *p;
 	GUFINISH
