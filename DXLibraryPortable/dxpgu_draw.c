@@ -257,7 +257,6 @@ int DrawBox(int x1,int y1,int x2,int y2,int color,int fillflag)
 		vtxbuf[1].x = x2;
 		vtxbuf[1].y = y2;
 		vtxbuf[1].z = gusettings.z_2d;
-//		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 2);
 		sceGuDrawArray(GU_SPRITES,DXP_VTYPE_2D | GU_TRANSFORM_2D,2,0,vtxbuf);
 	}
 	else
@@ -279,7 +278,6 @@ int DrawBox(int x1,int y1,int x2,int y2,int color,int fillflag)
 		vtxbuf[4].x = x1;
 		vtxbuf[4].y = y1;
 		vtxbuf[4].z = gusettings.z_2d;
-//		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 5);
 		sceGuDrawArray(GU_LINE_STRIP,DXP_VTYPE_2D | GU_TRANSFORM_2D,5,0,vtxbuf);
 	}
 	return 0;
@@ -298,7 +296,6 @@ int	DrawPixel( int x, int y, int Color)
 	vtxbuf[1].x = x + 1;
 	vtxbuf[1].y = y + 1;
 	vtxbuf[1].z = gusettings.z_2d;
-//	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 2);
 	sceGuDrawArray(GU_LINES,DXP_VTYPE_2D | GU_TRANSFORM_2D,2,0,vtxbuf);
 	return 0;
 }
@@ -323,7 +320,6 @@ int	DrawCircle( int x, int y, int r, int Color,int fill)
 		vtxbuf[i].z = gusettings.z_2d;
 	}
 
-//	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * (2 + DXPOVAL_DIV));
 	if(fill)
 		sceGuDrawArray(GU_TRIANGLE_FAN,DXP_VTYPE_2D | GU_TRANSFORM_2D,DXPOVAL_DIV + 2,0,vtxbuf);
 	else
@@ -349,7 +345,6 @@ int DrawTriangle(int x1,int y1,int x2,int y2,int x3,int y3,int color,int fill)
 		vtxbuf[2].x = x3;
 		vtxbuf[2].y = y3;
 		vtxbuf[2].z = gusettings.z_2d;
-//		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 3);
 		sceGuDrawArray(GU_TRIANGLES,DXP_VTYPE_2D | GU_TRANSFORM_2D,3,0,vtxbuf);
 	}
 	else
@@ -368,7 +363,6 @@ int DrawTriangle(int x1,int y1,int x2,int y2,int x3,int y3,int color,int fill)
 		vtxbuf[3].x = x1;
 		vtxbuf[3].y = y1;
 		vtxbuf[3].z = gusettings.z_2d;
-//		sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2D) * 4);
 		sceGuDrawArray(GU_LINE_STRIP,DXP_VTYPE_2D | GU_TRANSFORM_2D,4,0,vtxbuf);
 	}
 	return 0;
@@ -396,7 +390,6 @@ int DrawPolygon3D(VERTEX_3D *Vertex,int PolygonNum,int gh,int trans)
 			vtxbuf[i * 3 + j].z = Vertex[i * 3 + j].pos.z;
 		}
 	}
-//	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_3DTEX_F) * PolygonNum * 3);
 	sceGumDrawArray(GU_TRIANGLES,DXP_VTYPE_3DTEX_F | GU_TRANSFORM_3D,PolygonNum * 3,0,vtxbuf);
 	sceGuShadeModel(GU_FLAT);
 	GuListSafety();
@@ -433,7 +426,6 @@ inline static int StaticDrawExtendGraph(int x1,int y1,int x2,int y2,DXPGRAPHDATA
 		u0 += sw;
 		++i;
 	}
-//	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2DTEX) * 2 * count);
 	sceGuDrawArray(GU_SPRITES,DXP_VTYPE_2DTEX | GU_TRANSFORM_2D,2 * count,NULL,vtxbuf);
 	GuListSafety();
 	return 0;
@@ -477,7 +469,6 @@ inline static int StaticDrawModiGraph( int x1, int y1, int x2, int y2, int x3, i
 		vtxbuf[(i<<1)+1].z = gusettings.z_2d;
 		++i;
 	}
-//	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2DTEX) * 2 * (count + 1));
 	sceGuDrawArray(GU_TRIANGLE_STRIP,DXP_VTYPE_2DTEX | GU_TRANSFORM_2D,2 * (count + 1),NULL,vtxbuf);
 	GuListSafety();
 	return 0;
@@ -521,8 +512,195 @@ inline static int StaticDrawModiGraphF( float x1,float y1,float x2,float y2,floa
 		vtxbuf[(i<<1)+1].z = gusettings.z_2d;
 		++i;
 	}
-//	sceKernelDcacheWritebackRange(vtxbuf,sizeof(DXPVERTEX_2DTEX_F) * 2 * (count + 1));
 	sceGuDrawArray(GU_TRIANGLE_STRIP,DXP_VTYPE_2DTEX_F | GU_TRANSFORM_2D,2 * (count + 1),NULL,vtxbuf);
 	GuListSafety();
 	return 0;
 }
+
+
+
+int DrawExtendGraphCommon(int x1,int y1,int x2,int y2,DXPGRAPHDATA* gptr)
+{
+	if(gptr == NULL)return -1;
+	if(gptr->tex == NULL)return -1;
+	int sw = gusettings.slice * 2 / PSM2BYTEx2(gptr->tex->psm);	/*何ピクセルごとにsliceするか*/
+	int u[2];
+	u[0] = gptr->u0;
+	int count = (gptr->u1 - gptr->u0 + sw - 1) / sw;
+	DXPVERTEX_2DTEX *vtxbuf = (DXPVERTEX_2DTEX*)sceGuGetMemory(sizeof(DXPVERTEX_2DTEX) * 2 * count);
+	if(vtxbuf == NULL)return -1;
+	int i = 0;
+	while(u[0] < gptr->u1)
+	{
+		u[1] = MIN(u[0] + sw,gptr->u1);
+		vtxbuf[(i<<1)+0].u = u[0];
+		vtxbuf[(i<<1)+0].v = gptr->v0;
+		vtxbuf[(i<<1)+0].x = x1 + (float)(x2 - x1) * (u[0] - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+0].y = y1;
+		vtxbuf[(i<<1)+0].z = gusettings.z_2d;
+		vtxbuf[(i<<1)+1].u = u[1];
+		vtxbuf[(i<<1)+1].v = gptr->v1;
+		vtxbuf[(i<<1)+1].x = x1 + (float)(x2 - x1) * (u[1] - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+1].y = y2;
+		vtxbuf[(i<<1)+1].z = gusettings.z_2d;
+		u[0] += sw;
+		++i;
+	}
+	sceGuDrawArray(GU_SPRITES,DXP_VTYPE_2DTEX | GU_TRANSFORM_2D,2 * count,NULL,vtxbuf);
+	GuListSafety();
+	return 0;
+}
+
+int DrawGraphBoost(int x,int y)
+{
+	if(bptr == NULL)return -1;
+	DrawExtendGraphCommon(x,y,x + bptr->u1 - bptr->u0,y + bptr->v1 - bptr->v0,bptr);
+	return 0;
+}
+
+int DrawGraphCentre(int x,int y,int gh,int trans)
+{
+	DXPGRAPHDATA *gptr = GraphHandle2Ptr(gh);
+	if(gptr == NULL)	return -1;
+	int	vx = (gptr->u1 - gptr->u0) / 2;
+	int	vy = (gptr->v1 - gptr->v0) / 2;
+	return StaticDrawExtendGraph(x - vx ,y - vy,x + vx,y + vy,gptr,trans);
+}
+
+int DrawGraphCentreBoost(int x,int y)
+{
+	if(bptr == NULL)return -1;
+	int	vx = (bptr->u1 - bptr->u0) / 2;
+	int	vy = (bptr->v1 - bptr->v0) / 2;
+	DrawExtendGraphCommon(x - vx ,y - vy,x + vx,y + vy,bptr);
+	return 0;
+}
+
+int DrawExtendGraphBoost(int x1,int y1,int x2,int y2)
+{
+	DrawExtendGraphCommon(x1,y1,x2,y2,bptr);
+	return 0;
+}
+
+
+int DrawModiGraphFCommon( float x1,float y1,float x2,float y2,float x3,float y3,float x4,float y4, DXPGRAPHDATA* gptr)
+{
+	if(gptr == NULL)return -1;
+	if(gptr->tex == NULL)return -1;
+	int sw = gusettings.slice * 2 / PSM2BYTEx2(gptr->tex->psm);	/*何ピクセルごとにsliceするか*/
+	int count = (gptr->u1 - gptr->u0 + sw - 1) / sw;
+	int u = gptr->u0,i = 1;
+	DXPVERTEX_2DTEX_F *vtxbuf = (DXPVERTEX_2DTEX_F*)sceGuGetMemory(sizeof(DXPVERTEX_2DTEX_F) * 2 * (count + 1));
+	if(vtxbuf == NULL)return -1;
+
+	vtxbuf[0].u = u;
+	vtxbuf[0].v = gptr->v0;
+	vtxbuf[0].x = x1 + (float)(x2 - x1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+	vtxbuf[0].y = y1 + (float)(y2 - y1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+	vtxbuf[0].z = gusettings.z_2d;
+	vtxbuf[1].u = u;
+	vtxbuf[1].v = gptr->v1;
+	vtxbuf[1].x = x4 + (float)(x3 - x4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+	vtxbuf[1].y = y4 + (float)(y3 - y4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+	vtxbuf[1].z = gusettings.z_2d;
+	while(u < gptr->u1)
+	{
+		u = MIN(u + sw,gptr->u1);
+		vtxbuf[(i<<1)+0].u = u;
+		vtxbuf[(i<<1)+0].v = gptr->v0;
+		vtxbuf[(i<<1)+0].x = x1 + (float)(x2 - x1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+0].y = y1 + (float)(y2 - y1) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+0].z = gusettings.z_2d;
+		vtxbuf[(i<<1)+1].u = u;
+		vtxbuf[(i<<1)+1].v = gptr->v1;
+		vtxbuf[(i<<1)+1].x = x4 + (float)(x3 - x4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+1].y = y4 + (float)(y3 - y4) * (u - gptr->u0) / (gptr->u1 - gptr->u0);
+		vtxbuf[(i<<1)+1].z = gusettings.z_2d;
+		++i;
+	}
+	sceGuDrawArray(GU_TRIANGLE_STRIP,DXP_VTYPE_2DTEX_F | GU_TRANSFORM_2D,2 * (count + 1),NULL,vtxbuf);
+	GuListSafety();
+	return 0;
+}
+
+int	DrawRotaGraphFBoost(float x,float y,float ExtRate,float Angle,int turn)
+{
+	if(!bptr)return -1;
+	register float x1,x2,x3,x4,y1,y2,y3,y4;
+	register float s,c;
+	register float eus,euc,evs,evc;
+	s = sinf(Angle);
+	c = cosf(Angle);
+	eus = ((bptr->u1 - bptr->u0) >> 1) * ExtRate;
+	evs = ((bptr->v1 - bptr->v0) >> 1) * ExtRate;
+	euc = eus * c;
+	evc = evs * c;
+	eus *= s;
+	evs *= s;
+	x3 = -(x1 = evs - euc);
+	x4 = -(x2 = euc + evs);
+	y1 = -(y3 = eus + evc);
+	y4 = -(y2 = eus - evc);
+	x1 += x;
+	x2 += x;
+	x3 += x;
+	x4 += x;
+	y1 += y;
+	y2 += y;
+	y3 += y;
+	y4 += y;
+	if(turn)
+		DrawModiGraphFCommon(x2,y2,x1,y1,x4,y4,x3,y3,bptr);
+	else
+		DrawModiGraphFCommon(x1,y1,x2,y2,x3,y3,x4,y4,bptr);
+	return 0;
+//ｘ’＝ｘcosθ-ysinθ
+//ｙ’＝ｘsinθ+ycosθ
+}
+/*
+テクスチャ関連の関数概略
+sceGuTexEnvColor	テクスチャブレンディングの定数を設定
+sceGuTexFunc		テクスチャブレンド方法を設定
+sceGuTexFilter		テクスチャフィルタリングの設定　ネアレストとバイリニアだけでいいかとｗ
+
+sceGuTexFlush		GPU内部のテクスチャキャッシュを飛ばす
+sceGuTexMapMode		テクスチャの張り方の指定
+
+sceGuTexMode		テクスチャフォーマットとかの指定
+sceGuTexImage		テクスチャを設定
+
+sceGuTexWrap		テクスチャのUV座標が限界突破したときどうするか設定
+
+sceGuTexOffset		テクスチャのUV座標に加算される値。2Dでは使えない
+sceGuTexProjMapMode	テクスチャのUV座標系に何を使うか	多分呼び出すことは無い
+sceGuTexScale		テクスチャのUV座標に乗算される値。2Dでは使えない
+sceGuTexSlope		不明
+sceGuTexSync		sceGuCopyImage()の終了を待つ
+sceGuTexLevelMode	みっぷマップの設定　当分使わないつもり
+
+
+ステータスの一覧
+#define GU_ALPHA_TEST		(0)		アルファテスト
+#define GU_DEPTH_TEST		(1)		深度テスト
+#define GU_SCISSOR_TEST		(2)		シザーテスト（描画矩形内にピクセルが収まっているかの判定）
+#define GU_STENCIL_TEST		(3)		ステンシルテスト	バッファの設定方法がよくわからない ディスプレイバッファのα成分を使うらしい
+#define GU_BLEND		(4)			ブレンドを使用する。
+#define GU_CULL_FACE		(5)		カリング	2Dでは使わない
+#define GU_DITHER		(6)			減色		よくわからない
+#define GU_FOG			(7)			フォグ		2Dではたぶｎつかわない
+#define GU_CLIP_PLANES		(8)		不明		サンプルではEnableになってる
+#define GU_TEXTURE_2D		(9)		テクスチャを張るかどうか
+#define GU_LIGHTING		(10)		ライティング	使わない
+#define GU_LIGHT0		(11)
+#define GU_LIGHT1		(12)
+#define GU_LIGHT2		(13)
+#define GU_LIGHT3		(14)
+#define GU_LINE_SMOOTH		(15)	斜めの線分の描画が綺麗になる。
+#define GU_PATCH_CULL_FACE	(16)	不明
+#define GU_COLOR_TEST		(17)	カラーテスト　カラーキーみたいなのができる？
+#define GU_COLOR_LOGIC_OP	(18)	多分カラーテストで使うものだと
+#define GU_FACE_NORMAL_REVERSE	(19)多分法線を反転して扱うのではないかと…
+#define GU_PATCH_FACE		(20)	高次曲面パッチを使う。2Dでは使わないよ…
+#define GU_FRAGMENT_2X		(21)	フラグメントとはピクセルのことらしい。それで…？
+
+*/

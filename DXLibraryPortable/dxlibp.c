@@ -46,8 +46,7 @@ u64	GetNowHiPerformanceCount()/*micros単位*/
 /*HOMEボタン監視*/
 static int exit_callback(int arg1, int arg2, void *common)
 {
-
-	sceKernelExitGame();
+	dxpdata.flags[0] |= DXPDATAFLAGS_0_HOMEEXIT;
 	return 0;
 }
 
@@ -115,12 +114,13 @@ int DxLib_IsInit()
 {
 	return dxpdata.flags[0] & DXPDATAFLAGS_0_INITIALIZED;
 }
+
 int DxLib_Init()
 {
 	if(DxLib_IsInit())return -1;
 	dxpdata.flags[0] |= DXPDATAFLAGS_0_INITIALIZING;
 	//sceUtilityLoadAvModule(PSP_AV_MODULE_AVCODEC);//MP3やJpegのデコードにつかうモジュールをロードする。
-	if(DxpAvModuleInit() != 1) return -2;
+	if(DxpAvModuleInit() != 1) return -1;
 
 	SetExitCallback();/*HOMEボタンコールバック関数のセット*/
 	InitInput();/*入力の初期化*/
@@ -134,11 +134,10 @@ int DxLib_Init()
 	dxpdata.flags[0] |= DXPDATAFLAGS_0_INITIALIZED;
 	return 0;
 }
+
 int DxLib_End()
 {
-//	StopMusic();
 	dxpdata.flags[0] &= (~DXPDATAFLAGS_0_INITIALIZED);
-	//sceUtilityUnloadAvModule(PSP_AV_MODULE_AVCODEC);
 	DxpAvModuleFree();
 	EndGUEngine();
 	return 0;
@@ -147,7 +146,7 @@ int DxLib_End()
 int ProcessMessage()
 {
 	RenewInput();
-//	ProcessAudio();
+	if(dxpdata.flags[0] & DXPDATAFLAGS_0_HOMEEXIT)return -1;
 	return 0;
 }
 
@@ -160,7 +159,7 @@ int WaitTimer(int time)
 	while(GetNowCount() - t0 < time)
 	{
 		sceKernelDelayThread(1000);
-		if(i % 30 == 0)ProcessMessage();
+		if(i % 30 == 0)if(ProcessMessage() == -1)return -1;
 		++i;
 	}
 	return 0;

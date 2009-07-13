@@ -322,11 +322,11 @@ DXPTEXTURE2* LoadJpegImage(const char *FileName)
 		free(rgbabuf);
 		return NULL;
 	}
-//	memcpy(texptr->pmemory,rgbabuf,4 * height * width);//この1行なぜ存在するのか理解不能。消し忘れかもｗ動作に影響なければ削除。
 	int i;
 	for(i = 0;i < height;++i)
 		memcpy(((u32*)texptr->pmemory) + texptr->pitch * i,((u32*)rgbabuf) + 512 * i,width * 4);
 	free(rgbabuf);
+	sceKernelDcacheWritebackAll();//全部書き込んじゃえ
 	return texptr;
 }
 #endif

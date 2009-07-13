@@ -1,7 +1,7 @@
 /****************************************************
-*		DXライブラリPortable	Ver0.4.14			*
+*		DXライブラリPortable	Ver0.4.16			*
 *		製作者	：夢瑞憂煉							*
-*		最終更新：2009/04/22						*
+*		最終更新：2009/07/13						*
 *		更新履歴はファイルの最後のほうにあります。	*
 ****************************************************/
 /****************************************************
@@ -23,6 +23,7 @@ PSPのプログラムを簡単に作れるような関数郡の提供が目的�
 
 なお、本家と完全互換の関数にはコメントをつけていません。
 
+描画
 ****************************************************
 ****************************************************
 		用語集とか									
@@ -209,8 +210,8 @@ extern "C" {
 		void AppLogAdd(const char *Format,...);
 		int sjis2unicode(u16 sjis,u16 *punicode);		//sjisの文字をUnicodeにします
 		int unicode2sjis(u16 unicode,u16 *psjis);		//Unicodeの文字をsjisにします
-		int unicodestr2sjisstr(const u16 *unis,char *sjiss);
-		int sjisstr2unicodestr(const char *sjiss,u16 *unis);
+		int unicodestr2sjisstr(const u16 *unis,char *sjiss);//第一引数の文字列を第二引数のバッファに格納します。
+		int sjisstr2unicodestr(const char *sjiss,u16 *unis);//第一引数の文字列を第二引数のバッファに格納します。
 #define AppLogAdd2(FMT,...)	AppLogAdd("%s,%s,%d,%s\t"FMT,__TIME__,__FILE__,__LINE__,__func__,##__VA_ARGS__);
 	/*入力関連関数*/
 		int InitInput();							/*初期化。通常は呼ばなくてもいい*/
@@ -241,7 +242,7 @@ extern "C" {
 		int SetTransColor( int Red , int Green , int Blue );
 		int SetDrawArea(int x1,int y1,int x2,int y2);
 		/*取得系*/
-		int GetDisplayFormat();
+		int GetDisplayFormat();				/*画面のフォーマットを取得*/
 		int GetColor(int red,int green,int blue);
 		int GraphSize2DataSize(int width,int height,int Format);				/*縦横の大きさとフォーマットからデータサイズを計算する。*/
 		int AppLogAdd_GraphicData(int gh);										/*グラフィックハンドルの情報を書き出す。デバッグ専用*/
@@ -270,7 +271,7 @@ extern "C" {
 		int DrawBox(int x1,int y1,int x2,int y2,int color,int fillflag);
 		int	DrawCircle( int x, int y, int r, int Color,int fill);
 		int	DrawGraph(int x,int y,int gh,int trans);
-		int DrawGraph2(int x,int y,int gh,int trans);
+		int DrawGraphCentre(int x,int y,int gh,int trans);/*描画座標が画像の中心となります*/
 		int DrawExtendGraph(int x1,int y1,int x2,int y2,int gh,int trans);
 		int	DrawModiGraph(int x1,int y1,int x2,int y2,int x3,int y3,int x4,int y4,int gh,int trans);
 		int	DrawTurnGraph(int x,int y,int gh,int trans);
@@ -281,27 +282,29 @@ extern "C" {
 		int	DrawRotaGraphF(float x,float y,float ExtRate,float Angle,int gh,int trans,int turn DXPDEFARG(0));
 		int	DrawRotaGraph2F(float x,float y,float cx,float cy,float ExtRate,float Angle,int gh,int trans,int turn DXPDEFARG(0));
 		int DrawPolygon3D(VERTEX_3D *Vertex,int PolygonNum,int GrHandle,int TransFlag);//テスト中です…
-		/*処理速度アップ用関数(使用にはライブラリ周りのスキルが必要)*/
-		int SetTexture(int handle,int TransFlag);
-		int SetBaseColor(u32 color);
-		void AccumulatedDrawCommandDispose();
-		int	DrawBoostGraphHandleSet(int gh);
-		int DrawGraphBoost(int x,int y);
-		int DrawGraph2Boost(int x,int y);
-		int DrawExtendGraphBoost(int x1,int y1,int x2,int y2);
-		int	DrawRotaGraphFBoost(float x,float y,float ExtRate,float Angle,int turn DXPDEFARG(0));
-		/*引数を本家に合わせたバージョン*/
+		/*引数を本家に合わせた（double型を使っている）バージョン*/
 		int	DrawRotaGraphCompatible(int x,int y,double ExtRate,double Angle,int gh,int trans,int turn DXPDEFARG(0));
 		int DrawRotaGraph2Compatible(int x,int y,int cx,int cy,double ExtRate,double Angle,int gh,int trans,int turn DXPDEFARG(0));
 		int	DrawRotaGraphFCompatible(float x,float y,double ExtRate,double Angle,int gh,int trans,int turn DXPDEFARG(0));
 		int	DrawRotaGraph2FCompatible(float x,float y,float cx,float cy,double ExtRate,double Angle,int gh,int trans,int turn DXPDEFARG(0));
 
+		/*処理速度アップ用関数
+		SetTextureで指定されたグラフィックを用いて描画します
+		テクスチャの検索と切り替えの処理を省略できるので、弾幕ゲー等の同じグラフィックを大量に使うアプリに役立ちます
+		Boost系以外の描画関数が呼ばれた時点で再度SetTextureを呼ばない限り描画できなくなります
+		*/
+		int SetTexture(int handle,int TransFlag);
+		void WaitDrawProcess();/*今までに発行された全ての描画コマンドの実行が終わるまで待ちます*/
+		int DrawGraphBoost(int x,int y);
+		int DrawGraphCentreBoost(int x,int y);/*描画座標が画像の中心となります*/
+		int DrawExtendGraphBoost(int x1,int y1,int x2,int y2);
+		int	DrawRotaGraphFBoost(float x,float y,float ExtRate,float Angle,int turn DXPDEFARG(0));
 		/*その他*/
 		int SwizzleGraph(int gh);	/*指定されたグラフィックをSwizzleする。ただし、メインメモリの空き容量が足りない（グラフィックの実サイズより少ない）と失敗します。*/
 		int UnswizzleGraph(int gh);	/*指定されたグラフィックをUnswizzleする。ただし、メインメモリの空き容量が足りない（グラフィックの実サイズより少ない）と失敗します。*/
 		int MoveGraphToDDR(int gh);	/*指定されたグラフィックがVRAM上にある場合はメインメモリに移動*/
 		int MoveGraphToVRAM(int gh);/*指定されたグラフィックがメインメモリにある場合はVRAM上に移動*/
-		void WaitGPUSync();			/*GPUが描画を終えるまで待つ*/
+		void WaitGPUSync();			/*GPUに発行された命令が全て処理されるまで待つ*/
 	/*文字列描画関連関数*/
 		int InitString();			/*はじめてDrawString系関数が呼ばれたときに呼び出されます。あらかじめ呼び出しておくのも手です。*/
 		int EndString();			/*フォントデータを全てメモリ上から開放します。（デフォルトフォント含む）*/
@@ -312,7 +315,7 @@ extern "C" {
 		int SetFontSize( int FontSize );
 		int SetFontSizeF( float FontSize );
 		int SetFontBackgroundColor(int Color);
-		int SetFontAlignment(int Position,int Width);
+		int SetFontAlignment(int Position,int Width);/*文字列の並び方を指定。DXP_FONT_ALIGN*/
 
 	/*音楽関連関数*/
 		/*設定系*/
@@ -323,8 +326,6 @@ extern "C" {
 		int	CheckSoundMem( int handle );
 		/*読み込み系*/
 		int LoadSoundMem(const char* filename);
-		//20090415 Mp3の読み込みの高速化のため仕様変更
-		//int LoadStreamSound(const char* filename);
 		int LoadStreamSound(const char *filename,int SetPcmLen DXPDEFARG(-1),int* AnsPcmLen DXPDEFARG(NULL));
 		int	DeleteSoundMem( int SoundHandle, int LogOutFlag );
 		/*再生系*/
@@ -359,7 +360,7 @@ extern "C" {
 		void clsDx();
 		void DrawString_Shinonome(int x,int y,const char *str,int color);/*printfDxで使っている全角描画ライブラリを呼び出せます。*/
 	/*マイナー系*/
-		int SaveDrawScreen( int x1, int y1, int x2, int y2, char *FileName );
+		int SaveDrawScreen( int x1, int y1, int x2, int y2, char *FileName );//現在動作しません
 	/*デバッグ用*/
 		//int GetCpuUsage();//製作中
 
@@ -475,5 +476,6 @@ Ver0.4.10		加算合成が正常に働かないバグを修正
 Ver0.4.11		パレット形式のPNG画像はパレットを使って描画するように修正
 Ver0.4.12		MP3の再生を安定化、文字列描画のバグ修正、その他いろいろ
 Ver0.4.14		描画機能を更に高速化
+Ver0.4.16		DrawRotaGraphF内部の計算式最適化、命名規則にそぐわない関数名の変更、Boost系関数のエラーチェック、HOMEボタンでゲームを終了する際に即強制終了する動作だったのをProcessMessageで-1を返すように変更、その他バグ修正がいっぱい！
 */
 

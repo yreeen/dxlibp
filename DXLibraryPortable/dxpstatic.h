@@ -36,7 +36,7 @@ extern u8 psm2bytex2table[];
 /*ライブラリ本体の設定とか*/
 #define	DXPDATAFLAGS_0_INITIALIZED	0x00000001
 #define	DXPDATAFLAGS_0_INITIALIZING	0x00000002
-
+#define DXPDATAFLAGS_0_HOMEEXIT		0x00000004
 typedef	struct
 {
 	u32			TPS;		/*ティック　パー　セコンド　RTC（リアルタイムクロック）が幾つで秒単位になるのかを記録　PSP-2000では1000000だった*/
@@ -226,6 +226,8 @@ extern u32 gulist[];
 int InitGUEngine();
 int EndGUEngine();
 int SetTexture(int GrHandle,int TransFlag);
+int SetTexture2(DXPTEXTURE2 *gptr,int TransFlag);
+void GuListSafety();
 /*デバッグスクリーン用*/
 void InitDebugScreen();
 void DrawDebugScreen();
@@ -244,6 +246,9 @@ DXPTEXTURE2*	MakeTexture(int x,int y,int format);
 DXPGRAPHDATA*	GenerateGraphHandle();//ハンドルの番号を生成する。
 int		DxpAvModuleInit();
 int		DxpAvModuleFree();
+
+extern DXPGRAPHDATA *bptr;
+
 
 //int PSM2BYTEx2(int psm);
 #define MALLOC		malloc
