@@ -482,7 +482,7 @@ int dxppng_decode(DXPPNG_PARAMS *params,DXPPNG *png)
 						{
 							x = (x << (3 - (i >> 1))) + (i & 1) * (1 << (2 - (i >> 1)));
 							if(!i)y <<= 3;
-							else y = (y << (3 - ((y - 1) >> 1))) + ((i & 1) ^ 1) * (1 << (2 - ((i - 1) >> 1)));
+							else y = (y << (3 - ((i - 1) >> 1))) + ((i & 1) ^ 1) * (1 << (2 - ((i - 1) >> 1)));
 						}
 						out = rawbuf + (y * png->pitch + x) * (png->psm == PSM_8888 ? 8 : (png->psm == PSM_T8 ? 2 : 1)) / 2;
 						switch(bitDepth)

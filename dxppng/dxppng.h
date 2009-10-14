@@ -1,8 +1,15 @@
 /*
 png decoder for dx library portable.
 written by yreeen
-ver1.0.0
+ver1.0.1
 last update 2009/10/14
+
+change log
+1.0.0	release
+1.0.1	bug fix
+*/
+
+/*
 
 
 require::zlib
