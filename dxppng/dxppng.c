@@ -318,7 +318,7 @@ int dxppng_decode(DXPPNG_PARAMS *params,DXPPNG *png)
 
 		{//uncompress
 			int retinf,errflag = 0;
-			u32 i,j,k,l,pathnum,bpp;
+			u32 i,j,k,pathnum,bpp;
 			z_stream z;
 			CHUNK tmpcnk;
 			bpp= (epp * bitDepth + 7) >> 3;
@@ -419,14 +419,14 @@ int dxppng_decode(DXPPNG_PARAMS *params,DXPPNG *png)
 						switch(bitDepth)
 						{
 						case 1://g or p 1
-							bit = k % 8;
+							bit = k & 7;
 							color = (linebuf[cl][k >> 3] & (1 << bit)) >> bit;
 							if(!params->mode)//raw
 							{
 								*(u32*)out = png->clut[color];
 								break;
 							}
-							if(k % 1)
+							if(k & 1)
 							{
 								*out |= color & 0xf;
 							}else
@@ -435,14 +435,14 @@ int dxppng_decode(DXPPNG_PARAMS *params,DXPPNG *png)
 							}
 							break;
 						case 2://g or p 1
-							bit = (k % 4) << 1;
+							bit = (k & 3) << 1;
 							color = (linebuf[cl][k >> 2] & (3 << bit)) >> bit;
 							if(!params->mode)//raw
 							{
 								*(u32*)out = png->clut[color];
 								break;
 							}
-							if(k % 1)
+							if(k & 1)
 							{
 								*out |= color & 0xf;
 							}else
@@ -451,14 +451,14 @@ int dxppng_decode(DXPPNG_PARAMS *params,DXPPNG *png)
 							}
 							break;
 						case 4://g or p 1
-							bit = (k % 2) << 2;
+							bit = (k & 1) << 2;
 							color = (linebuf[cl][k >> 1] & (15 << bit)) >> bit;
 							if(!params->mode)//raw
 							{
 								*(u32*)out = png->clut[color];
 								break;
 							}
-							if(k % 1)
+							if(k & 1)
 							{
 								*out |= color & 0xf;
 							}else
