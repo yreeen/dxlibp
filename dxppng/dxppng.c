@@ -29,14 +29,6 @@ typedef struct CHUNK_
 
 static u32 crctable[256];
 static int crcinit = 0;
-
-//static inline u32	bytearray2dword(const u8 dat[]);//byte * 4 -> dword
-//static inline int	signaturecheck(const u8 dat[]);
-//static inline int	getchunk(const u8 dat[],CHUNK *cnk);
-//static inline u32	getcrc(const u8 dat[],u32 length);
-//static inline int	comparechunkname(const u8 dat1[],const u8 dat2[]);
-//int deflate(u32 length,u8 dat[],DXPPNG_FUNCS *funcs);
-
 static u32 bytearray2dword(const u8 dat[])
 {
 	if(!dat)return 0;
@@ -105,68 +97,6 @@ static int	comparechunkname(const u8 dat1[],const u8 dat2[])
 	if(dat1[0] == dat2[0] && dat1[1] == dat2[1] && dat1[2] == dat2[2] && dat1[3] == dat2[3])return 0;
 	return 1;
 }
-
-//static int releasefilter(u8 **in,u8 **out,u8 bitDepth,u8 epp,u32 width,u32 height)
-//{
-//	u32 i,j,k,bwidth,bpp;
-//	u8 fltr;
-//	u32 a,b,c,p,pa,pb,pc;
-//	bwidth = (width * bitDepth * epp + 7) >> 3;
-//	bpp = (epp * bitDepth + 7) >> 3;
-//	for(i = 0;i < height;++i)
-//	{
-//		fltr = *((*in)++);
-//		for(j = 0;j < bwidth;++j)
-//		{
-//			switch(fltr)
-//			{
-//			case 0://none
-//				*((*out)++) = *((*in)++);
-//				break;
-//			case 1://sub
-//				*((*out)++) = **in + (j ? *(*in - bpp) : 0);
-//				++(*in);
-//				break;
-//			case 2://up
-//				*((*out)++) = **in + (i ? *(*in - bwidth) : 0);
-//				++(*in);
-//				break;
-//			case 3://avarage
-//				*((*out)++) = **in + (((u32)(j ? *(*in - bpp) : 0) + (u32)(i ? *(*in - bwidth) : 0)) >> 1);
-//				++(*in);
-//			case 4://peacth
-//				a = (j ? *(*in - bpp) : 0);
-//				b = (i ? *(*in - bwidth) : 0);
-//				c = (i && j ? *(*in - bwidth - bpp) : 0);
-//				p = a + b - c;
-//				pa = p >= a ? p - a : a - p;
-//				pb = p >= b ? p - b : b - p;
-//				pc = p >= c ? p - c : c - p;
-//				*((*out)++) = **in + (pa <= pb && pa <= pc ? a : (pb <= pc ? b : c));
-//				++(*in);
-//				break;
-///*function PaethPredictor (a, b, c)
-//   begin
-//        ; a = left, b = above, c = upper left
-//        p := a + b - c        ; initial estimate
-//        pa := abs(p - a)      ; distances to a, b, c
-//        pb := abs(p - b)
-//        pc := abs(p - c)
-//        ; return nearest of a,b,c,
-//        ; breaking ties in order a,b,c.
-//        if pa <= pb AND pa <= pc then return a
-//        else if pb <= pc then return b
-//        else return c
-//   end
-//*/
-//			default:
-//				return -1;
-//			}
-//		}
-//	}
-//	return 0;
-//}
-
 int dxppng_decode(DXPPNG_PARAMS *params,DXPPNG *png)
 {
 	DXPPNG_FUNCS *funcs;
@@ -424,10 +354,6 @@ int dxppng_decode(DXPPNG_PARAMS *params,DXPPNG *png)
 						if(retinf == Z_OK)
 						{
 							if(!z.avail_out)break;
-							//if(getchunk(tmpcnk.pos + 12 + tmpcnk.length,&tmpcnk) < 0){errflag = 1;break;}
-							//if(comparechunkname(tmpcnk.name,(u8*)"IDAT")){errflag = 1;break;}
-							//z.next_in = tmpcnk.data;
-							//z.avail_in = tmpcnk.length;
 							continue;
 						}else if(retinf == Z_STREAM_END)break;
 					}
@@ -437,32 +363,37 @@ int dxppng_decode(DXPPNG_PARAMS *params,DXPPNG *png)
 					fltr = linebuf[cl][0];
 					for(k = 0;k < linesize;++k)//release filter
 					{
-						u32 a,b,c,p,pa,pb,pc;
+						int a,b,c,p,pa,pb,pc;
 						u8 left,up,upperleft;
 						left = (k >= bpp ? linebuf[cl][k - bpp] : 0);
 						up = linebuf[cl ^ 1][k];
 						upperleft =  k >= bpp ? linebuf[cl ^ 1][k - bpp] : 0;
 						switch(fltr)
 						{
-						case 0:break;
+						case 0:
+							linebuf[cl][k] = linebuf[cl][k + 1];
+							break;
 						case 1:
-							linebuf[cl][k] = linebuf[cl][k + 1] + left;
+							linebuf[cl][k] = (u8)(((int)linebuf[cl][k + 1] + (int)left) & 0xff);
 							break;
 						case 2:
-							linebuf[cl][k] = linebuf[cl][k + 1] + up;
+							linebuf[cl][k] = (u8)(((int)linebuf[cl][k + 1] + (int)up) & 0xff);
 							break;
 						case 3:
-							linebuf[cl][k] = linebuf[cl][k + 1] + (((u32)left + (u32)up) >> 1);
+							linebuf[cl][k] = (u8)(((int)linebuf[cl][k + 1] + (((int)left + (int)up) >> 1)) & 0xff);
 							break;
 						case 4:
 							a = left;
 							b = up;
 							c = upperleft;
 							p = a + b - c;
-							pa = p >= a ? p - a : a - p;
-							pb = p >= b ? p - b : b - p;
-							pc = p >= c ? p - c : c - p;
-							linebuf[cl][k] = linebuf[cl][k + 1] + (pa <= pb && pa <= pc ? a : (pb <= pc ? b : c));
+							pa = p - a;
+							pb = p - b;
+							pc = p - c;
+							pa = pa < 0 ? -pa : pa;
+							pb = pb < 0 ? -pb : pb;
+							pc = pc < 0 ? -pc : pc;
+							linebuf[cl][k] = (u8)(((int)linebuf[cl][k + 1] + (int)(pa <= pb && pa <= pc ? a : (pb <= pc ? b : c))) & 0xff);
 							break;
 						default:
 							errflag = 1;

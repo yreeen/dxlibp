@@ -5,12 +5,8 @@ ver1.0.1
 last update 2009/10/14
 
 change log
-1.0.0	release
-1.0.1	bug fix
-*/
-
-/*
-
+1.0.0 release
+1.0.1 bug fix
 
 require::zlib
 
@@ -80,7 +76,7 @@ typedef struct DXPPNG_
 	unsigned int pitch;
 	unsigned int psm;
 	unsigned int *clut;
-	unsigned char clutnum;
+	unsigned int clutnum;
 	void *raw;
 }DXPPNG;
 
