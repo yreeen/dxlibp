@@ -35,7 +35,7 @@ static u32 bytearray2dword(const u8 dat[])
 	return (((u32)dat[0]) << 24) | (((u32)dat[1]) << 16) | (((u32)dat[2]) << 8) | (((u32)dat[3]) & 0xff);
 }
 
-static u16 bytearray2word(const dat[])
+static u16 bytearray2word(const u8 dat[])
 {
 	if(!dat)return 0;
 	return (((u16)dat[0]) << 8) | (((u16)dat[1]) & 0xff);
