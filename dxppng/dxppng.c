@@ -1,5 +1,6 @@
 #include "dxppng.h"
 
+#include <string.h>
 #include <malloc.h>
 #include <zlib.h>
 #ifdef WIN32
@@ -19,10 +20,10 @@ static void* memalign(unsigned int align,unsigned int size)
 
 typedef struct CHUNK_
 {
-	const u8 *pos;
+	u8 *pos;
 	u32	length;
 	u8	name[4];
-	const u8 *data;
+	u8 *data;
 	u32 crc;
 	u8	valid;
 }CHUNK;
@@ -49,7 +50,7 @@ static int signaturecheck(const u8 dat[])
 	return -1;
 }
 
-static int	getchunk(const u8 dat[],CHUNK *cnk)
+static int	getchunk(u8 dat[],CHUNK *cnk)
 {
 	if(!dat || !cnk)return -1;
 	cnk->pos = dat;
@@ -106,10 +107,12 @@ int dxppng_decode(DXPPNG_PARAMS *params,DXPPNG *png)
 	u8	bitDepth,colorType,interlace;
 	u8 epp;//elements per pixel
 	u16 trnscolor[3];//rgb:rgb gray:g--
-	IHDR.valid = 0;
-	PLTE.valid = 0;
-	tRNS.valid = 0;
-	IDAT.valid = 0;
+
+	memset(&IHDR,0,sizeof(CHUNK));
+	memset(&PLTE,0,sizeof(CHUNK));
+	memset(&tRNS,0,sizeof(CHUNK));
+	memset(&IDAT,0,sizeof(CHUNK));
+	trnscolor[0] = trnscolor[1] = trnscolor[2] = 0;
 
 	//arguments check and setup
 	if(!params || !png)return -1;
@@ -407,6 +410,7 @@ int dxppng_decode(DXPPNG_PARAMS *params,DXPPNG *png)
 						u32 x,y,color,bit,a;
 						u16 r,g,b;
 						u8 *out;
+						r = g = b = 0;
 						x = k;
 						y = j;
 						if(interlace)
