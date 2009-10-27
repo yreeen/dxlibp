@@ -1,13 +1,14 @@
 /*
 png decoder for dx library portable.
 written by yreeen
-ver1.0.2
-last update 2009/10/14
+ver1.0.3
+last update 2009/10/27
 
 change log
 1.0.0 release
 1.0.1 bug fix
 1.0.2 bug fix
+1.0.3 support alpha info exist check
 
 require::zlib
 
@@ -78,6 +79,7 @@ typedef struct DXPPNG_
 	unsigned int psm;
 	unsigned int *clut;
 	unsigned int clutnum;
+	unsigned int alpha;
 	void *raw;
 }DXPPNG;
 

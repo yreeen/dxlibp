@@ -124,6 +124,8 @@ int dxppng_decode(DXPPNG_PARAMS *params,DXPPNG *png)
 		funcs->pmemalign = memalign;
 	}
 
+	png->alpha = 0;
+
 	//signature check
 	if(signaturecheck((u8*)params->src) < 0)return -1;
 
@@ -198,8 +200,8 @@ int dxppng_decode(DXPPNG_PARAMS *params,DXPPNG *png)
 			case 0:
 			case 3:epp = 1;break;
 			case 2:epp = 3;break;
-			case 4:epp = 2;break;
-			case 6:epp = 4;break;
+			case 4:epp = 2;png->alpha = 1;break;
+			case 6:epp = 4;png->alpha = 1;break;
 			default:return -1;
 		}
 		png->width = width;
@@ -271,6 +273,7 @@ int dxppng_decode(DXPPNG_PARAMS *params,DXPPNG *png)
 	if(tRNS.valid)
 	{
 		int i;
+		png->alpha = 1;
 		if(colorType == 3)//clut
 		{
 			if(png->clutnum < tRNS.length){params->funcs.pfree(png->clut);return -1;}
