@@ -80,6 +80,7 @@ OBJS += graphics/getscreenstate.o
 OBJS += graphics/screenflip.o
 OBJS += graphics/screencopy.o
 OBJS += graphics/setdrawarea.o
+OBJS += graphics/setgraphmode.o
 OBJS += graphics/setdrawmode.o
 OBJS += graphics/setdrawbright.o
 OBJS += graphics/setdrawblendmode.o

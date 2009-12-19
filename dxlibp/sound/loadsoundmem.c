@@ -20,5 +20,14 @@ int LoadSoundMem(const char *filename)
 	strncpy(pHnd->filename,filename,256);
 	pHnd->soundDataType = dxpSoundData.createSoundDataType;
 	sceKernelStartThread(pHnd->threadId,4,&pHnd);
+	while(pHnd->loadstatus == 0)
+	{
+		if(pHnd->threadId == -1)
+		{
+			dxpSoundReleaseHandle(handle);
+			return -1;
+		}
+		sceKernelDelayThread(100);
+	}
 	return handle;
 }

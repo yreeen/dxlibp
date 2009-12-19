@@ -43,6 +43,7 @@ typedef struct DXPSOUNDHANDLE
 	int sampleRate;
 	int id3v1;
 	int id3v2;
+	int loadstatus;
 	unsigned playing : 1;
 
 	//デコード関連
