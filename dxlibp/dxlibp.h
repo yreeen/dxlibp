@@ -307,7 +307,7 @@
 
 /* 音楽 */
 #define DX_SOUNDDATATYPE_MEMNOPRESS					(0)
-#define DX_SOUNDDATATYPE_MEMPRESS					(-1)
+//#define DX_SOUNDDATATYPE_MEMPRESS					(1)
 #define DX_SOUNDDATATYPE_FILE						(3)
 
 
@@ -346,7 +346,7 @@ extern "C" {
  * @retval 0 成功
  * @retval -1 失敗
  */
-int DxLib_Init();
+int DxLib_Init(void);
 /**
  * ライブラリ使用の終了関数(本家互換)
  * 
@@ -354,7 +354,7 @@ int DxLib_Init();
  * @retval 0 成功
  * @retval -1 失敗
  */
-int DxLib_End();
+int DxLib_End(void);
 /**
  * ライブラリが初期化済みかどうか調べる(本家互換)
  * 
@@ -362,7 +362,7 @@ int DxLib_End();
  * @retval 1 初期化済み
  * @retval 0 未初期化
 */
-int DxLib_Isinit();
+int DxLib_Isinit(void);
 /**
  * 毎フレーム必要な処理を行う(本家互換)
  * 
@@ -370,7 +370,7 @@ int DxLib_Isinit();
  * @retval 0 成功
  * @retval -1 失敗
 */
-int ProcessMessage();
+int ProcessMessage(void);
 /*@}*/
 
 /*@defgroup 文字コード関連*/
@@ -394,14 +394,14 @@ int SetCodepoint(int codepoint);
  * RTC(本体内蔵の時計)の値をミリ秒単位であらわした値が返ってきます。
  * @return RTCの値をミリ秒単位であらわした値
 */
-int GetNowCount();
+int GetNowCount(void);
 /**
  * マイクロ秒単位の精度を持つカウンタの現在値を得る(本家互換)
  * 
  * RTC(本体内蔵の時計)の値を返します。この関数の呼び出しに少なくとも30マイクロ秒ほどかかるようです。
  * @return RTCの値
 */
-u64 GetNowHiPerformanceCount();
+u64 GetNowHiPerformanceCount(void);
 /**
  * 現在時刻を取得する(本家互換)
  * 
@@ -411,6 +411,13 @@ u64 GetNowHiPerformanceCount();
  * @retval -1 失敗
 */
 int GetDateTime(DATEDATA *datebuf);
+/**
+ * 指定時間だけ処理を止める
+ * 
+ * Win32APIのSleep関数と同じです。
+ * @param ms ミリ秒単位で処理を止める時間を指定します。
+*/
+void Sleep(int ms);
 /*@}*/
 
 /** @defgroup 乱数取得関数*/
@@ -661,13 +668,13 @@ static inline MATRIX MInverse(MATRIX m){register float d;__asm__ volatile ("ulv.
  * @endcode
  * @return ボタンの入力状態
 */
-int GetInputState();
+int GetInputState(void);
 /**
  * ジョイパッドが接続されている数を取得する。(本家互換)
  * 
  * DXPではこの関数は必ず1を返します。PSPのボタン入力はGetJoypadInputStateにより、PCのジョイパッド入力として受け取ることができます。詳細は本家のヘルプを参照してください。
 */
-int GetJoypadNum();
+int GetJoypadNum(void);
 /**
  * ジョイパッドの入力状況を得る。(本家互換)
  * 
@@ -733,7 +740,7 @@ int SetKeyInputToPspInput(int key,int pspbutton);
  * @retval 1 どれかのキーが押された
  * @retval 0 どのキーも押されていない
 */
-int CheckHitKeyAll();												/**<本家互換関数*/
+int CheckHitKeyAll(void);												/**<本家互換関数*/
 /**
  * 特定のキーの入力状態を得る(本家互換)
  * 
@@ -1103,7 +1110,7 @@ int GetGraphSize(int gh,int *xbuf,int *ybuf);
  * @retval 0 成功
  * @retval -1 失敗
 */
-int InitGraph();
+int InitGraph(void);
 /**
  * グラフィックスハンドルを削除します(本家互換)
  * 
@@ -1202,7 +1209,7 @@ int SetDrawArea(int x1,int y1,int x2,int y2);
  * @retval 0 成功
  * @retval -1 失敗
 */
-int ClearDrawScreen();
+int ClearDrawScreen(void);
 /**
  * 色コードを返します(本家互換)
  * 
@@ -1212,8 +1219,15 @@ int ClearDrawScreen();
  * @return 色コード
 */
 int GetColor(int Red,int Green,int Blue);
-/*
-* LoadDivGraphやDerivationGraph関数を使って作った、一枚のテクスチャを複数のグラフィックスが共有するようなグラフィックスハンドルを指定すると予期しない結果になる可能性があります。
+/**
+ * 描画先を変更します
+ * 
+ * VRAM上にあるSwizzleされていないグラフィックスハンドルを渡すと、描画先として設定されます
+ * LoadDivGraphやDerivationGraph関数を使って作ったような、一枚のテクスチャを複数のグラフィックスが共有するような
+ * グラフィックスハンドルを指定すると予期しない結果になる可能性があります
+ * @param ghandle 描画先にするグラフィックスハンドル
+ * @retval 0 成功
+ * @retval -1 失敗
 */
 int SetDrawScreen(int ghandle);
 /**
@@ -1222,7 +1236,7 @@ int SetDrawScreen(int ghandle);
  * @retval 0 成功
  * @retval -1 失敗
 */
-int ScreenFlip();
+int ScreenFlip(void);
 /**
  * ScreenFlip、ScreenCopy関数実行時に垂直同期待ちをするかのフラグをセット(本家互換)
  * 
@@ -1285,7 +1299,7 @@ int ConvertGraphFormat(int gh,int psm);
  * @retval 0 成功
  * @retval -1 エラー発生
 */
-int WaitGPUSync();
+int WaitGPUSync(void);
 /**
  * 画面のピクセルフォーマットを得る
  * 
@@ -1297,7 +1311,7 @@ int WaitGPUSync();
  * @return ピクセルフォーマット
  * @retval -1 失敗
 */
-int GetDisplayFormat();
+int GetDisplayFormat(void);
 /**
  * 画面のピクセルフォーマットを変更する
  * 
@@ -1315,35 +1329,181 @@ int SetDisplayFormat(int psm);
  * 
  * @return フレームバッファのポインタ
 */
-void *GetFramebufferAddress();
+void *GetFramebufferAddress(void);
 /**
  * ディスプレイバッファ（表画面）へのポインタを返します
  * 
  * @return ディスプレイバッファへのポインタ
 */
-void *GetDisplaybufferAddress();
+void *GetDisplaybufferAddress(void);
 /*@}*/
 
 /**@defgroup サウンド関連*/
 /*@{*/
+
+/**
+ * 音楽データを読み込みます(本家互換)
+ * 
+ * MP3形式の音楽ファイルのみ読み込めます。なお、読み込み作業は別スレッドで行われます。
+ * 
+ * @param filename ファイル名
+ * @return サウンドハンドル
+ * @retval -1 失敗
+*/
 int LoadSoundMem(const char *filename);
+/**
+ * サウンドハンドルから再生します(本家互換)
+ * 
+ * LoadSoundMemで読み込んだ音楽ファイルを再生することができます
+ * 指定可能な再生タイプは以下の通り
+ * - DX_PLAYTYPE_NORMAL 再生が終わるまで待ちます
+ * - DX_PLAYTYPE_BACK バックグラウンドで再生します。音楽の終わりまで再生したら停止します
+ * - DX_PLAYTYPE_LOOP バックグラウンドで再生します。ループ再生になります
+ * 
+ * @param handle サウンドハンドル
+ * @param playtype 再生タイプ
+ * @param rewindflag 最初から再生させるかどうか
+ * @retval -1 失敗
+*/
 int PlaySoundMem(int handle,int playtype,int rewindflag DXPDEFARG(1));
+/**
+ * サウンドハンドルが再生中かチェックします(本家互換)
+ * 
+ * @param handle サウンドハンドル
+ * @retval 1 再生中
+ * @retval 0 停止
+ * @retval -1 失敗
+*/
 int CheckSoundMem(int handle);
+/**
+ * サウンドハンドルの再生を止めます(本家互換)
+ * 
+ * @param handle サウンドハンドル
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
 int StopSoundMem(int handle);
+/**
+ * サウンドハンドルを削除します(本家互換)
+ * 
+ * @param handle サウンドハンドル
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
 int DeleteSoundMem(int handle);
-int InitSoundMem();
-int SetLoopPosSoundMem(int looppos_s,int handle);
-int SetLoopSamplePosSoundMem(int looppos,int handle);
-int SetCreateSoundDataType(int type);
+/**
+ * 全てのサウンドハンドルを削除します。(本家互換)
+ * 
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
+int InitSoundMem(void);
+/**
+ * サウンドハンドルにパンを設定する(本家互換)
+ * 
+ * 正の値を設定すると右の音量が下がり、負の値を設定すると左の音量が下がります。0なら左右の音量が等しくなります。
+ * @param handle サウンドハンドル
+ * @param pan パンの値。-10000〜+10000の範囲
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
+int SetPanSoundMem(int pan,int handle);
+/**
+ * サウンドハンドルの音量を変更する(本家互換)
+ * 
+ * @param handle サウンドハンドル
+ * @param volume 音量。0〜255の範囲
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
 int ChangeVolumeSoundMem(int volume,int handle);
+/**
+ * ループ位置を設定する(本家互換)
+ * 
+ * ループ再生時に、指定した場所から再生再開できるようにします。
+ * @param looppos_s ループ再開位置（ミリ秒単位）
+ * @param handle サウンドハンドル
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
+int SetLoopPosSoundMem(int looppos_s,int handle);
+/**
+ * ループ位置を設定する(本家互換)
+ * 
+ * ループ再生時に、指定した場所から再生再開できるようにします。サンプル数で指定します。
+ * @param looppos ループ再開位置（サンプル数単位）
+ * @param handle サウンドハンドル
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
+int SetLoopSamplePosSoundMem(int looppos,int handle);
+/** 
+ * LoadSoundMemの挙動を変更します。(本家互換)
+ * 
+ * LoadSoundMemはメモリ上に音楽データを展開し、それを再生します。
+ * この関数でその時の挙動を変更できます。
+ * 指定可能な値は以下の通り
+ * - DX_SOUNDDATATYPE_MEMNOPRESS	メモリ上にデータを展開し、それを再生します。
+ * - DX_SOUNDDATATYPE_FILE ストリーミング再生をします。
+ * 
+ * 以下の値は現在使えません。
+ * - DX_SOUNDDATATYPE_MEMPRESS
+ * - DX_SOUNDDATATYPE_MEMPRESS_PLUS
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
+int SetCreateSoundDataType(int type);
 /*@}*/
+
+/**@defgroup 文字列描画関連*/
+/*@{*/
+/**
+ * 文字列を描画する
+ * 
+ * x,y 文字列の左上の座標
+ * String 描画する文字列
+ * color 文字列の色
+ * EdgeColor 文字列のエッジの色
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
 int DrawString(int x,int y,const char *String,int color, int EdgeColor DXPDEFARG(0));
+/**
+ * 書式付き文字列を描画する
+ * 
+ * x,y 文字列の左上の座標
+ * color 文字列の色
+ * String 書式付き文字列
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
 int DrawFormatString(int x,int y,int color,const char *String,...);
+/*@}*/
+
 /**@defgroup デバッグ関連*/
 /*@{*/
+/** 
+ * ログファイルに出力します
+ * printfのように使うとログファイルに書き込まれます。
+*/
 int AppLogAdd(const char *format,...);
-int clsDx();
+/**
+ * 簡易文字列出力
+ * 
+ * DOS窓のように文字列を出力します。
+ * 非常に低速な上、実行ファイルサイズが一気に膨れるのでゲームには不向きです。
+ * なお、ScreenFlip関数かScreenCopy関数が呼ばれるまで描画されませんので注意してください。
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
 int printfDx(const char *format,...);
+/**
+ * 簡易文字列出力の履歴を削除します
+ * 
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
+int clsDx(void);
 /*@}*/
 #ifdef __cplusplus
 }

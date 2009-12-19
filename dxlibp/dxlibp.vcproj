@@ -46,11 +46,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\debug\applogadd.c"
+				RelativePath=".\debug_\applogadd.c"
 				>
 			</File>
 			<File
-				RelativePath=".\debug_\applogadd.c"
+				RelativePath=".\debug\applogadd.c"
 				>
 			</File>
 			<File
@@ -94,11 +94,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\debug\debug.c"
+				RelativePath=".\debug_\debug.c"
 				>
 			</File>
 			<File
-				RelativePath=".\debug_\debug.c"
+				RelativePath=".\debug\debug.c"
 				>
 			</File>
 			<File
@@ -186,11 +186,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\debug_\dxpdebugputs_zenkaku.c"
+				RelativePath=".\debug\dxpdebugputs_zenkaku.c"
 				>
 			</File>
 			<File
-				RelativePath=".\debug\dxpdebugputs_zenkaku.c"
+				RelativePath=".\debug_\dxpdebugputs_zenkaku.c"
 				>
 			</File>
 			<File
@@ -442,6 +442,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\sound\setpansoundmem.c"
+				>
+			</File>
+			<File
 				RelativePath=".\graphics\settranscolor.c"
 				>
 			</File>
@@ -459,6 +463,10 @@
 			</File>
 			<File
 				RelativePath=".\cpcnv\sjis\sjistoucs2.c"
+				>
+			</File>
+			<File
+				RelativePath=".\general\sleep.c"
 				>
 			</File>
 			<File

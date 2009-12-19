@@ -17,6 +17,9 @@ intraFont
 Uses intraFont by BenHur
 ※ただしDrawString等の文字列描画関数を使っていない場合は無しで大丈夫です。
 
+liblzr
+Uses liblzr by BenHur
+
 
 全角文字表示ライブラリ
 このソフトウェアはmediumgauge氏作成の全角文字表示ライブラリを使用しています。

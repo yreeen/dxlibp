@@ -1,8 +1,8 @@
 #include "../sound.h"
 
-int SetLoopPosSoundMem(int looppos_s,int handle)
+int SetPanSoundMem(int pan,int handle)
 {
-	if(looppos_s < 0)return -1;
+	if(pan < -10000 || pan > 10000)return -1;
 	if(!dxpSoundData.init)return -1;
 	if(handle < 0 || handle >= DXP_BUILDOPTION_SOUNDHANDLE_MAX)return -1;
 	DXPSOUNDHANDLE *pHnd = dxpSoundArray + handle;
@@ -13,9 +13,6 @@ int SetLoopPosSoundMem(int looppos_s,int handle)
 		return -1;
 	}
 
-	int sample;
-	sample = pHnd->sampleRate * looppos_s / 1000;
-	if(sample > pHnd->length)return -1;
-	pHnd->loopPos[0] = sample;
+	pHnd->pan = pan;
 	return 0;
 }

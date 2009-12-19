@@ -158,7 +158,6 @@ int InitString()
 
 int EndString()
 {
-//	int i;
 	DXP_FONTDATA *p = &fontarray,*p2 = NULL;
 	if(!intrafont_init)return 0;
 	while(p != NULL)
@@ -180,7 +179,7 @@ int DrawStringToHandle(int x,int y,const char *String,int color,int handle, int 
 	if(ptr == NULL)return -1;
 	StringStart(&gc);
 	intraFontSetStyle(ptr->ifp,ptr->scale,(u32)color,EdgeColor ? (u32)EdgeColor : ptr->edgecolor_default,ptr->Alignment);
-	intraFontPrint(ptr->ifp,x,y,String);
+	intraFontPrint(ptr->ifp,x,y + 16 * ptr->scale,String);
 	StringFinish(&gc);
 	return 0;
 }
@@ -198,6 +197,8 @@ int DrawFormatString(int x,int y,int color,const char *String,...)
 	va_end(arg);
 	return DrawString(x,y,str,color,0);
 }
+
+
 
 float GetDrawStringWidthWithHandleF(const char *String, int StrLen, int FontHandle)
 {

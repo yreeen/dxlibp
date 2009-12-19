@@ -14,6 +14,7 @@ OBJS += general/getrand.o
 OBJS += general/setcodepoint.o
 OBJS += general/changerandmode.o
 OBJS += general/changecpuspeed.o
+OBJS += general/sleep.o
 
 #file io functions
 OBJS += fileio/fileio.o
@@ -132,6 +133,7 @@ OBJS += sound/deletesoundmem.o
 OBJS += sound/setlooppossoundmem.o
 OBJS += sound/setloopsamplepossoundmem.o
 OBJS += sound/changevolumesoundmem.o
+OBJS += sound/setpansoundmem.o
 OBJS += sound/setcreatesounddatatype.o
 
 
