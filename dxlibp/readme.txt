@@ -30,6 +30,9 @@ Uses liblzr by BenHur
 DXライブラリPortable
 DX Library Portable Copyright (C) 2008-2009 Kawai Yuichi.
 
+【0.4.x以前からの更新注意！】
+依存しているライブラリが変更されたので、Makefileに指定するLIBSの項目が変化しています。
+LIBS = dxlibp.a -lpspgu -lz -lm -lpsprtc -lpspaudio -lpspaudiocodec -lstdc++ -lpsputility -lpspvalloc -lpsppower
 
 【更新履歴】
 

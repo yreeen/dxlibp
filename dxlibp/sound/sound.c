@@ -285,7 +285,7 @@ void dxpSoundThread_file(DXPSOUNDHANDLE *pHnd,int fh)
 			pHnd->pcmOut = (u16*)pcmBuf[pcm];
 			if(dxpSoundCodecDecode(pHnd,fh) < 0)
 			{
-//				pHnd->cmd = DXP_SOUNDCMD_STOP;
+				//pHnd->cmd = DXP_SOUNDCMD_STOP;
 				continue;
 			}
 			while(sceAudioGetChannelRestLen(channel) > 0)sceKernelDelayThread(100);

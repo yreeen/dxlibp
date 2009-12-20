@@ -15,7 +15,6 @@ DXPFILEIODATA dxpFileioData =
 
 static int dxpPowerCallback(int unk0,int flag,void* arg)
 {
-	int i;
 	if(flag & PSP_POWER_CB_SUSPENDING)
 	{
 		dxpFileioData.sleep = 1;
