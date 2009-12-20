@@ -1,5 +1,6 @@
 #include "../sound.h"
 #include <string.h>
+#include "../safealloc.h"
 int LoadSoundMem(const char *filename)
 {
 	if(!dxpSoundData.init)dxpSoundInit();
@@ -22,6 +23,7 @@ int LoadSoundMem(const char *filename)
 	sceKernelStartThread(pHnd->threadId,4,&pHnd);
 	while(pHnd->loadstatus == 0)
 	{
+		dxpSafeAllocMain();
 		if(pHnd->threadId == -1)
 		{
 			dxpSoundReleaseHandle(handle);

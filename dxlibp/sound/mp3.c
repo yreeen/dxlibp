@@ -4,7 +4,7 @@
 #include <psputility.h>
 #include <pspaudiocodec.h>
 #include <malloc.h>
-
+#include "../safealloc.h"
 
 int dxpSoundGetID3v1Size(int fh);
 int dxpSoundGetID3v2Size(int fh);
@@ -121,7 +121,7 @@ int dxpSoundMp3Init(DXPSOUNDHANDLE *pHnd,int fh)
 		if(FileRead_read(buf,4,fh) != 4)break;
 	}
 	FileRead_seek(fh,pHnd->id3v2,SEEK_SET);
-	pHnd->mp3.avBuf = (DXPAVCODEC_BUFFER*)memalign(64,sizeof(DXPAVCODEC_BUFFER));
+	pHnd->mp3.avBuf = (DXPAVCODEC_BUFFER*)dxpSafeAlloc(sizeof(DXPAVCODEC_BUFFER));
 	if(!pHnd->mp3.avBuf)return -1;
 	memset(pHnd->mp3.avBuf,0,sizeof(DXPAVCODEC_BUFFER));
 	status = sceAudiocodecCheckNeedMem((unsigned long*)pHnd->mp3.avBuf,PSP_CODEC_MP3);
@@ -175,12 +175,13 @@ int dxpSoundMp3Decode(DXPSOUNDHANDLE *pHnd,int fh)
 	int status;
 	if(pHnd->format != DXP_SOUNDFMT_MP3)return -1;
 	FileRead_read(headerBuf,4,fh);
+	if(headerBuf[0] == 'T' && headerBuf[1] == 'A' && headerBuf[2] == 'G')return -1;
 	frameLen = dxpSoundMp3CheckFrameHeader(headerBuf);
 	if(frameLen < 0)return -1;
 	if(pHnd->mp3.mp3BufSize < frameLen)
 	{
 		free(pHnd->mp3.mp3Buf);
-		pHnd->mp3.mp3Buf = memalign(64,frameLen);
+		pHnd->mp3.mp3Buf = dxpSafeAlloc(frameLen);
 		if(!pHnd->mp3.mp3Buf)return -1;
 		pHnd->mp3.mp3BufSize = frameLen;
 	}
@@ -202,7 +203,7 @@ int dxpSoundMp3End(DXPSOUNDHANDLE *pHnd,int fh)
 	if(pHnd->format != DXP_SOUNDFMT_MP3)return -1;
 	FileRead_close(fh);
 	sceAudiocodecReleaseEDRAM((unsigned long*)pHnd->mp3.avBuf);
-	free(pHnd->mp3.avBuf);
-	free(pHnd->mp3.mp3Buf);
+	dxpSafeFree(pHnd->mp3.avBuf);
+	dxpSafeFree(pHnd->mp3.mp3Buf);
 	return 0;
 }

@@ -19,38 +19,27 @@
 
 //structures ----
 
-////function-pointers for stream data control
-//typedef struct STREAMDATASHRED__
-//{
-//	long					(*Tell)( void *StreamDataPoint ) ;
-//	int						(*Seek)( void *StreamDataPoint, long SeekPoint, int SeekType ) ;
-//	size_t					(*Read)( void *Buffer, size_t BlockSize, size_t DataNum, void *StreamDataPoint ) ;
-////	size_t					(*Write)( void *Buffer, size_t BlockSize, size_t DataNum, void *StreamDataPoint ) ;
-//	int						(*Eof)( void *StreamDataPoint ) ;
-//	int						(*IdleCheck)( void *StreamDataPoint ) ;
-//	int						(*Close)( void *StreamDataPoint ) ;
-//} STREAMDATASHRED;
-//
-////stream data control
-//typedef struct STREAMDATA__
-//{
-//	STREAMDATASHRED			ReadShred ;
-//	void					*DataPoint ;
-//} STREAMDATA ;
-
-
 typedef struct DXPFILEIOHANDLE__
 {
 	unsigned used : 1;
+	unsigned onmemory : 1;
+
 	char filename[DXP_BUILDOPTION_FILENAMELENGTH_MAX];
-	int pos;
-	SceUID fd;
+
+	u32 pos;
+	u32 size;
+
+	union
+	{
+		SceUID fd;
+		void *dat;
+	};
 }DXPFILEIOHANDLE;
 
 typedef struct DXPFILEIODATA__
 {
 	unsigned init : 1;
-	unsigned reopen : 1;
+	unsigned sleep : 1;
 	DXPFILEIOHANDLE handleArray[DXP_BUILDOPTION_FILEHANDLE_MAX];
 }DXPFILEIODATA;
 //variables ----
@@ -62,4 +51,4 @@ extern DXPFILEIODATA dxpFileioData;
 
 
 void dxpFileioInit();
-void dxpFileioReopenAll();
+int dxpFileioReopen(int handle);

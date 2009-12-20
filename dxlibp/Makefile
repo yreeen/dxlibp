@@ -16,6 +16,9 @@ OBJS += general/changerandmode.o
 OBJS += general/changecpuspeed.o
 OBJS += general/sleep.o
 
+#threadsafe alloc/free
+OBJS += safealloc/safealloc.o
+
 #file io functions
 OBJS += fileio/fileio.o
 OBJS += fileio/fileread_open.o

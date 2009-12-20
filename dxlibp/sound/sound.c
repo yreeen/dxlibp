@@ -3,6 +3,7 @@
 #include <string.h>
 #include <pspaudio.h>
 #include "../general.h"
+#include "../safealloc.h"
 
 DXPSOUNDHANDLE dxpSoundArray[DXP_BUILDOPTION_SOUNDHANDLE_MAX];
 DXPSOUNDDATA dxpSoundData = {0,0};
@@ -113,18 +114,20 @@ void dxpSoundThread_memnopress(DXPSOUNDHANDLE *pHnd,int fh)
 {
 	u32 *pcmBuf;
 	if(dxpSoundCodecInit(pHnd,fh) < 0)dxpSoundThreadExit(pHnd);
-	pcmBuf = (u32*)memalign(64,pHnd->length * 2 * 2);
+	pcmBuf = (u32*) dxpSafeAlloc(pHnd->length * 2 * 2);
 	if(!pcmBuf)dxpSoundThreadExit(pHnd);
+	memset(pcmBuf,0,pHnd->length * 2 * 2);
 	pHnd->pcmOut = (u16*)pcmBuf;
 	while(pHnd->currentPos < pHnd->length)
 	{
 		if(dxpSoundCodecDecode(pHnd,fh) < 0)
 		{
-			free(pcmBuf);
+			dxpSafeFree(pcmBuf);
 			dxpSoundCodecEnd(pHnd,fh);
 			dxpSoundThreadExit(pHnd);
 		}
 		pHnd->pcmOut = (u16*)(pcmBuf + pHnd->currentPos);
+		sceKernelDelayThread(1);
 	}
 	dxpSoundMp3End(pHnd,fh);
 	pHnd->loadstatus = 1;
@@ -153,7 +156,7 @@ void dxpSoundThread_memnopress(DXPSOUNDHANDLE *pHnd,int fh)
 				while(sceAudioGetChannelRestLen(channel) > 0)sceKernelDelayThread(100);
 				sceAudioChRelease(channel);
 			}
-			free(pcmBuf);
+			dxpSafeFree(pcmBuf);
 			dxpSoundThreadExit(pHnd);
 			break;
 		}
@@ -213,12 +216,12 @@ void dxpSoundThread_file(DXPSOUNDHANDLE *pHnd,int fh)
 	int channel = -1;
 	if(dxpSoundCodecInit(pHnd,fh) < 0)dxpSoundThreadExit(pHnd);
 	pHnd->loadstatus = 1;
-	pcmBuf[0] = memalign(64,pHnd->pcmOutSize);
-	pcmBuf[1] = memalign(64,pHnd->pcmOutSize);
+	pcmBuf[0] = dxpSafeAlloc(pHnd->pcmOutSize);
+	pcmBuf[1] = dxpSafeAlloc(pHnd->pcmOutSize);
 	if(!pcmBuf[0] || !pcmBuf[1])
 	{
-		free(pcmBuf[0]);
-		free(pcmBuf[1]);
+		dxpSafeFree(pcmBuf[0]);
+		dxpSafeFree(pcmBuf[1]);
 		dxpSoundCodecEnd(pHnd,fh);
 		dxpSoundThreadExit(pHnd);
 	}
@@ -242,8 +245,8 @@ void dxpSoundThread_file(DXPSOUNDHANDLE *pHnd,int fh)
 				while(sceAudioGetChannelRestLen(channel) > 0)sceKernelDelayThread(100);
 				sceAudioChRelease(channel);
 			}
-			free(pcmBuf[0]);
-			free(pcmBuf[1]);
+			dxpSafeFree(pcmBuf[0]);
+			dxpSafeFree(pcmBuf[1]);
 			dxpSoundCodecEnd(pHnd,fh);
 			dxpSoundThreadExit(pHnd);
 			break;
@@ -282,7 +285,7 @@ void dxpSoundThread_file(DXPSOUNDHANDLE *pHnd,int fh)
 			pHnd->pcmOut = (u16*)pcmBuf[pcm];
 			if(dxpSoundCodecDecode(pHnd,fh) < 0)
 			{
-				pHnd->cmd = DXP_SOUNDCMD_STOP;
+//				pHnd->cmd = DXP_SOUNDCMD_STOP;
 				continue;
 			}
 			while(sceAudioGetChannelRestLen(channel) > 0)sceKernelDelayThread(100);
