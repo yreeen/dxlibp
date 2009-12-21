@@ -119,7 +119,7 @@ int dxpSoundMp3Init(DXPSOUNDHANDLE *pHnd,int fh)
 	{
 		FileRead_seek(fh,status - 4,SEEK_CUR);
 		if(FileRead_read(buf,4,fh) != 4)break;
-		if(!strncmp(buf,"TAG",3))break;
+		if(!strncmp((char*)buf,"TAG",3))break;
 	}
 	FileRead_seek(fh,pHnd->id3v2,SEEK_SET);
 	pHnd->mp3.avBuf = (DXPAVCODEC_BUFFER*)dxpSafeAlloc(sizeof(DXPAVCODEC_BUFFER));

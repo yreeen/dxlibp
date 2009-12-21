@@ -46,11 +46,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\debug\applogadd.c"
+				RelativePath=".\debug_\applogadd.c"
 				>
 			</File>
 			<File
-				RelativePath=".\debug_\applogadd.c"
+				RelativePath=".\debug\applogadd.c"
 				>
 			</File>
 			<File
@@ -94,11 +94,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\font\createfonttohandle.c"
+				>
+			</File>
+			<File
 				RelativePath=".\debug\debug.c"
 				>
 			</File>
 			<File
 				RelativePath=".\debug_\debug.c"
+				>
+			</File>
+			<File
+				RelativePath=".\font\deletefonttohandle.c"
 				>
 			</File>
 			<File
@@ -186,11 +194,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\debug_\dxpdebugputs_zenkaku.c"
+				RelativePath=".\debug\dxpdebugputs_zenkaku.c"
 				>
 			</File>
 			<File
-				RelativePath=".\debug\dxpdebugputs_zenkaku.c"
+				RelativePath=".\debug_\dxpdebugputs_zenkaku.c"
 				>
 			</File>
 			<File
@@ -238,6 +246,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\font\font.c"
+				>
+			</File>
+			<File
 				RelativePath=".\general\general.c"
 				>
 			</File>
@@ -251,6 +263,10 @@
 			</File>
 			<File
 				RelativePath=".\graphics\getdrawscreengraph.c"
+				>
+			</File>
+			<File
+				RelativePath=".\font\getdrawstringwidthtohandle.c"
 				>
 			</File>
 			<File
@@ -544,6 +560,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\font.h"
+				>
+			</File>
+			<File
 				RelativePath=".\general.h"
 				>
 			</File>
@@ -591,6 +611,11 @@
 			>
 		</Filter>
 		<File
+			RelativePath=".\BuildLog.htm"
+			DeploymentContent="true"
+			>
+		</File>
+		<File
 			RelativePath=".\Doxyfile"
 			>
 		</File>
@@ -603,11 +628,11 @@
 			>
 		</File>
 		<File
-			RelativePath=".\ŠJ”­ŽG‹L.txt"
+			RelativePath=".\ŽÀ‘••\.txt"
 			>
 		</File>
 		<File
-			RelativePath=".\ŠÖ”ŽÀ‘•‚Ì—Dæ‡ˆÊ•\.txt"
+			RelativePath=".\ŠJ”­ŽG‹L.txt"
 			>
 		</File>
 	</Files>

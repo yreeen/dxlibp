@@ -1401,7 +1401,7 @@ int InitSoundMem(void);
 /**
  * サウンドハンドルにパンを設定する(本家互換)
  * 
- * 正の値を設定すると右の音量が下がり、負の値を設定すると左の音量が下がります。0なら左右の音量が等しくなります。
+ * 正の値を設定すると左の音量が下がり、負の値を設定すると右の音量が下がります。0なら左右の音量が等しくなります。
  * @param handle サウンドハンドル
  * @param pan パンの値。-10000〜+10000の範囲
  * @retval 0 成功
@@ -1458,26 +1458,157 @@ int SetCreateSoundDataType(int type);
 /**@defgroup 文字列描画関連*/
 /*@{*/
 /**
- * 文字列を描画する
+ * 文字列を描画する(本家互換)
  * 
- * x,y 文字列の左上の座標
- * String 描画する文字列
- * color 文字列の色
- * EdgeColor 文字列のエッジの色
+ * @param x,y 文字列の左上の座標
+ * @param String 描画する文字列
+ * @param color 文字列の色
+ * @param EdgeColor 文字列のエッジの色
  * @retval 0 成功
  * @retval -1 失敗
 */
 int DrawString(int x,int y,const char *String,int color, int EdgeColor DXPDEFARG(0));
 /**
- * 書式付き文字列を描画する
+ * 書式付き文字列を描画する(本家互換)
  * 
- * x,y 文字列の左上の座標
- * color 文字列の色
- * String 書式付き文字列
+ * @param x,y 文字列の左上の座標
+ * @param color 文字列の色
+ * @param String 書式付き文字列
  * @retval 0 成功
  * @retval -1 失敗
 */
 int DrawFormatString(int x,int y,int color,const char *String,...);
+/**
+ * 文字列を描画した時の横幅を取得する(本家互換)
+ * 
+ * @param str 文字列
+ * @param len 文字列の長さ
+ * @return 文字列を描画した時の長さ
+ * @retval -1 失敗
+*/
+int GetDrawStringWidth(const char *str,int len);
+/**
+ * 書式付き文字列を描画した時の横幅を取得する(本家互換)
+ * 
+ * @param format 書式付き文字列
+ * @param ... 書式付き文字列に付随するデータ
+ * @return 文字列を描画した時の長さ
+ * @retval -1 失敗
+*/
+int GetDrawFormatStringWidth(const char *format, ... );
+/**
+ * フォントサイズを設定する(本家互換)
+ * 
+ * @param size フォントサイズ
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
+int SetFontSize(int size);
+/**
+ * フォントの文字の太さを設定する
+ * 
+ * この関数は動きません。0を返すだけです。
+ * @param thickness フォントの太さ（無視されます）
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
+int SetFontThickness(int thickness);
+/**
+ * フォントを変更する(本家互換)
+ * 
+ * pgfフォントのみ読み込めます。
+ * @param fontname フォント名
+ * @param charset 文字コード
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
+int ChangeFont(const char *fontname,int charset);
+/**
+ * フォントタイプを変更する(本家互換)
+ * 
+ * 以下の値が指定可能ですが、アンチエイリアシングの有無は描画に反映されません。
+ * - -1（DX_FONTTYPE_NORMALとして扱われます）
+ * - DX_FONTTYPE_NORMAL
+ * - DX_FONTTYPE_EDGE
+ * - DX_FONTTYPE_ANTIALIASING　
+ * - DX_FONTTYPE_ANTIALIASING_EDGE
+ * @param type フォントタイプ
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
+int ChangeFontType(int type);
+
+/**
+ * フォントを読み込み、ハンドルを作成する
+ * 
+ * @param fontname フォント名
+ * @param size フォントサイズ
+ * @param thick フォントの太さ（無視されます）
+ * @param fonttype フォントタイプ 詳しくはSetFontTypeを参照してください。
+ * @param charset 文字セット　DXP_CP_が頭についているものを指定する必要があります
+ * @return フォントハンドル
+ * @retval -1 失敗
+*/
+int CreateFontToHandle(const char *fontname,int size,int thick,int fonttype,int charset DXPDEFARG(DXP_CP_SJIS));
+/**
+ * フォントハンドルを削除する(本家互換)
+ *
+ * @param handle 削除したいフォントハンドル
+ * @retval 0 成功
+ * @retval -1 失敗
+ *
+*/
+int DeleteFontToHandle(int handle);
+/**
+ * フォントハンドルを指定して文字列を描画する(本家互換)
+ * 
+ * @param x,y 文字列の左上の座標
+ * @param str 描画する文字列
+ * @param color 文字列の色
+ * @param handle フォントハンドル
+ * @param edgecolor 文字列のエッジの色
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
+int DrawStringToHandle(int x,int y,const char *str,int color,int handle,int edgecolor DXPDEFARG(0));
+/**
+ * フォントハンドルを指定して書式付き文字列を描画する(本家互換)
+ * 
+ * @param x,y 文字列の左上の座標
+ * @param color 文字列の色
+ * @param handle フォントハンドル
+ * @param format 書式付き文字列
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
+int	DrawFormatStringToHandle(int x,int y,int color,int handle,const char *format,...);
+/**
+ * フォントハンドルを指定して文字列を描画した時の横幅を取得する(本家互換)
+ * 
+ * @param str 文字列
+ * @param len 文字列の長さ
+ * @param handle フォントハンドル
+ * @return 文字列を描画した時の長さ
+ * @retval -1 失敗
+*/
+int GetDrawStringWidthToHandle(const char *str,int len,int handle);
+/**
+ * フォントハンドルを指定して書式付き文字列を描画した時の横幅を取得する(本家互換)
+ * 
+ * @param handle フォントハンドル
+ * @param format 書式付き文字列
+ * @param ... 書式付き文字列に付随するデータ
+ * @return 文字列を描画した時の長さ
+ * @retval -1 失敗
+*/
+int GetDrawFormatStringWidthToHandle(int handle,const char *format, ... );
+/**
+ * フォントハンドルを全て開放する(本家互換)
+ * 
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
+int InitFontToHandle(void);
 /*@}*/
 
 /**@defgroup デバッグ関連*/

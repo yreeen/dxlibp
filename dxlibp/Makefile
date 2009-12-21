@@ -100,7 +100,10 @@ OBJS += graphics/dxppng.o
 
 #intrafont
 OBJS += font/intraFont.o
-OBJS += font/intrafont_wrapper.o
+OBJS += font/font.o
+OBJS += font/createfonttohandle.o
+OBJS += font/deletefonttohandle.o
+OBJS += font/getdrawstringwidthtohandle.o
 
 #debug functions
 OBJS += debug/debug.o

@@ -545,7 +545,7 @@ void *GetDisplaybufferAddress()
 void* dxpGuGetMemory(u32 size)
 {
 	int p = sceGuCheckList();
-	if(p > GULIST_LEN){ return NULL;}//致命的なエラー。バッファオーバーランが発生している
+	if(p > GULIST_LEN){return NULL;}//致命的なエラー。バッファオーバーランが発生している
 	if(p > GULIST_LIM){GUSYNC;GUSTART;}//コマンドリストが残り少ないので一度同期をとる
 	return sceGuGetMemory(size);
 }

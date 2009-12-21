@@ -1,5 +1,4 @@
 #include "dxlibp.h"
-//#include <libc/stdio.h>
 
 #define DXPCPTABLE_MAX 20
 

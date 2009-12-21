@@ -30,9 +30,32 @@ Uses liblzr by BenHur
 DXライブラリPortable
 DX Library Portable Copyright (C) 2008-2009 Kawai Yuichi.
 
+【DXライブラリとの主な違い】
+PSPで動く
+画像フォーマットは現時点でPNGのみ
+音声フォーマットは現時点でMP3のみ
+フォントはpgfフォントのみ
+同時再生可能な音声データは８つまで
+画面サイズは480x272固定
+最初から裏画面を使う設定になっている
+GPUを使わずに描画する機能は無い
+未実装の関数がそれなりにある
+アーカイブ読み込み機能が無い
+3D機能が無い
+
 【0.4.x以前からの更新注意！】
 依存しているライブラリが変更されたので、Makefileに指定するLIBSの項目が変化しています。
 LIBS = dxlibp.a -lpspgu -lz -lm -lpsprtc -lpspaudio -lpspaudiocodec -lstdc++ -lpsputility -lpspvalloc -lpsppower
+また、それに伴って必要な著作権表示も変更されています。上にあるので確認してください。
+
+VFPUを使うようになったので、スレッドアトリビュート設定を下記のように修正してください。
+PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER | THREAD_ATTR_VFPU);
+
+VFPUを使う人へ
+乱数生成関数、算術支援関数、DraｗModiGraph、DrawRotaGraph及びその派生関数では内部で一時的にVFPUレジスタの０〜２ブロックを使っています。
+それらの関数が呼ばれた時点で該当するVFPUレジスタの内容が破壊されますので、注意してください。
+また、今後のアップデートでVFPUを使う関数が増えたり、使うレジスタを増やす可能性があります。
+
 
 【更新履歴】
 
