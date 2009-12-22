@@ -10,10 +10,12 @@ int DrawModiGraph( int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y
 	if(dxpGraphicsSetup2DTex(gptr->tex,trans) < 0)return -1;
 	int sw = dxpPsm2SliceSize[gptr->tex->psm][0];
 	int sh = dxpPsm2SliceSize[gptr->tex->psm][1];
-	u0 = gptr->u1 - gptr->u0;
-	v0 = gptr->v1 - gptr->v0;
-	int swn = (u0 + sw - 1) / sw;
-	int shn = (v0 + sh - 1) / sh;
+	u0 = gptr->u0;
+	v0 = gptr->v0;
+	u1 = gptr->u1 - u0;
+	v1 = gptr->v1 - v0;
+	int swn = (u1 + sw - 1) / sw;
+	int shn = (v1 + sh - 1) / sh;
 	DXP_FVF_2DTEX *buf = (DXP_FVF_2DTEX*)dxpGuGetMemory(sizeof(DXP_FVF_2DTEX) * (swn * 2 + 2) * shn);
 	DXP_FVF_2DTEX *vtxbuf = buf;
 	register int x,y;
@@ -40,10 +42,13 @@ int DrawModiGraph( int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y
 		"vi2f.p	R002,	R002,	1/2\n"
 		"vone.s	S033\n"
 		"vrcp.p	R002,	R002\n"
+		"mtv	%10,	S100\n"
+		"mtv	%11,	S110\n"
+		"vi2f.p	R100,	R100,	1/2\n"
 		:
 		:"m"(x1),"m"(x2),"m"(x3),"m"(x4),
 			"m"(y1),"m"(y2),"m"(y3),"m"(y4),
-			"r"(u0),"r"(v0)
+			"r"(u1),"r"(v1),"r"(u0),"r"(v0)
 	);
 
 	v0 = gptr->v0;
@@ -59,6 +64,7 @@ int DrawModiGraph( int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y
 			"mtv	%2,	S003\n"
 			"mtv	%3,	S013\n"
 			"vi2f.p	R003,	R003,	1/2\n"
+			"vsub.p	R003,	R003,	R100\n"
 			"vmul.p	R003,	R003,	R002\n"
 			"vmul.s	S023,	S013,	S003\n"
 			"vdot.q	S022,	R003,	R000\n"
@@ -80,6 +86,7 @@ int DrawModiGraph( int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y
 			"mtv	%2,	S003\n"
 			"mtv	%3,	S013\n"
 			"vi2f.p	R003,	R003,	1/2\n"
+			"vsub.p	R003,	R003,	R100\n"
 			"vmul.p	R003,	R003,	R002\n"
 			"vmul.s	S023,	S013,	S003\n"
 			"vdot.q	S022,	R003,	R000\n"
@@ -104,6 +111,7 @@ int DrawModiGraph( int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y
 				"mtv	%2,	S003\n"
 				"mtv	%3,	S013\n"
 				"vi2f.p	R003,	R003,	1/2\n"
+				"vsub.p	R003,	R003,	R100\n"
 				"vmul.p	R003,	R003,	R002\n"
 				"vmul.s	S023,	S013,	S003\n"
 				"vdot.q	S022,	R003,	R000\n"
@@ -125,6 +133,7 @@ int DrawModiGraph( int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y
 				"mtv	%2,	S003\n"
 				"mtv	%3,	S013\n"
 				"vi2f.p	R003,	R003,	1/2\n"
+				"vsub.p	R003,	R003,	R100\n"
 				"vmul.p	R003,	R003,	R002\n"
 				"vmul.s	S023,	S013,	S003\n"
 				"vdot.q	S022,	R003,	R000\n"

@@ -18,8 +18,10 @@ int FileRead_getc(int filehandle)
 	if(dxpFileioData.sleep)
 		if(dxpFileioReopen(filehandle) < 0)return -1;
 
-	u8 res;
-	pHnd->pos += sceIoRead(dxpFileioData.handleArray[filehandle].fd,&res,1);
-	
-	return res;
+	char c;
+	int status;
+	status = sceIoRead(dxpFileioData.handleArray[filehandle].fd,&c,1);
+	if(status != 1)return -1;
+	pHnd->pos += 1;
+	return c;
 }
