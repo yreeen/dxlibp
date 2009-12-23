@@ -116,6 +116,7 @@ void dxpFontIntrafontStart(void)
 		break;
 	}
 	sceGuColor(color);
+	dxpGraphicsData.gucolor = color;
 }																					
 
 void dxpFontIntrafontFinish(void)

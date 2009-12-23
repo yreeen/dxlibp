@@ -11,14 +11,18 @@ int PlaySoundMem(int handle,int playtype,int rewindflag)
 		dxpSoundReleaseHandle(handle);
 		return -1;
 	}
-	if(pHnd->playing)return 0;
 	if(rewindflag)pHnd->gotoPos = 0;
+	if(pHnd->playing)return 0;
 	switch(playtype)
 	{
 	case DX_PLAYTYPE_NORMAL:
 		pHnd->loop = 0;
 		pHnd->cmd = DXP_SOUNDCMD_PLAY;
-		while(pHnd->playing)if(pHnd->threadId == -1)break;
+		while(pHnd->playing)if(pHnd->threadId == -1)
+		{
+			dxpSoundReleaseHandle(handle);
+			return -1;
+		}
 		break;
 	case DX_PLAYTYPE_BACK:
 		pHnd->loop = 0;

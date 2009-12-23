@@ -4,10 +4,19 @@
 
 int ConvertGraphFormat(int gh,int psm)
 {
+	GUINITCHECK;
+	GUSYNC;
 	u32 size,i;
+	int swizzleflag = 0;
 	DXPTEXTURE3 *texptr = dxpGraphHandle2TexPtr(gh);
 	if(!texptr)return -1;
 	if(texptr->psm == psm)return 0;
+	if(texptr->swizzledflag)
+	{
+		swizzleflag = 1;
+		UnswizzleGraph(gh);
+		if(texptr->swizzledflag)return -1;
+	}
 	void *src,*dest;
 	u16 *src16,*dest16;//このあたりちょい無駄
 	u32 *src32,*dest32;
@@ -98,5 +107,6 @@ int ConvertGraphFormat(int gh,int psm)
 	sceKernelDcacheWritebackAll();
 	texptr->psm = psm;
 	texptr->reloadflag = 1;
+	if(swizzleflag)SwizzleGraph(gh);
 	return 0;
 }

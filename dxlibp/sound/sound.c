@@ -53,7 +53,7 @@ int dxpSoundReleaseHandle(int handle)
 	pHnd = dxpSoundArray + handle;
 	if(!pHnd->used)return 0;
 	pHnd->cmd = DXP_SOUNDCMD_EXIT;
-	while(pHnd->threadId != -1)sceKernelDelayThread(100);
+	while(pHnd->threadId != -1)sceKernelDelayThread(1000);
 	pHnd->used = 0;
 	return 0;
 }
@@ -127,7 +127,7 @@ void dxpSoundThread_memnopress(DXPSOUNDHANDLE *pHnd,int fh)
 			dxpSoundThreadExit(pHnd);
 		}
 		pHnd->pcmOut = (u16*)(pcmBuf + pHnd->currentPos);
-		sceKernelDelayThread(1);
+		sceKernelDelayThread(1000);
 	}
 	dxpSoundMp3End(pHnd,fh);
 	pHnd->loadstatus = 1;
@@ -153,7 +153,7 @@ void dxpSoundThread_memnopress(DXPSOUNDHANDLE *pHnd,int fh)
 		case DXP_SOUNDCMD_EXIT:
 			if(channel >= 0)
 			{
-				while(sceAudioGetChannelRestLen(channel) > 0)sceKernelDelayThread(100);
+				while(sceAudioGetChannelRestLen(channel) > 0)sceKernelDelayThread(1000);
 				sceAudioChRelease(channel);
 			}
 			dxpSafeFree(pcmBuf);
@@ -189,9 +189,8 @@ void dxpSoundThread_memnopress(DXPSOUNDHANDLE *pHnd,int fh)
 			{
 				pHnd->currentPos = (pHnd->loopPos[0] / (pHnd->pcmOutSize / 4)) * (pHnd->pcmOutSize / 4);
 			}
-			while(sceAudioGetChannelRestLen(channel) > 0)sceKernelDelayThread(100);
 			sceAudioSetChannelDataLen(channel,pHnd->pcmOutSize / 4);
-			sceAudioOutputPanned(channel,
+			sceAudioOutputPannedBlocking(channel,
 				PSP_AUDIO_VOLUME_MAX * (pHnd->pan > 0 ? 1.0f - pHnd->pan / 10000.0f : 1.0f) * pHnd->volume / 255.0f,
 				PSP_AUDIO_VOLUME_MAX * (pHnd->pan < 0 ? 1.0f + pHnd->pan / 10000.0f : 1.0f) * pHnd->volume / 255.0f,
 				pcmBuf + pHnd->currentPos);
@@ -200,11 +199,11 @@ void dxpSoundThread_memnopress(DXPSOUNDHANDLE *pHnd,int fh)
 		{
 			if(channel >= 0)
 			{
-				while(sceAudioGetChannelRestLen(channel) > 0)sceKernelDelayThread(100);
+				while(sceAudioGetChannelRestLen(channel) > 0)sceKernelDelayThread(3000);
 				sceAudioChRelease(channel);
 				channel = -1;
 			}
-			sceKernelDelayThread(100);
+			sceKernelDelayThread(500);
 		}
 	}
 }
@@ -242,7 +241,7 @@ void dxpSoundThread_file(DXPSOUNDHANDLE *pHnd,int fh)
 		case DXP_SOUNDCMD_EXIT:
 			if(channel >= 0)
 			{
-				while(sceAudioGetChannelRestLen(channel) > 0)sceKernelDelayThread(100);
+				while(sceAudioGetChannelRestLen(channel) > 0)sceKernelDelayThread(3000);
 				sceAudioChRelease(channel);
 			}
 			dxpSafeFree(pcmBuf[0]);
@@ -288,7 +287,7 @@ void dxpSoundThread_file(DXPSOUNDHANDLE *pHnd,int fh)
 				//pHnd->cmd = DXP_SOUNDCMD_STOP;
 				continue;
 			}
-			while(sceAudioGetChannelRestLen(channel) > 0)sceKernelDelayThread(100);
+			while(sceAudioGetChannelRestLen(channel) > 0)sceKernelDelayThread(3000);
 			sceAudioSetChannelDataLen(channel,pHnd->pcmOutSize / 4);
 			sceAudioOutputPanned(channel,
 				PSP_AUDIO_VOLUME_MAX * (pHnd->pan > 0 ? 1.0f - pHnd->pan / 10000.0f : 1.0f) * pHnd->volume / 255.0f,
@@ -299,11 +298,11 @@ void dxpSoundThread_file(DXPSOUNDHANDLE *pHnd,int fh)
 		{
 			if(channel >= 0)
 			{
-				while(sceAudioGetChannelRestLen(channel) > 0)sceKernelDelayThread(100);
+				while(sceAudioGetChannelRestLen(channel) > 0)sceKernelDelayThread(1000);
 				sceAudioChRelease(channel);
 				channel = -1;
 			}
-			sceKernelDelayThread(100);
+			sceKernelDelayThread(500);
 		}
 	}
 }

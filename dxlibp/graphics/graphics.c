@@ -377,8 +377,10 @@ int dxpGraphicsSetup2DTex(DXPTEXTURE3 *texptr,int flag)
 	case DX_BLENDMODE_DESTCOLOR:
 		tcc = GU_TCC_RGB;
 		tfx = GU_TFX_MODULATE;
-		if(alphaEnable)tcc = GU_TCC_RGBA;
-	break;
+		if(!alphaEnable)
+		{
+			break;
+		}
 	case DX_BLENDMODE_ALPHA:
 	case DX_BLENDMODE_ADD:
 	case DX_BLENDMODE_SUB:
@@ -444,7 +446,7 @@ int dxpGraphicsSetup2D(u32 color)
 	{
 	case DX_BLENDMODE_NOBLEND:
 		GUDISABLE(GU_BLEND);
-		sceGuColor(color);
+		sceGuColor(dxpGraphicsData.gucolor = color);
 		dxpGraphicsData.forceupdate = 0;
 		return 0;
 	case DX_BLENDMODE_INVSRC:
@@ -500,7 +502,7 @@ int dxpGraphicsSetup2D(u32 color)
 	default:
 		return -1;
 	}
-	sceGuColor(color);
+	sceGuColor(dxpGraphicsData.gucolor = color);
 
 	GUENABLE(GU_BLEND);
 	if(dxpGraphicsData.forceupdate

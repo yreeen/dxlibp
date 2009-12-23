@@ -68,7 +68,6 @@ int dxpGraphicsReleseGraphicHandle(DXPGRAPHICSHANDLE* gptr)
 
 int dxpGraphicsCalcTexSize(int width,int height,int psm)
 {
-	width = dxpN_2(width);
 	height = dxpN_2(height);
 	switch(psm)
 	{
@@ -76,16 +75,20 @@ int dxpGraphicsCalcTexSize(int width,int height,int psm)
 	case GU_PSM_5551:
 	case GU_PSM_5650:
 	case GU_PSM_T16:
+		width = ((width + 7) >> 3) << 3;
 		return width * height * 2;
 	case GU_PSM_8888:
 	case GU_PSM_T32:
+		width = ((width + 3) >> 2) << 2;
 		return width * height * 4;
 	case GU_PSM_DXT1:
 	case GU_PSM_T4:
+		width = ((width + 31) >> 5) << 5;
 		return width * height / 2;
 	case GU_PSM_DXT3:
 	case GU_PSM_DXT5:
 	case GU_PSM_T8:
+		width = ((width + 15) >> 4) << 4;
 		return width * height;
 	}
 	return 0;
@@ -161,6 +164,8 @@ static void dxpGraphicsUnswizzleFast(u8* out, const u8* in, unsigned int width, 
 
 int SwizzleGraph(int gh)
 {
+	GUINITCHECK;
+	GUSYNC;
 	u32 size;
 	DXPTEXTURE3 *texptr = dxpGraphHandle2TexPtr(gh);
 	if(!texptr)return -1;
@@ -188,6 +193,8 @@ int SwizzleGraph(int gh)
 
 int UnswizzleGraph(int gh)
 {
+	GUINITCHECK;
+	GUSYNC;
 	u32 size;
 	DXPTEXTURE3 *texptr = dxpGraphHandle2TexPtr(gh);
 	if(!texptr)return -1;
@@ -215,6 +222,8 @@ int UnswizzleGraph(int gh)
 
 int MoveGraphToVRAM(int gh)
 {
+	GUINITCHECK;
+	GUSYNC;
 	DXPTEXTURE3 *texptr;
 	int size;
 	texptr = dxpGraphHandle2TexPtr(gh);
@@ -231,6 +240,8 @@ int MoveGraphToVRAM(int gh)
 
 int MoveGraphToDDR(int gh)
 {
+	GUINITCHECK;
+	GUSYNC;
 //vramあり→vram上のデータを消す
 //vramなし→なにもしない
 	DXPTEXTURE3 *texptr;
@@ -239,7 +250,7 @@ int MoveGraphToDDR(int gh)
 	if(!texptr)return -1;
 	if(!texptr->texvram)return 0;
 	size = dxpGraphicsCalcTexSize(texptr->pitch,texptr->height,texptr->psm);
-	memcpy(texptr->texdata,texptr->texvram,size);
+	memcpy(texptr->texdata,vCPUPointer(texptr->texvram),size);
 	vfree(texptr->texvram);
 	texptr->texvram = NULL;
 	texptr->reloadflag = 1;
