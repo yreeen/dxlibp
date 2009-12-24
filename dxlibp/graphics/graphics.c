@@ -555,7 +555,7 @@ void* dxpGuGetMemory(u32 size)
 void dxpGraphicsWaitVSync()
 {
 	if(!dxpGraphicsData.waitvsinc)return;
-	sceDisplayWaitVblank();
+	sceDisplayWaitVblankStart();
 }
 
 
