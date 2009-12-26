@@ -5,8 +5,6 @@ int DrawModiGraphF(float x1,float y1,float x2,float y2,float x3,float y3,float x
 	register int u0,u1,v0,v1;
 	DXPGRAPHICSHANDLE* gptr;
 	GHANDLE2GPTR(gptr,gh);
-	GUSTART;
-	trans = trans ? 1 : 0;
 	if(dxpGraphicsSetup2DTex(gptr->tex,trans) < 0)return -1;
 	int sw = dxpPsm2SliceSize[gptr->tex->psm][0];
 	int sh = dxpPsm2SliceSize[gptr->tex->psm][1];

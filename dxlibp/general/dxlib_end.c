@@ -4,8 +4,8 @@
 int DxLib_End()
 {
 	if(!dxpGeneralData.initialized)return 0;
-	InitSoundMem();
+//	InitSoundMem();
 	dxpGraphicsEnd();
-	dxpSafeAllocEnd();
+	//dxpSafeAllocEnd();
 	return 0;
 }

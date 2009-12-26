@@ -222,11 +222,9 @@ int dxpGraphicsReleseTexture(DXPTEXTURE3* texptr);
 DXPGRAPHICSHANDLE* dxpGraphicsCreateGraphicHandle();
 int dxpGraphicsReleseGraphicHandle(DXPGRAPHICSHANDLE* gptr);
 
-DXPTEXTURE3* dxpGraphHandle2TexPtr(int gh);
 
-int dxpGraphicsSetup2DTex(DXPTEXTURE3 *texptr,int flag);//flag:0x01 trans,0x02 sprite
+int dxpGraphicsSetup2DTex(DXPTEXTURE3 *texptr,int flag);
 int dxpGraphicsSetup2D(u32 color);
-void* dxpGuGetMemory(u32 size);
 
 #define PSM2BYTEX2(PSM) (PSM == GU_PSM_5650 || PSM == GU_PSM_5551 || PSM == GU_PSM_4444 ? 4 : (PSM == GU_PSM_8888 ? 8 : (PSM == GU_PSM_T8 ? 2 : 1)))
 
@@ -238,3 +236,16 @@ extern DXPGRAPHICSDATA dxpGraphicsData;
 extern u32 dxpGuList[GULIST_LEN];
 extern u8 dxpPsm2SliceSize[11][2];
 
+static inline DXPTEXTURE3* dxpGraphHandle2TexPtr(int gh)
+{
+	if(gh < 0 || gh >= DXP_BUILDOPTION_GHANDLE_MAXNUM)return NULL;
+	return dxpGraphicsData.grapharray[gh]->tex;
+}
+
+static inline void* dxpGuGetMemory(u32 size)
+{
+	int p = sceGuCheckList();
+	if(p > GULIST_LEN){return NULL;}//致命的なエラー。バッファオーバーランが発生している
+	if(p > GULIST_LIM){GUSYNC;GUSTART;}//コマンドリストが残り少ないので一度同期をとる
+	return sceGuGetMemory(size);
+}

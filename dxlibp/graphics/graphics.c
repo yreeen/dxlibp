@@ -259,7 +259,7 @@ int dxpGraphicsSetup2DTex(DXPTEXTURE3 *texptr,int flag)
 
 	u8 colorKey = 0,alphaEnable = 0;
 	
-	if(flag & 1)
+	if(flag)
 	{
 		if(texptr->alphabit)
 			alphaEnable = 1;
@@ -379,6 +379,7 @@ int dxpGraphicsSetup2DTex(DXPTEXTURE3 *texptr,int flag)
 		tfx = GU_TFX_MODULATE;
 		if(!alphaEnable)
 		{
+			GUDISABLE(GU_ALPHA_TEST);
 			break;
 		}
 	case DX_BLENDMODE_ALPHA:
@@ -387,11 +388,14 @@ int dxpGraphicsSetup2DTex(DXPTEXTURE3 *texptr,int flag)
 	case DX_BLENDMODE_INVDESTCOLOR:
 		tcc = GU_TCC_RGBA;
 		tfx = GU_TFX_MODULATE;
+		GUENABLE(GU_ALPHA_TEST);
+		sceGuAlphaFunc(GU_NOTEQUAL,0x00,0xff);
 		break;
 	case DX_BLENDMODE_INVSRC:
 		sceGuTexEnvColor(0x00000000);
 		tcc = GU_TCC_RGBA;
 		tfx = GU_TFX_BLEND;
+		GUDISABLE(GU_ALPHA_TEST);
 		break;
 	default:
 		return -1;
@@ -544,13 +548,6 @@ void *GetDisplaybufferAddress()
 }
 
 
-void* dxpGuGetMemory(u32 size)
-{
-	int p = sceGuCheckList();
-	if(p > GULIST_LEN){return NULL;}//致命的なエラー。バッファオーバーランが発生している
-	if(p > GULIST_LIM){GUSYNC;GUSTART;}//コマンドリストが残り少ないので一度同期をとる
-	return sceGuGetMemory(size);
-}
 
 void dxpGraphicsWaitVSync()
 {

@@ -4,8 +4,6 @@ int DrawExtendGraph(int x1,int y1,int x2,int y2,int gh,int trans)
 	if((x2 < x1 || y2 < y1) && !(x2 < x1 && y2 < y1))return DrawModiGraph(x1,y1,x2,y1,x2,y2,x1,y2,gh,trans);//X方向反転画像がうまく動作しないので（GU_SPRITESを使ったのが原因と思われる）強引に回避
 	DXPGRAPHICSHANDLE* gptr;
 	GHANDLE2GPTR(gptr,gh)
-	GUSTART;
-	trans = trans ? 1 : 0;
 	if(dxpGraphicsSetup2DTex(gptr->tex,trans) < 0)return -1;
 	int sw = dxpPsm2SliceSize[gptr->tex->psm][0];
 	int sh = dxpPsm2SliceSize[gptr->tex->psm][1];

@@ -39,7 +39,7 @@ int DxLib_Init()
 {
 	if(dxpGeneralData.initialized)return 0;
 
-	dxpSafeAllocInit();
+	//dxpSafeAllocInit();
 	if(!dxpGeneralData.homebutton_callback_initialized)
 	{
 		dxpGeneralData.homebutton_callback_threadid = SetExitCallback();
@@ -47,6 +47,7 @@ int DxLib_Init()
 	}
 	dxpInputInit();
 	dxpGraphicsInit();
+	dxpSoundInit();
 
 	SRand(time(NULL));
 	

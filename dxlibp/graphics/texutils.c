@@ -5,11 +5,6 @@
 #include"../graphics.h"
 
 
-DXPTEXTURE3* dxpGraphHandle2TexPtr(int gh)
-{
-	if(gh < 0 || gh >= DXP_BUILDOPTION_GHANDLE_MAXNUM)return NULL;
-	return dxpGraphicsData.grapharray[gh]->tex;
-}
 
 DXPTEXTURE3* dxpGraphicsCreateTexture()
 {

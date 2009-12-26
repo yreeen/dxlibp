@@ -194,11 +194,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\debug\dxpdebugputs_zenkaku.c"
+				RelativePath=".\debug_\dxpdebugputs_zenkaku.c"
 				>
 			</File>
 			<File
-				RelativePath=".\debug_\dxpdebugputs_zenkaku.c"
+				RelativePath=".\debug\dxpdebugputs_zenkaku.c"
 				>
 			</File>
 			<File

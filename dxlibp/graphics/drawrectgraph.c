@@ -4,9 +4,7 @@ int DrawRectGraph(int destx,int desty,int srcx,int srcy,int width,int height,int
 {
 	DXPGRAPHICSHANDLE* gptr;
 	GHANDLE2GPTR(gptr,gh);
-	GUSTART;
 	if(srcx < 0 || srcy < 0 || srcx + width > gptr->u1 - gptr->u0 || srcy + height > gptr->v1 - gptr->v0)return -1;
-	trans = trans ? 1 : 0;
 	if(dxpGraphicsSetup2DTex(gptr->tex,trans) < 0)return -1;
 	int x1 = destx,x2 = destx + width,y1 = desty,y3 = desty + height;
 	int x3 = x2,x4 = x1,y2 = y1,y4 = y3;

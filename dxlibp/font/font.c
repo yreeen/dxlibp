@@ -200,7 +200,7 @@ int	DrawFormatStringToHandle(int x,int y,int color,int handle,const char *format
 
 int SetFontSizeF(float size)
 {
-	if(!dxpFontData.init)return -1;
+	if(!dxpFontData.init)dxpFontInit();
 	dxpFontArray[0].scale = size / 16;
 	return 0;
 }
@@ -217,7 +217,7 @@ int SetFontThickness(int thickness)
 
 int ChangeFont(const char *fontname,int charset)
 {
-	if(!dxpFontData.init)return -1;
+	if(!dxpFontData.init)dxpFontInit();
 	intraFont *pif;
 	pif = intraFontLoad(fontname,charset);
 	if(!pif)return -1;
@@ -229,7 +229,7 @@ int ChangeFont(const char *fontname,int charset)
 int ChangeFontType(int type)
 {
 	if(type == -1)type = 0;
-	if(!dxpFontData.init)return -1;
+	if(!dxpFontData.init)dxpFontInit();
 	if(type < 0 || type > 3)return -1;
 	dxpFontArray[0].fontAlign = type & 1;
 	return 0;

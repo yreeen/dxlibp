@@ -131,17 +131,17 @@ OBJS += osk/osk.o
 #sound functions
 OBJS += sound/sound.o
 OBJS += sound/mp3.o
-OBJS += sound/initsoundmem.o
-OBJS += sound/loadsoundmem.o
-OBJS += sound/playsoundmem.o
-OBJS += sound/checksoundmem.o
-OBJS += sound/stopsoundmem.o
-OBJS += sound/deletesoundmem.o
-OBJS += sound/setlooppossoundmem.o
-OBJS += sound/setloopsamplepossoundmem.o
-OBJS += sound/changevolumesoundmem.o
-OBJS += sound/setpansoundmem.o
-OBJS += sound/setcreatesounddatatype.o
+#OBJS += sound/initsoundmem.o
+#OBJS += sound/loadsoundmem.o
+#OBJS += sound/playsoundmem.o
+#OBJS += sound/checksoundmem.o
+#OBJS += sound/stopsoundmem.o
+#OBJS += sound/deletesoundmem.o
+#OBJS += sound/setlooppossoundmem.o
+#OBJS += sound/setloopsamplepossoundmem.o
+#OBJS += sound/changevolumesoundmem.o
+#OBJS += sound/setpansoundmem.o
+#OBJS += sound/setcreatesounddatatype.o
 
 
 INCDIR = 

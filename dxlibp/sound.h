@@ -11,54 +11,76 @@
 
 #define DXP_SOUNDFMT_MP3 1
 
+#define SHND2PTR(HNDLE,PTR) {if(!dxpSoundData.init)return -1; if(HNDLE < 0 || HNDLE >= DXP_BUILDOPTION_SOUNDHANDLE_MAX)return -1;PTR = dxpSoundArray + HNDLE;if(!PTR->used)return -1;}
+
+
 typedef struct DXPAVCODEC_BUFFER
 {
 	u32 reserved0[6];
 	u8* datIn;
 	u32 frameSize0;
-	u16* pcmOut;
+	u32* pcmOut;
 	u32 decodeByte;//set 4608 (= 1152[sample per frame] * 2[byte per sample] * 2[channel])
 	u32 frameSize1;
 	u32 reserved1[54];
 }DXPAVCODEC_BUFFER;
 
+typedef struct DXPAVCONTEXT_MP3
+{
+	DXPAVCODEC_BUFFER *avBuf;
+	int id3v1Pos;
+	int id3v2Pos;
+	u32 blockId;//メモリ確保に使う。
+	u8 *mp3Buf;
+	u32 mp3BufSize;
+}DXPAVCONTEXT_MP3;
+
+typedef struct DXPAVCONTEXT
+{
+	int fileHandle;//Uファイルハンドル
+	int fileSize;//Uファイルサイズ
+
+	u32 *pcmOut;//U出力先
+
+	int sampleRate;//Dサンプルレート
+	int nextPos;//Dデコーダが次にデコードするサンプル位置
+	int outSampleNum;//Dデコーダが必要とする出力先バッファサイズ（サンプル数）
+	u8 format;//Dフォーマット
+	union
+	{
+		DXPAVCONTEXT_MP3 mp3;
+	};
+}DXPAVCONTEXT;
+
 typedef struct DXPSOUNDHANDLE
 {
-	//ステータス
+	//ハンドルステータス
 	unsigned used : 1;
-	SceUID threadId;
-	//メインスレッドからの指示
+	int soundDataType;
+	//ユーザーから指定する情報
 	unsigned loop : 1;
-	unsigned cmd : 2;//DXP_SOUNDCMD_XXXX
-	int gotoPos;
-	int loopPos[2];//A-B in sample num.
+	unsigned cmd : 2;
+	int loopResumePos;
 	u8 volume;
 	int pan;
-	char filename[256];
-	int soundDataType;
 
-	//再生スレッドからの情報
-	int length;
-	int currentPos;
-	int sampleRate;
-	int id3v1;
-	int id3v2;
-	int loadstatus;
-	unsigned playing : 1;
-
-	//デコード関連
-	u8 format;
-	u16* pcmOut;
-	int pcmOutSize;
-	union{
-		struct
-		{
-			int handle;
-			DXPAVCODEC_BUFFER *avBuf;
-			u8 *mp3Buf;
-			u32 mp3BufSize;
-		}mp3;
+	union
+	{
+		struct{
+			int threadId;
+			int gotoPos;
+			unsigned playing : 1;
+		}file;
+		struct{
+			int refCount;
+			int sema;
+			int length;
+			u32 *pcmBuf;
+		}memnopress;
 	};
+
+
+	DXPAVCONTEXT avContext;
 }DXPSOUNDHANDLE;
 
 typedef struct DXPSOUNDDATA
@@ -74,10 +96,15 @@ int dxpSoundInit();
 int dxpSoundTerm();
 int dxpSoundReserveHandle();
 int dxpSoundReleaseHandle(int handle);
-int dxpSoundThread(SceSize datLen,void* datPtr);
 
+int dxpSoundMp3Init(DXPAVCONTEXT *av);
+int dxpSoundMp3GetSampleLength(DXPAVCONTEXT *av);
+int dxpSoundMp3Seek(DXPAVCONTEXT *av,int sample);
+int dxpSoundMp3Decode(DXPAVCONTEXT *av);
+int dxpSoundMp3End(DXPAVCONTEXT *av);
 
-int dxpSoundMp3Init(DXPSOUNDHANDLE *pHnd,int fh);
-int dxpSoundMp3Seek(DXPSOUNDHANDLE *pHnd,int fh,int sample);
-int dxpSoundMp3Decode(DXPSOUNDHANDLE *pHnd,int fh);
-int dxpSoundMp3End(DXPSOUNDHANDLE *pHnd,int fh);
+int dxpSoundCodecInit(DXPSOUNDHANDLE *pHnd);
+int dxpSoundCodecGetSampleLength(DXPSOUNDHANDLE *pHnd);
+int dxpSoundCodecSeek(DXPSOUNDHANDLE *pHnd,int sample);
+int dxpSoundCodecDecode(DXPSOUNDHANDLE *pHnd);
+int dxpSoundCodecEnd(DXPSOUNDHANDLE *pHnd);

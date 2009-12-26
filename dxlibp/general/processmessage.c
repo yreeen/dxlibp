@@ -3,7 +3,7 @@
 #include "../safealloc.h"
 int ProcessMessage()
 {
-	dxpSafeAllocMain();
+	//dxpSafeAllocMain();
 	if(dxpGeneralData.homebutton_pushed)return -1;
 	
 	dxpInputRenew();

@@ -8,13 +8,14 @@
 
 int dxpSoundGetID3v1Size(int fh);
 int dxpSoundGetID3v2Size(int fh);
-int dxpSoundMp3CheckFrameHeader(u8 *buf);
-int dxpSoundMp3GetSampleRate(u8 *buf);
+static int dxpSoundMp3CheckFrameHeader(u8 *buf);
+static int dxpSoundMp3GetSampleRate(u8 *buf);
 
-int dxpSoundMp3Init(DXPSOUNDHANDLE *pHnd,int fh);
-int dxpSoundMp3Seek(DXPSOUNDHANDLE *pHnd,int fh,int sample);
-int dxpSoundMp3Decode(DXPSOUNDHANDLE *pHnd,int fh);
-int dxpSoundMp3End(DXPSOUNDHANDLE *pHnd,int fh);
+int dxpSoundMp3Init(DXPAVCONTEXT *av);
+int dxpSoundMp3GetSampleLength(DXPAVCONTEXT *av);
+int dxpSoundMp3Seek(DXPAVCONTEXT *av,int sample);
+int dxpSoundMp3Decode(DXPAVCONTEXT *av);
+int dxpSoundMp3End(DXPAVCONTEXT *av);
 
 int dxpSoundGetID3v1Size(int fh)
 {
@@ -66,6 +67,8 @@ int dxpSoundMp3CheckFrameHeader(u8 *buf)
 	};
 	const int samplerates[4] = {44100,48000,32000,2};
 
+	if(buf[0] == 'T' && buf[1] == 'A' && buf[2] == 'G')return -1;
+
 	header = buf[0];
 	header = (header << 8) | buf[1];
 	header = (header << 8) | buf[2];
@@ -99,112 +102,123 @@ int dxpSoundMp3GetSampleRate(u8 *buf)
 	return samplerates[(header & 0xc00) >> 10];
 }
 
-
-int dxpSoundMp3Init(DXPSOUNDHANDLE *pHnd,int fh)
+int dxpSoundMp3Init(DXPAVCONTEXT *av)
 {
 	u8 buf[4];
-	int filesize;
 	int status;
-	filesize = FileRead_seek(fh,0,SEEK_END);
-	pHnd->id3v1 = dxpSoundGetID3v1Size(fh);
-	pHnd->id3v2 = dxpSoundGetID3v2Size(fh);
-	FileRead_seek(fh,pHnd->id3v2,SEEK_SET);
-	if(FileRead_read(buf,4,fh) != 4)return -1;
+	av->mp3.id3v1Pos = av->fileSize - dxpSoundGetID3v1Size(av->fileHandle);
+	av->mp3.id3v2Pos = dxpSoundGetID3v2Size(av->fileHandle);
+	FileRead_seek(av->fileHandle,av->mp3.id3v2Pos,SEEK_SET);
+	if(FileRead_read(buf,4,av->fileHandle) != 4)return -1;
 	status = dxpSoundMp3CheckFrameHeader(buf);
 	if(status == -1)return -1;
-	pHnd->format = DXP_SOUNDFMT_MP3;
-	pHnd->sampleRate = dxpSoundMp3GetSampleRate(buf);
+	av->format = DXP_SOUNDFMT_MP3;
+	av->sampleRate = dxpSoundMp3GetSampleRate(buf);
 
-	for(pHnd->length = 0;(status = dxpSoundMp3CheckFrameHeader(buf)) != -1;pHnd->length += 1152)
-	{
-		FileRead_seek(fh,status - 4,SEEK_CUR);
-		if(FileRead_read(buf,4,fh) != 4)break;
-		if(!strncmp((char*)buf,"TAG",3))break;
-	}
-	FileRead_seek(fh,pHnd->id3v2,SEEK_SET);
-	pHnd->mp3.avBuf = (DXPAVCODEC_BUFFER*)dxpSafeAlloc(sizeof(DXPAVCODEC_BUFFER));
-	if(!pHnd->mp3.avBuf)return -1;
-	memset(pHnd->mp3.avBuf,0,sizeof(DXPAVCODEC_BUFFER));
-	status = sceAudiocodecCheckNeedMem((unsigned long*)pHnd->mp3.avBuf,PSP_CODEC_MP3);
+	FileRead_seek(av->fileHandle,av->mp3.id3v2Pos,SEEK_SET);
+	av->mp3.avBuf = dxpSafeAlloc(sizeof(DXPAVCODEC_BUFFER));
+	if(!av->mp3.avBuf)return -1;
+	memset(av->mp3.avBuf,0,sizeof(DXPAVCODEC_BUFFER));
+	status = sceAudiocodecCheckNeedMem((unsigned long*)av->mp3.avBuf,PSP_CODEC_MP3);
 	if(status < 0)
 	{
-		free(pHnd->mp3.avBuf);
+		dxpSafeFree(av->mp3.avBuf);
 		return -1;
 	}
-	status = sceAudiocodecGetEDRAM((unsigned long*)pHnd->mp3.avBuf,PSP_CODEC_MP3);
+	status = sceAudiocodecGetEDRAM((unsigned long*)av->mp3.avBuf,PSP_CODEC_MP3);
 	if(status < 0)
 	{
-		free(pHnd->mp3.avBuf);
+		dxpSafeFree(av->mp3.avBuf);
 		return -1;
 	}
-	status = sceAudiocodecInit((unsigned long*)pHnd->mp3.avBuf,PSP_CODEC_MP3);
+	status = sceAudiocodecInit((unsigned long*)av->mp3.avBuf,PSP_CODEC_MP3);
 	if(status < 0)
 	{
-		sceAudiocodecReleaseEDRAM((unsigned long*)pHnd->mp3.avBuf);
-		free(pHnd->mp3.avBuf);
+		sceAudiocodecReleaseEDRAM((unsigned long*)av->mp3.avBuf);
+		dxpSafeFree(av->mp3.avBuf);
 		return -1;
 	}
-	pHnd->mp3.mp3Buf = NULL;
-	pHnd->mp3.mp3BufSize = 0;
-	pHnd->currentPos = 0;
-	pHnd->pcmOutSize = 1152 * 2 * 2;
+	av->mp3.mp3Buf = NULL;
+	av->mp3.mp3BufSize = 0;
+	av->nextPos = 0;
+	av->outSampleNum = 1152;
 	return 0;
 }
 
-int dxpSoundMp3Seek(DXPSOUNDHANDLE *pHnd,int fh,int sample)
+int dxpSoundMp3Seek(DXPAVCONTEXT *av,int sample)
 {
-	if(pHnd->length < sample)return -1;
 	int frame = sample / 1152,i;
 	int frameLen;
 	u8 buf[4];
-	FileRead_seek(fh,pHnd->id3v2,SEEK_SET);
+	FileRead_seek(av->fileHandle,av->mp3.id3v2Pos,SEEK_SET);
 	for(i = 0;i < frame;++i)
 	{
-		FileRead_read(buf,4,fh);
+		FileRead_read(buf,4,av->fileHandle);
 		frameLen = dxpSoundMp3CheckFrameHeader(buf);
 		if(frameLen == -1)return -1;
-		FileRead_seek(fh,frameLen - 4,SEEK_CUR);
+		FileRead_seek(av->fileHandle,frameLen - 4,SEEK_CUR);
 	}
-	pHnd->currentPos = frame * 1152;
+	av->nextPos = frame * 1152;
 	return 0;
 }
 
-int dxpSoundMp3Decode(DXPSOUNDHANDLE *pHnd,int fh)
+int dxpSoundMp3Decode(DXPAVCONTEXT *av)
 {
 	int frameLen;
 	u8 headerBuf[4] = {0,0,0,0};
 	int status;
-	if(pHnd->format != DXP_SOUNDFMT_MP3)return -1;
-	FileRead_read(headerBuf,4,fh);
+	if(av->format != DXP_SOUNDFMT_MP3)return -1;
+	FileRead_read(headerBuf,4,av->fileHandle);
 	if(headerBuf[0] == 'T' && headerBuf[1] == 'A' && headerBuf[2] == 'G')return -1;
 	frameLen = dxpSoundMp3CheckFrameHeader(headerBuf);
 	if(frameLen < 0)return -1;
-	if(pHnd->mp3.mp3BufSize < frameLen)
+	if(av->mp3.mp3BufSize < frameLen)
 	{
-		free(pHnd->mp3.mp3Buf);
-		pHnd->mp3.mp3Buf = dxpSafeAlloc(frameLen);
-		if(!pHnd->mp3.mp3Buf)return -1;
-		pHnd->mp3.mp3BufSize = frameLen;
+		dxpSafeFree(av->mp3.mp3Buf);
+		av->mp3.mp3Buf = dxpSafeAlloc(frameLen);
+		if(!av->mp3.mp3Buf)
+		{
+			av->mp3.mp3BufSize = 0;
+			return -1;
+		}
+		av->mp3.mp3BufSize = frameLen;
 	}
-	FileRead_read(pHnd->mp3.mp3Buf + 4,frameLen - 4,fh);
-	memcpy(pHnd->mp3.mp3Buf,headerBuf,4);
-	pHnd->mp3.avBuf->datIn = pHnd->mp3.mp3Buf;
-	pHnd->mp3.avBuf->decodeByte = 1152 * 2 * 2;
-	pHnd->mp3.avBuf->frameSize0 =
-		pHnd->mp3.avBuf->frameSize1 = frameLen;
-	pHnd->mp3.avBuf->pcmOut = pHnd->pcmOut;
-	status = sceAudiocodecDecode((unsigned long*)pHnd->mp3.avBuf,PSP_CODEC_MP3);
+	FileRead_read(av->mp3.mp3Buf + 4,frameLen - 4,av->fileHandle);
+	memcpy(av->mp3.mp3Buf,headerBuf,4);
+	av->mp3.avBuf->datIn = av->mp3.mp3Buf;
+	av->mp3.avBuf->decodeByte = 1152 * 2 * 2;
+	av->mp3.avBuf->frameSize0 =
+		av->mp3.avBuf->frameSize1 = frameLen;
+	av->mp3.avBuf->pcmOut = av->pcmOut;
+	status = sceAudiocodecDecode((unsigned long*)av->mp3.avBuf,PSP_CODEC_MP3);
 	if(status < 0)return -1;
-	pHnd->currentPos += 1152;
+	av->nextPos += 1152;
 	return 0;
 }
 
-int dxpSoundMp3End(DXPSOUNDHANDLE *pHnd,int fh)
+int dxpSoundMp3End(DXPAVCONTEXT *av)
 {
-	if(pHnd->format != DXP_SOUNDFMT_MP3)return -1;
-	FileRead_close(fh);
-	sceAudiocodecReleaseEDRAM((unsigned long*)pHnd->mp3.avBuf);
-	dxpSafeFree(pHnd->mp3.avBuf);
-	dxpSafeFree(pHnd->mp3.mp3Buf);
+	if(av->format != DXP_SOUNDFMT_MP3)return -1;
+	sceAudiocodecReleaseEDRAM((unsigned long*)av->mp3.avBuf);
+	dxpSafeFree(av->mp3.avBuf);
+	dxpSafeFree(av->mp3.mp3Buf);
 	return 0;
+}
+
+int dxpSoundMp3GetSampleLength(DXPAVCONTEXT *av)
+{
+	u8 buf[4];
+	if(av->format != DXP_SOUNDFMT_MP3)return -1;
+	int pos = FileRead_tell(av->fileHandle);
+	FileRead_seek(av->fileHandle,av->mp3.id3v2Pos,SEEK_SET);
+	int length,status;
+	for(length = 0;1;++length)
+	{
+		if(FileRead_read(buf,4,av->fileHandle) != 4)break;
+		status = dxpSoundMp3CheckFrameHeader(buf);
+		if(status < 0)break;
+		FileRead_seek(av->fileHandle,status - 4,SEEK_CUR);
+	}
+	FileRead_seek(av->fileHandle,pos,SEEK_SET);
+	return length * 1152;
 }

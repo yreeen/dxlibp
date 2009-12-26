@@ -30,7 +30,7 @@
 /*---定数とマクロ---*/
 
 #define RUNCHECK {printfDx("%s,%s,%s,%d\n",__TIME__,__FILE__,__func__,__LINE__);ScreenCopy();AppLogAdd("%s,%s,%s,%d\n",__TIME__,__FILE__,__func__,__LINE__);}
-
+#define FILETRACE {AppLogAdd("%s,%s,%s,%d\n",__TIME__,__FILE__,__func__,__LINE__);}
 
 #ifndef	TRUE
 #define	TRUE	(1)
