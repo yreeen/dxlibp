@@ -130,6 +130,8 @@ OBJS += osk/osk.o
 
 #sound functions
 OBJS += sound/sound.o
+OBJS += sound/soundcodec.o
+OBJS += sound/soundthread.o
 OBJS += sound/mp3.o
 #OBJS += sound/initsoundmem.o
 #OBJS += sound/loadsoundmem.o

@@ -5,8 +5,7 @@
 #define DXP_BUILDOPTION_SOUNDHANDLE_MAX 32
 
 #define DXP_SOUNDCMD_NONE 0
-#define DXP_SOUNDCMD_PLAY 1
-#define DXP_SOUNDCMD_STOP 2
+#define DXP_SOUNDCMD_STOP 1
 #define DXP_SOUNDCMD_EXIT 3
 
 #define DXP_SOUNDFMT_MP3 1
@@ -58,7 +57,6 @@ typedef struct DXPSOUNDHANDLE
 	unsigned used : 1;
 	int soundDataType;
 	//ユーザーから指定する情報
-	unsigned loop : 1;
 	unsigned cmd : 2;
 	int loopResumePos;
 	u8 volume;
@@ -67,13 +65,9 @@ typedef struct DXPSOUNDHANDLE
 	union
 	{
 		struct{
-			int threadId;
 			int gotoPos;
-			unsigned playing : 1;
 		}file;
 		struct{
-			int refCount;
-			int sema;
 			int length;
 			u32 *pcmBuf;
 		}memnopress;
@@ -89,13 +83,25 @@ typedef struct DXPSOUNDDATA
 	u8 createSoundDataType;
 }DXPSOUNDDATA;
 
+typedef struct DXPSOUNDTHREAD
+{
+	unsigned used : 1;
+	unsigned running : 1;
+	unsigned loop : 1;
+	int threadId;
+	DXPSOUNDHANDLE *pHnd;
+}DXPSOUNDTHREAD;
+
 extern DXPSOUNDHANDLE dxpSoundArray[];
+extern DXPSOUNDTHREAD dxpSoundThreads[];
 extern DXPSOUNDDATA dxpSoundData;
 
 int dxpSoundInit();
 int dxpSoundTerm();
 int dxpSoundReserveHandle();
 int dxpSoundReleaseHandle(int handle);
+int dxpSoundReserveThread();
+int dxpSoundReleaseThread(int handle);
 
 int dxpSoundMp3Init(DXPAVCONTEXT *av);
 int dxpSoundMp3GetSampleLength(DXPAVCONTEXT *av);
@@ -108,3 +114,5 @@ int dxpSoundCodecGetSampleLength(DXPSOUNDHANDLE *pHnd);
 int dxpSoundCodecSeek(DXPSOUNDHANDLE *pHnd,int sample);
 int dxpSoundCodecDecode(DXPSOUNDHANDLE *pHnd);
 int dxpSoundCodecEnd(DXPSOUNDHANDLE *pHnd);
+
+int dxpSoundThreadFunc(SceSize size,void* argp);
