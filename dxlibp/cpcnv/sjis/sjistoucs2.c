@@ -24,7 +24,7 @@ int dxpCpSJIS_toUcs2(dxpUcs2 *dst,u32 count,const dxpChar *src)
 			if ((code >= header[j].startcode) && (code <= header[j].endcode)) {
 				id = header[j].offset + code - header[j].startcode; 
 			} else {
-				if (j == 2) code = 0x0200 * src[i] - 0xE100 - ((src[i] >= 0xE0) ? 0x8000 : 0) + src[i+1] + ((src[i+1] <= 0x7E) ? -0x1F : ((src[i+1] >= 0x9F) ? 0x82 : -0x20) );
+				if (j == 1) code = 0x0200 * src[i] - 0xE100 - ((src[i] >= 0xE0) ? 0x8000 : 0) + src[i+1] + ((src[i+1] <= 0x7E) ? -0x1F : ((src[i+1] >= 0x9F) ? 0x82 : -0x20) );
 			}
 		}
 		dst[length++] = (id < 0) ? dxpCpData.errcode_ucs2 : SJIStoUCS2[id];
