@@ -18,6 +18,7 @@ int dxpSoundThreadFunc(SceSize size,void* argp)
 	if(!pth)sceKernelExitDeleteThread(0);
 	while(1)
 	{
+		pcm ^= 1;
 		if(dxpGeneralData.exit_called)pth->pHnd = NULL;
 		if(!pth->pHnd || !pth->used)
 		{
@@ -36,6 +37,7 @@ int dxpSoundThreadFunc(SceSize size,void* argp)
 			pos = 0;
 			pth->running = 0;
 			pth->used = 0;
+			if(dxpGeneralData.exit_called)sceKernelExitDeleteThread(0);
 			sceKernelSleepThread();
 		}
 		if(!pth->pHnd || !pth->used)continue;
@@ -91,11 +93,6 @@ int dxpSoundThreadFunc(SceSize size,void* argp)
 		case DX_SOUNDDATATYPE_FILE:
 			if(channel < 0)
 				continue;
-			if(pth->pHnd->file.gotoPos >= 0)
-			{
-				dxpSoundCodecSeek(pth->pHnd,pth->pHnd->file.gotoPos);
-				pth->pHnd->file.gotoPos = -1;
-			}
 			if(pcmBufSize[pcm] < pth->pHnd->avContext.outSampleNum * 4)
 			{
 				dxpSafeFree(pcmBuf[pcm]);
@@ -108,6 +105,12 @@ int dxpSoundThreadFunc(SceSize size,void* argp)
 				pcmBufSize[pcm] = pth->pHnd->avContext.outSampleNum * 4;
 			}
 			pth->pHnd->avContext.pcmOut = pcmBuf[pcm];
+			if(pth->pHnd->file.gotoPos >= 0)
+			{
+				dxpSoundCodecSeek(pth->pHnd,pth->pHnd->file.gotoPos);
+				dxpSoundCodecDecode(pth->pHnd);
+				pth->pHnd->file.gotoPos = -1;
+			}
 			if(dxpSoundCodecDecode(pth->pHnd) < 0)
 			{
 				if(!pth->loop)
@@ -117,6 +120,7 @@ int dxpSoundThreadFunc(SceSize size,void* argp)
 					continue;
 				}
 				dxpSoundCodecSeek(pth->pHnd,pth->pHnd->loopResumePos);
+				continue;
 			}
 			while(sceAudioGetChannelRestLength(channel) > 0)sceKernelDelayThread(3000);
 			sceAudioSetChannelDataLen(channel,pth->pHnd->avContext.outSampleNum);
@@ -124,9 +128,7 @@ int dxpSoundThreadFunc(SceSize size,void* argp)
 				PSP_AUDIO_VOLUME_MAX * (pth->pHnd->pan > 0 ? 1.0f - pth->pHnd->pan / 10000.0f : 1.0f) * pth->pHnd->volume / 255.0f,
 				PSP_AUDIO_VOLUME_MAX * (pth->pHnd->pan < 0 ? 1.0f + pth->pHnd->pan / 10000.0f : 1.0f) * pth->pHnd->volume / 255.0f,
 				pcmBuf[pcm]);
-			pcm ^= 1;
 			break;
-
 		}
 	}
 	return 0;
