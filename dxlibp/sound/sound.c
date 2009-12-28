@@ -164,6 +164,7 @@ int PlaySoundMem(int handle,int playtype,int rewindflag)
 			pThd = dxpSoundThreads + thnd;
 			pThd->pHnd = pHnd;
 		}
+		if(rewindflag)pThd->pHnd->file.gotoPos = 0;
 		pThd->loop = playtype == DX_PLAYTYPE_LOOP ? 1 : 0;
 		sceKernelWakeupThread(pThd->threadId);
 		if(playtype == DX_PLAYTYPE_NORMAL)
@@ -256,3 +257,14 @@ int InitSoundMem()
 	return 0;
 }
 
+int SetCreateSoundDataType(int type)
+{
+	switch(type)
+	{
+	case DX_SOUNDDATATYPE_MEMNOPRESS:
+	case DX_SOUNDDATATYPE_FILE:
+		dxpSoundData.createSoundDataType = type;
+	default:
+		return -1;
+	}
+}

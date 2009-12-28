@@ -18,15 +18,19 @@ int dxpSoundThreadFunc(SceSize size,void* argp)
 	if(!pth)sceKernelExitDeleteThread(0);
 	while(1)
 	{
+		if(dxpGeneralData.exit_called)pth->pHnd = NULL;
 		if(!pth->pHnd || !pth->used)
 		{
 			if(channel >= 0)
 			{
+				while(sceAudioGetChannelRestLength(channel) > 0)sceKernelDelayThread(3000);
 				sceAudioChRelease(channel);
 				channel = -1;
 			}
 			dxpSafeFree(pcmBuf[0]);
 			dxpSafeFree(pcmBuf[1]);
+			pcmBuf[0] = NULL;
+			pcmBuf[1] = NULL;
 			pcmBufSize[0] = 0;
 			pcmBufSize[1] = 0;
 			pos = 0;
@@ -45,6 +49,7 @@ int dxpSoundThreadFunc(SceSize size,void* argp)
 		case DXP_SOUNDCMD_EXIT:
 			if(channel >= 0)
 			{
+				while(sceAudioGetChannelRestLength(channel) > 0)sceKernelDelayThread(100);
 				sceAudioChRelease(channel);
 				channel = -1;
 			}
@@ -91,7 +96,7 @@ int dxpSoundThreadFunc(SceSize size,void* argp)
 				dxpSoundCodecSeek(pth->pHnd,pth->pHnd->file.gotoPos);
 				pth->pHnd->file.gotoPos = -1;
 			}
-			if(pcmBufSize[pcm] < pth->pHnd->avContext.outSampleNum)
+			if(pcmBufSize[pcm] < pth->pHnd->avContext.outSampleNum * 4)
 			{
 				dxpSafeFree(pcmBuf[pcm]);
 				pcmBuf[pcm] = dxpSafeAlloc(pth->pHnd->avContext.outSampleNum * 4);
@@ -100,7 +105,7 @@ int dxpSoundThreadFunc(SceSize size,void* argp)
 					pcmBufSize[pcm] = 0;
 					continue;
 				}
-				pcmBufSize[pcm] = pth->pHnd->avContext.outSampleNum;
+				pcmBufSize[pcm] = pth->pHnd->avContext.outSampleNum * 4;
 			}
 			pth->pHnd->avContext.pcmOut = pcmBuf[pcm];
 			if(dxpSoundCodecDecode(pth->pHnd) < 0)
@@ -113,7 +118,9 @@ int dxpSoundThreadFunc(SceSize size,void* argp)
 				}
 				dxpSoundCodecSeek(pth->pHnd,pth->pHnd->loopResumePos);
 			}
-			sceAudioOutputPannedBlocking(channel,
+			while(sceAudioGetChannelRestLength(channel) > 0)sceKernelDelayThread(3000);
+			sceAudioSetChannelDataLen(channel,pth->pHnd->avContext.outSampleNum);
+			sceAudioOutputPanned(channel,
 				PSP_AUDIO_VOLUME_MAX * (pth->pHnd->pan > 0 ? 1.0f - pth->pHnd->pan / 10000.0f : 1.0f) * pth->pHnd->volume / 255.0f,
 				PSP_AUDIO_VOLUME_MAX * (pth->pHnd->pan < 0 ? 1.0f + pth->pHnd->pan / 10000.0f : 1.0f) * pth->pHnd->volume / 255.0f,
 				pcmBuf[pcm]);
