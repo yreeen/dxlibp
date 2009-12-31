@@ -183,7 +183,7 @@ int dxpSoundMp3Decode(DXPAVCONTEXT *av)
 		}
 		av->mp3.mp3BufSize = frameLen;
 	}
-	FileRead_read(av->mp3.mp3Buf + 4,frameLen - 4,av->fileHandle);
+	if(FileRead_read(av->mp3.mp3Buf + 4,frameLen - 4,av->fileHandle) != frameLen - 4)return -1;
 	memcpy(av->mp3.mp3Buf,headerBuf,4);
 	av->mp3.avBuf->datIn = av->mp3.mp3Buf;
 	av->mp3.avBuf->decodeByte = 1152 * 2 * 2;

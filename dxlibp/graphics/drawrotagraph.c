@@ -54,3 +54,4 @@ int DrawRotaGraph(int x,int y,float scale,float angle,int gh,int trans,int turn)
 }
 
 
+

@@ -16,17 +16,9 @@ int dxpSoundInit()
 	ret = sceUtilityLoadAvModule(PSP_AV_MODULE_AVCODEC);
 	if(ret < 0)return -1;
 	memset(&dxpSoundArray,0,sizeof(dxpSoundArray));
-	int i;
-	for(i = 0;i < PSP_AUDIO_CHANNEL_MAX;++i)
-	{
-		dxpSoundThreads[i].used = 0;
-		dxpSoundThreads[i].running = 0;
-		dxpSoundThreads[i].pHnd = NULL;
-		dxpSoundThreads[i].threadId = sceKernelCreateThread("dxpsound",dxpSoundThreadFunc,0x11,0x4000,PSP_THREAD_ATTR_USER,0);
-		sceKernelStartThread(dxpSoundThreads[i].threadId,4,&i);
-	}
-
+	dxpSoundData.memnopress_cmd.handle = -1;
 	dxpSoundData.init = 1;
+	sceKernelStartThread(sceKernelCreateThread("dxp mnp sound thread",dxpSoundThreadFunc_memnopress,0x11,0x4000,PSP_THREAD_ATTR_USER,0),0,0);
 	return 0;
 }
 
@@ -37,8 +29,6 @@ int dxpSoundTerm()
 	int i;
 	for(i = 0;i < DXP_BUILDOPTION_SOUNDHANDLE_MAX;++i)
 		DeleteSoundMem(i);
-	for(i = 0;i < PSP_AUDIO_CHANNEL_MAX;++i)
-		dxpSoundReleaseThread(i);
 	sceUtilityUnloadAvModule(PSP_MODULE_AV_AVCODEC);
 	dxpSoundData.init = 0;
 	return 0;
@@ -49,13 +39,16 @@ int dxpSoundReserveHandle()
 	if(!dxpSoundData.init)return -1;
 	int i;
 	DXPSOUNDHANDLE *pHnd;
-	for(i = 0;i < DXP_BUILDOPTION_SOUNDHANDLE_MAX && dxpSoundArray[i].used;++i);
-	if(i >= DXP_BUILDOPTION_SOUNDHANDLE_MAX)return -1;
-	pHnd = dxpSoundArray + i;
-	memset(pHnd,0,sizeof(DXPSOUNDHANDLE));
-	pHnd->volume = 255;
-	pHnd->used = 1;
-	return i;
+	for(i = 0;i < DXP_BUILDOPTION_SOUNDHANDLE_MAX;++i)
+	{
+		if(dxpSoundArray[i].used)continue;
+		pHnd = dxpSoundArray + i;
+		memset(pHnd,0,sizeof(DXPSOUNDHANDLE));
+		pHnd->volume = 255;
+		pHnd->used = 1;
+		return i;
+	}
+	return -1;
 }
 
 int dxpSoundReleaseHandle(int handle)
@@ -71,6 +64,7 @@ int dxpSoundReleaseHandle(int handle)
 
 int LoadSoundMem(const char *filename)
 {
+	int stat;
 	if(!dxpSoundData.init)return -1;
 	int i;
 	int fileSize = FileRead_size(filename);
@@ -118,8 +112,25 @@ int LoadSoundMem(const char *filename)
 		FileRead_close(fileHandle);
 		break;
 	case DX_SOUNDDATATYPE_FILE:
+		pHnd->file.threadId = sceKernelCreateThread("dxp sound file thread",dxpSoundThreadFunc_file,0x11,0x4000,PSP_THREAD_ATTR_USER,0);
+		if(pHnd->file.threadId < 0)
+		{
+			dxpSoundCodecEnd(pHnd);
+			dxpSoundReleaseHandle(handle);
+			FileRead_close(fileHandle);
+			return -1;
+		}
+		stat = sceKernelStartThread(pHnd->file.threadId,4,&handle);
+		if(stat < 0)
+		{
+			sceKernelDeleteThread(pHnd->file.threadId);
+			dxpSoundCodecEnd(pHnd);
+			dxpSoundReleaseHandle(handle);
+			FileRead_close(fileHandle);
+			return -1;
+		}
 		pHnd->file.gotoPos = -1;
-		return 0;
+		break;
 	default:
 		dxpSoundCodecEnd(pHnd);
 		dxpSoundReleaseHandle(handle);
@@ -131,44 +142,39 @@ int LoadSoundMem(const char *filename)
 
 int PlaySoundMem(int handle,int playtype,int rewindflag)
 {
-	int thnd,i;
+	int i;
 	DXPSOUNDHANDLE *pHnd;
-	DXPSOUNDTHREAD *pThd;
-
 	SHND2PTR(handle,pHnd);
-	pHnd->cmd = DXP_SOUNDCMD_NONE;
+	while(pHnd->cmd != DXP_SOUNDCMD_NONE)sceKernelDelayThread(100);
 	switch(pHnd->soundDataType)
 	{
 	case DX_SOUNDDATATYPE_MEMNOPRESS:
-		thnd = dxpSoundReserveThread();
-		if(thnd < 0)return -1;
-		pThd = dxpSoundThreads + thnd;
-		pThd->pHnd = pHnd;
-		pThd->loop = playtype == DX_PLAYTYPE_LOOP ? 1 : 0;
-		sceKernelWakeupThread(pThd->threadId);
 		if(playtype == DX_PLAYTYPE_NORMAL)
-			while(pThd->used)sceKernelDelayThread(100);
+		{
+			int channel = sceAudioChReserve(PSP_AUDIO_NEXT_CHANNEL,pHnd->avContext.outSampleNum,PSP_AUDIO_FORMAT_STEREO);
+			if(channel < 0)return 0;
+			int pos = 0;
+			while(pos < pHnd->memnopress.length)
+			{
+				sceAudioOutputPannedBlocking(channel,
+					PSP_AUDIO_VOLUME_MAX * (pHnd->pan > 0 ? 1.0f - pHnd->pan / 10000.0f : 1.0f) * pHnd->volume / 255.0f,
+					PSP_AUDIO_VOLUME_MAX * (pHnd->pan < 0 ? 1.0f + pHnd->pan / 10000.0f : 1.0f) * pHnd->volume / 255.0f,
+					pHnd->memnopress.pcmBuf + pos);
+				pos += pHnd->avContext.outSampleNum;
+			}
+			sceAudioChRelease(channel);
+			return 0;
+		}
+		while(dxpSoundData.memnopress_cmd.handle >= 0)sceKernelDelayThread(100);
+		dxpSoundData.memnopress_cmd.playtype = playtype;
+		dxpSoundData.memnopress_cmd.handle = handle;
 		break;
 	case DX_SOUNDDATATYPE_FILE:
-		pThd = NULL;
-		for(i = 0;i < PSP_AUDIO_CHANNEL_MAX;++i)
-			if(dxpSoundThreads[i].pHnd == pHnd)
-			{
-				pThd = dxpSoundThreads + i;
-				break;
-			}
-		if(!pThd)
-		{
-			thnd = dxpSoundReserveThread();
-			if(thnd < 0)return -1;
-			pThd = dxpSoundThreads + thnd;
-			pThd->pHnd = pHnd;
-		}
-		if(rewindflag)pThd->pHnd->file.gotoPos = 0;
-		pThd->loop = playtype == DX_PLAYTYPE_LOOP ? 1 : 0;
-		sceKernelWakeupThread(pThd->threadId);
-		if(playtype == DX_PLAYTYPE_NORMAL)
-			while(pThd->used)sceKernelDelayThread(100);
+		pHnd->file.loop = playtype == DX_PLAYTYPE_LOOP ? 1 : 0;
+		if(rewindflag)pHnd->file.gotoPos = 0;
+		pHnd->cmd = DXP_SOUNDCMD_PLAY;
+		if(playtype == DX_PLAYTYPE_NORMAL)while(pHnd->playing)sceKernelDelayThread(100);
+		break;
 	default:
 		return -1;
 	}
@@ -179,6 +185,7 @@ int StopSoundMem(int handle)
 {
 	DXPSOUNDHANDLE *pHnd;
 	SHND2PTR(handle,pHnd);
+	while(pHnd->cmd != DXP_SOUNDCMD_NONE)sceKernelDelayThread(100);
 	pHnd->cmd = DXP_SOUNDCMD_STOP;
 	return 0;
 }
@@ -187,36 +194,21 @@ int DeleteSoundMem(int handle)
 {
 	DXPSOUNDHANDLE *pHnd;
 	SHND2PTR(handle,pHnd);
+	while(pHnd->cmd != DXP_SOUNDCMD_NONE)sceKernelDelayThread(100);
+	pHnd->cmd = DXP_SOUNDCMD_EXIT;
+	while(pHnd->cmd != DXP_SOUNDCMD_NONE)sceKernelDelayThread(100);
+
 	switch(pHnd->soundDataType)
 	{
 	case DX_SOUNDDATATYPE_MEMNOPRESS:
-		pHnd->cmd = DXP_SOUNDCMD_STOP;
-		while(1)
-		{
-			int i,flag = 1;
-			for(i = 0;i < PSP_AUDIO_CHANNEL_MAX;++i)
-				if(dxpSoundThreads[i].pHnd == pHnd && dxpSoundThreads[i].running)
-					flag = 0;
-			if(flag)break;
-			sceKernelDelayThread(100);
-		}
 		free(pHnd->memnopress.pcmBuf);
 		dxpSoundReleaseHandle(handle);
 		return 0;
-		break;
 	case DX_SOUNDDATATYPE_FILE:
-		pHnd->cmd = DXP_SOUNDCMD_STOP;
-		while(1)
-		{
-			int i,flag = 1;
-			for(i = 0;i < PSP_AUDIO_CHANNEL_MAX;++i)
-				if(dxpSoundThreads[i].pHnd == pHnd && dxpSoundThreads[i].running)
-					flag = 0;
-			if(flag)break;
-			sceKernelDelayThread(100);
-		}
+		dxpSoundCodecEnd(pHnd);
+		FileRead_close(pHnd->avContext.fileHandle);
 		dxpSoundReleaseHandle(handle);
-
+		return 0;
 	default:
 		return -1;
 	}
@@ -226,26 +218,7 @@ int CheckSoundMem(int handle)
 {
 	DXPSOUNDHANDLE *pHnd;
 	SHND2PTR(handle,pHnd);
-	switch(pHnd->soundDataType)
-	{
-	case DX_SOUNDDATATYPE_MEMNOPRESS:
-		{
-			int i,flag = 0;
-			for(i = 0;i < PSP_AUDIO_CHANNEL_MAX;++i)
-			if(dxpSoundThreads[i].pHnd == pHnd && dxpSoundThreads[i].running)
-				flag = 1;
-			return flag;
-		}
-	case DX_SOUNDDATATYPE_FILE:
-		{
-			int i,flag = 0;
-			for(i = 0;i < PSP_AUDIO_CHANNEL_MAX;++i)
-			if(dxpSoundThreads[i].pHnd == pHnd && dxpSoundThreads[i].running)
-				flag = 1;
-			return flag;
-		}
-	}
-	return -1;
+	return pHnd->playing ? 1 : 0;
 }
 
 int InitSoundMem()
@@ -267,4 +240,47 @@ int SetCreateSoundDataType(int type)
 	default:
 		return -1;
 	}
+}
+
+int SetPanSoundMem(int pan,int handle)
+{
+	if(pan > 10000)pan = 10000;
+	if(pan < -10000)pan = -10000;
+	DXPSOUNDHANDLE *pHnd;
+	SHND2PTR(handle,pHnd);
+	pHnd->pan = pan;
+	return 0;
+}
+
+int ChangeVolumeSoundMem(int volume,int handle)
+{
+	if(volume > 255)volume = 255;
+	if(volume < 0)volume = 0;
+	DXPSOUNDHANDLE *pHnd;
+	SHND2PTR(handle,pHnd);
+	pHnd->volume = volume;
+	return 0;
+}
+
+int SetLoopPosSoundMem(int looppos_s,int handle)
+{
+	if(looppos_s < 0)return -1;
+	DXPSOUNDHANDLE *pHnd;
+	SHND2PTR(handle,pHnd);
+	looppos_s = pHnd->avContext.sampleRate * looppos_s;
+	return SetLoopSamplePosSoundMem(looppos_s,handle);
+}
+
+int SetLoopSamplePosSoundMem(int looppos,int handle)
+{
+	if(looppos < 0)return -1;
+	DXPSOUNDHANDLE *pHnd;
+	SHND2PTR(handle,pHnd);
+	switch(pHnd->soundDataType)
+	{
+	case DX_SOUNDDATATYPE_MEMNOPRESS:
+		if(looppos >= pHnd->memnopress.length)return -1;
+	}
+	pHnd->loopResumePos = looppos;
+	return 0;
 }

@@ -10,9 +10,9 @@ int ScreenCopy()
 	back = dxpGraphicsData.displaybuffer_back;
 	memcpy(front,back,dxpGraphicsData.display_psm == GU_PSM_8888 ? 557056 : 278528);
 	sceKernelDcacheWritebackAll();
-	dxpGraphicsWaitVSync();
-	sceGuSwapBuffers();
 	if(dxpGraphicsData.debugScreenCallback)dxpGraphicsData.debugScreenCallback();
+	sceGuSwapBuffers();
+	dxpGraphicsWaitVSync();
 	dxpGraphicsData.displaybuffer_back = front;
 	if(dxpGraphicsData.rendertarget == &dxpGraphicsData.displaybuffer[0] || dxpGraphicsData.rendertarget == &dxpGraphicsData.displaybuffer[1])
 		dxpGraphicsData.rendertarget = front;

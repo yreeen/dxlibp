@@ -231,7 +231,7 @@ int ChangeFontType(int type)
 	if(type == -1)type = 0;
 	if(!dxpFontData.init)dxpFontInit();
 	if(type < 0 || type > 3)return -1;
-	dxpFontArray[0].fontAlign = type & 1;
+	dxpFontArray[0].edgeEnable = type & 1;
 	return 0;
 }
 

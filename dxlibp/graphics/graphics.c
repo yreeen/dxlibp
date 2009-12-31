@@ -552,7 +552,11 @@ void *GetDisplaybufferAddress()
 void dxpGraphicsWaitVSync()
 {
 	if(!dxpGraphicsData.waitvsinc)return;
-	sceDisplayWaitVblankStart();
+	sceDisplayWaitVblank();
 }
 
-
+int SetCreateSwizzledGraphFlag(int flag)
+{
+	dxpGraphicsData.create_swizzled_graph = flag ? 1 : 0;
+	return 0;
+}

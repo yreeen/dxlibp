@@ -1294,6 +1294,14 @@ int UnswizzleGraph(int gh);
 */
 int ConvertGraphFormat(int gh,int psm);
 /**
+ * 画像を読み込む際にSwizzle処理を行うかどうか設定します
+ * 
+ * @param flag 画像読み込み時Swizzle処理実行フラグ
+ * @retval 0 成功
+ * @retval -1 エラー発生
+*/
+int SetCreateSwizzledGraphFlag(int flag);
+/**
  * GPUが処理を終えるのを待ちます
  * 
  * @retval 0 成功
