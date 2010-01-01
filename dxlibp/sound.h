@@ -73,6 +73,7 @@ typedef struct DXPSOUNDHANDLE
 		struct{
 			int length;
 			u32 *pcmBuf;
+			int cmdplaytype;
 		}memnopress;
 	};
 
@@ -84,11 +85,6 @@ typedef struct DXPSOUNDDATA
 {
 	u8 init;
 	u8 createSoundDataType;
-	struct
-	{
-		int handle;
-		int playtype;
-	}memnopress_cmd;
 }DXPSOUNDDATA;
 
 extern DXPSOUNDHANDLE dxpSoundArray[];

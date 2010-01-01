@@ -4,7 +4,7 @@
 
  * DXライブラリPortable 
 
- * Ver0.5.1
+ * Ver0.5.4
 
  * 製作者：憂煉
 
@@ -266,6 +266,10 @@
 #define DXP_FONT_ALIGN_DEFAULT	(DXP_FONT_ALIGN_LEFT)
 #define DXP_FONT_DEFAULT_SIZE	16
 
+#define DX_FONTTYPE_NORMAL				0
+#define DX_FONTTYPE_EDGE				1
+#define DX_FONTTYPE_ANTIALIASING　		2
+#define DX_FONTTYPE_ANTIALIASING_EDGE	3
 
 /*描画*/
 #define DX_SCREEN_BACK		0xfffffffe

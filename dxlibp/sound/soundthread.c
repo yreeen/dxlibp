@@ -12,22 +12,24 @@ int dxpSoundThreadFunc_file(SceSize size,void* argp)
 	u32 pcmBufSize[2] = {0,0};
 	u8 pcm = 1;
 	DXPSOUNDHANDLE *pHnd = dxpSoundArray + *(int*)argp;
-	while(1)
+	while(dxpSoundData.init)
 	{
+		sceKernelDelayThread(1000);
 		pcm ^= 1;
 		if(dxpGeneralData.exit_called)break;
+		if(dxpGeneralData.homebutton_pushed)break;
 		if(pHnd->cmd == DXP_SOUNDCMD_EXIT)break;
 		switch(pHnd->cmd)
 		{
 		case DXP_SOUNDCMD_NONE:
 			break;
 		case DXP_SOUNDCMD_PLAY:
-			pHnd->cmd = DXP_SOUNDCMD_NONE;
 			pHnd->playing = 1;
+			pHnd->cmd = DXP_SOUNDCMD_NONE;
 			break;
 		case DXP_SOUNDCMD_STOP:
-			pHnd->cmd = DXP_SOUNDCMD_NONE;
 			pHnd->playing = 0;
+			pHnd->cmd = DXP_SOUNDCMD_NONE;
 			break;
 		}
 		if(pHnd->playing)
@@ -66,7 +68,7 @@ int dxpSoundThreadFunc_file(SceSize size,void* argp)
 				pHnd->playing = 0;
 				continue;
 			}
-			while(sceAudioGetChannelRestLength(channel) > 0)sceKernelDelayThread(500);
+			while(sceAudioGetChannelRestLength(channel) > 0)sceKernelDelayThread(1000);
 			sceAudioSetChannelDataLen(channel,pHnd->avContext.outSampleNum);
 			sceAudioOutputPanned(channel,
 				PSP_AUDIO_VOLUME_MAX * (pHnd->pan > 0 ? 1.0f - pHnd->pan / 10000.0f : 1.0f) * pHnd->volume / 255.0f,
@@ -80,7 +82,6 @@ int dxpSoundThreadFunc_file(SceSize size,void* argp)
 				channel = -1;
 			}
 		}
-		sceKernelDelayThread(500);
 	}
 	dxpSafeFree(pcmBuf[0]);
 	dxpSafeFree(pcmBuf[1]);
@@ -95,60 +96,67 @@ int dxpSoundThreadFunc_file(SceSize size,void* argp)
 
 int dxpSoundThreadFunc_memnopress(SceSize len,void* ptr)
 {
-	int i;
+	int i,j;
 	int handle[PSP_AUDIO_CHANNEL_MAX];
 	int pos[PSP_AUDIO_CHANNEL_MAX];
 	int playtype[PSP_AUDIO_CHANNEL_MAX];
 	int channel[PSP_AUDIO_CHANNEL_MAX];
-	int stophandle[PSP_AUDIO_CHANNEL_MAX];
 	for(i = 0;i < PSP_AUDIO_CHANNEL_MAX;++i)
 	{
 		handle[i] = -1;
 		channel[i] = -1;
-		stophandle[i] = -1;
 	}
-	while(!dxpGeneralData.exit_called && dxpSoundData.init)
+	while(dxpSoundData.init)
 	{
+		sceKernelDelayThread(1000);
+		if(dxpGeneralData.exit_called)break;
+		if(dxpGeneralData.homebutton_pushed)break;
 		//コマンド受け取り
-		if(dxpSoundData.memnopress_cmd.handle >= 0)
+		for(i = 0;i < DXP_BUILDOPTION_SOUNDHANDLE_MAX;++i)
 		{
-			for(i = 0;i < PSP_AUDIO_CHANNEL_MAX;++i)
-			{
-				if(handle[i] < 0)
-				{
-					channel[i] = sceAudioChReserve(PSP_AUDIO_NEXT_CHANNEL,dxpSoundArray[dxpSoundData.memnopress_cmd.handle].avContext.outSampleNum,PSP_AUDIO_FORMAT_STEREO);
-					if(channel[i] < 0)break;
-					handle[i] = dxpSoundData.memnopress_cmd.handle;
-					pos[i] = 0;
-					playtype[i] = dxpSoundData.memnopress_cmd.playtype;
-					++dxpSoundArray[handle[i]].playing;
-					break;
-				}
-			}
-		}
-		dxpSoundData.memnopress_cmd.handle = -1;
-		//ループ等制御
-		for(i = 0;i < PSP_AUDIO_CHANNEL_MAX;++i)
-		{
-			if(handle[i] < 0)continue;
-			switch(dxpSoundArray[handle[i]].cmd)
+			if(!dxpSoundArray[i].used)continue;
+			if(dxpSoundArray[i].soundDataType != DX_SOUNDDATATYPE_MEMNOPRESS)continue;
+			switch(dxpSoundArray[i].cmd)
 			{
 			case DXP_SOUNDCMD_NONE:
-				break;
+				continue;
 			case DXP_SOUNDCMD_PLAY:
-				dxpSoundArray[handle[i]].cmd = DXP_SOUNDCMD_NONE;
+				for(j = 0;j < PSP_AUDIO_CHANNEL_MAX;++j)
+				{
+					if(handle[j] < 0)
+					{
+						channel[j] = sceAudioChReserve(PSP_AUDIO_NEXT_CHANNEL,dxpSoundArray[i].avContext.outSampleNum,PSP_AUDIO_FORMAT_STEREO);
+						if(channel[j] < 0)break;
+						handle[j] = i;
+						pos[j] = 0;
+						playtype[j] = dxpSoundArray[i].memnopress.cmdplaytype;
+						break;
+					}
+				}
+				dxpSoundArray[i].cmd = DXP_SOUNDCMD_NONE;
 				break;
 			case DXP_SOUNDCMD_STOP:
 			case DXP_SOUNDCMD_EXIT:
 			default:
-				stophandle[i] = handle[i];
-				if(channel[i] >= 0)
-					sceAudioChRelease(channel[i]);
-				channel[i] = -1;
-				handle[i] = -1;
-				--dxpSoundArray[handle[i]].playing;
-				continue;
+				for(j = 0;j < PSP_AUDIO_CHANNEL_MAX;++j)
+				{
+					if(handle[j] == i)
+					{
+						if(channel[j] >= 0)sceAudioChRelease(channel[j]);
+						channel[j] = -1;
+						--dxpSoundArray[handle[j]].playing;
+						handle[j] = -1;
+					}
+				}
+				dxpSoundArray[i].cmd = DXP_SOUNDCMD_NONE;
+				break;			
 			}
+		}
+
+		//ループ等制御
+		for(i = 0;i < PSP_AUDIO_CHANNEL_MAX;++i)
+		{
+			if(handle[i] < 0)continue;
 
 			if(pos[i] > dxpSoundArray[handle[i]].memnopress.length)
 			{
@@ -177,17 +185,15 @@ int dxpSoundThreadFunc_memnopress(SceSize len,void* ptr)
 				pos[i] += dxpSoundArray[handle[i]].avContext.outSampleNum;
 			}
 		}
-		for(i = 0;i < PSP_AUDIO_CHANNEL_MAX;++i)
-		{
-			if(stophandle[i] < 0)continue;
-			dxpSoundArray[stophandle[i]].cmd = DXP_SOUNDCMD_NONE;
-			stophandle[i] = -1;
-		}
-		sceKernelDelayThread(500);
 	}
 	for(i = 0;i < PSP_AUDIO_CHANNEL_MAX;++i)
 	{
 		if(channel[i] >= 0)sceAudioChRelease(channel[i]);
+		if(handle[i] >= 0)
+		{
+			dxpSoundArray[handle[i]].playing = 0;
+		}
 	}
 	sceKernelExitDeleteThread(0);
+	return 0;
 }

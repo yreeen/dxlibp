@@ -1,4 +1,5 @@
 #include "../general.h"
+#include "../sound.h"
 #include "../input.h"
 #include "../graphics.h"
 #include "../safealloc.h"

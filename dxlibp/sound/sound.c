@@ -16,7 +16,6 @@ int dxpSoundInit()
 	ret = sceUtilityLoadAvModule(PSP_AV_MODULE_AVCODEC);
 	if(ret < 0)return -1;
 	memset(&dxpSoundArray,0,sizeof(dxpSoundArray));
-	dxpSoundData.memnopress_cmd.handle = -1;
 	dxpSoundData.init = 1;
 	sceKernelStartThread(sceKernelCreateThread("dxp mnp sound thread",dxpSoundThreadFunc_memnopress,0x11,0x4000,PSP_THREAD_ATTR_USER,0),0,0);
 	return 0;
@@ -142,7 +141,6 @@ int LoadSoundMem(const char *filename)
 
 int PlaySoundMem(int handle,int playtype,int rewindflag)
 {
-	int i;
 	DXPSOUNDHANDLE *pHnd;
 	SHND2PTR(handle,pHnd);
 	while(pHnd->cmd != DXP_SOUNDCMD_NONE)sceKernelDelayThread(100);
@@ -165,15 +163,20 @@ int PlaySoundMem(int handle,int playtype,int rewindflag)
 			sceAudioChRelease(channel);
 			return 0;
 		}
-		while(dxpSoundData.memnopress_cmd.handle >= 0)sceKernelDelayThread(100);
-		dxpSoundData.memnopress_cmd.playtype = playtype;
-		dxpSoundData.memnopress_cmd.handle = handle;
+		while(pHnd->cmd != DXP_SOUNDCMD_NONE)sceKernelDelayThread(100);
+		pHnd->memnopress.cmdplaytype = playtype;
+		pHnd->cmd = DXP_SOUNDCMD_PLAY;
 		break;
 	case DX_SOUNDDATATYPE_FILE:
 		pHnd->file.loop = playtype == DX_PLAYTYPE_LOOP ? 1 : 0;
 		if(rewindflag)pHnd->file.gotoPos = 0;
+		while(pHnd->cmd != DXP_SOUNDCMD_NONE)sceKernelDelayThread(100);
 		pHnd->cmd = DXP_SOUNDCMD_PLAY;
-		if(playtype == DX_PLAYTYPE_NORMAL)while(pHnd->playing)sceKernelDelayThread(100);
+		if(playtype == DX_PLAYTYPE_NORMAL)
+		{
+			while(pHnd->cmd != DXP_SOUNDCMD_NONE)sceKernelDelayThread(100);
+			while(pHnd->playing)sceKernelDelayThread(100);
+		}
 		break;
 	default:
 		return -1;
@@ -196,15 +199,15 @@ int DeleteSoundMem(int handle)
 	SHND2PTR(handle,pHnd);
 	while(pHnd->cmd != DXP_SOUNDCMD_NONE)sceKernelDelayThread(100);
 	pHnd->cmd = DXP_SOUNDCMD_EXIT;
-	while(pHnd->cmd != DXP_SOUNDCMD_NONE)sceKernelDelayThread(100);
-
 	switch(pHnd->soundDataType)
 	{
 	case DX_SOUNDDATATYPE_MEMNOPRESS:
+		while(pHnd->playing > 0)sceKernelDelayThread(100);
 		free(pHnd->memnopress.pcmBuf);
 		dxpSoundReleaseHandle(handle);
 		return 0;
 	case DX_SOUNDDATATYPE_FILE:
+		while(pHnd->playing > 0)sceKernelDelayThread(100);
 		dxpSoundCodecEnd(pHnd);
 		FileRead_close(pHnd->avContext.fileHandle);
 		dxpSoundReleaseHandle(handle);
