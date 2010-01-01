@@ -3,8 +3,6 @@
 
 //build option ----
 
-
-
 //macros ----
 
 //structures ----
@@ -27,11 +25,3 @@ typedef struct DXPGENERALDATA__
 //variables ----
 
 extern DXPGENERALDATA dxpGeneralData;
-
-#ifdef DXP_BUILDOPTION_RAND_HW
-#endif
-
-#ifdef DXP_BUILDOPTION_RAND_MT
-#include <psputility.h>
-extern SceKernelUtilsMt19937Context dxpranddata;
-#endif

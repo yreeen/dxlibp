@@ -9,14 +9,6 @@
 #define STREAM_SEEKTYPE_END							(PSP_SEEK_END)
 #define STREAM_SEEKTYPE_CUR							(PSP_SEEK_CUR)
 
-//#define STTELL( st )								((st)->ReadShred.Tell( (st)->DataPoint ))
-//#define STSEEK( st, pos, type )						((st)->ReadShred.Seek( (st)->DataPoint, (pos), (type) ))
-//#define STREAD( buf, length, num, st )				((st)->ReadShred.Read( (buf), (length), (num), (st)->DataPoint ))
-//#define STWRITE( buf, length, num, st )				((st)->ReadShred.Write( (buf), (length), (num), (st)->DataPoint ))
-//#define STEOF( st )									((st)->ReadShred.Eof( (st)->DataPoint ))
-//#define STCLOSE( st )								((st)->ReadShred.Close( (st)->DataPoint ))
-
-
 //structures ----
 
 typedef struct DXPFILEIOHANDLE__

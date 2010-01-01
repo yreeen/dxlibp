@@ -2,18 +2,12 @@
  * @file dxlibp.h
  * @mainpage
 
- * DXライブラリPortable 
-
- * Ver0.5.4
-
- * 製作者：憂煉
-
- * このライブラリを使う際にこのライブラリの著作権表記は要りませんが、このライブラリが依存しているライブラリの著作権表記は行う必要があります。
-
- * また、このライブラリのソースコードの一部または全部を転載、引用、公開などする場合はこのライブラリの著作権表記が必要です。
-
- * 詳しくはreadme.txtを読んでください。
-
+ * DXライブラリPortable @n
+ * Ver0.5.4@n
+ * 製作者：憂煉@n
+ * このライブラリを使う際にこのライブラリの著作権表記は要りませんが、このライブラリが依存しているライブラリの著作権表記は行う必要があります。@n
+ * また、このライブラリのソースコードの一部または全部を転載、引用、公開などする場合はこのライブラリの著作権表記が必要です。@n
+ * 詳しくはreadme.txtを読んでください。@n
  * 説明に（本家互換）とある関数はDXライブラリと挙動がほぼ同じですので、本家の関数リファレンスも参考にしてください。
 */
 #ifndef DXLIBP_H__
@@ -26,6 +20,7 @@
 #define DXP_BUILDOPTION_FILENAMELENGTH_MAX	260		//FileRead系関数で使えるファイル名の長さ
 #define DXP_BUILDOPTION_TEXTURE_MAXNUM		256		//DXPが内部で持つテクスチャの最大枚数
 #define DXP_BUILDOPTION_GHANDLE_MAXNUM		512		//グラフィックスハンドルの最大数
+#define DXP_BUILDOPTION_FONTHANDLE_MAX 8
 
 /*---定数とマクロ---*/
 
@@ -266,9 +261,9 @@
 #define DXP_FONT_ALIGN_DEFAULT	(DXP_FONT_ALIGN_LEFT)
 #define DXP_FONT_DEFAULT_SIZE	16
 
-#define DX_FONTTYPE_NORMAL				0
-#define DX_FONTTYPE_EDGE				1
-#define DX_FONTTYPE_ANTIALIASING　		2
+#define DX_FONTTYPE_NORMAL				0 
+#define DX_FONTTYPE_EDGE				1 
+#define DX_FONTTYPE_ANTIALIASING		2
 #define DX_FONTTYPE_ANTIALIASING_EDGE	3
 
 /*描画*/

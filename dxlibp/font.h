@@ -1,7 +1,6 @@
 #include "dxlibp.h"
 #include "font/intraFont.h"
 
-#define DXP_BUILDOPTION_FONTHANDLE_MAX 8
 
 #define DXP_FONTNAME_JPN "flash0:/font/jpn0.pgf"
 #define DXP_FONTNAME_DEFAULT DXP_FONTNAME_JPN
