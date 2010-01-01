@@ -143,7 +143,7 @@ int PlaySoundMem(int handle,int playtype,int rewindflag)
 {
 	DXPSOUNDHANDLE *pHnd;
 	SHND2PTR(handle,pHnd);
-	while(pHnd->cmd != DXP_SOUNDCMD_NONE)sceKernelDelayThread(100);
+//	while(pHnd->cmd != DXP_SOUNDCMD_NONE)sceKernelDelayThread(100);
 	switch(pHnd->soundDataType)
 	{
 	case DX_SOUNDDATATYPE_MEMNOPRESS:
@@ -188,7 +188,7 @@ int StopSoundMem(int handle)
 {
 	DXPSOUNDHANDLE *pHnd;
 	SHND2PTR(handle,pHnd);
-	while(pHnd->cmd != DXP_SOUNDCMD_NONE)sceKernelDelayThread(100);
+//	while(pHnd->cmd != DXP_SOUNDCMD_NONE)sceKernelDelayThread(100);
 	pHnd->cmd = DXP_SOUNDCMD_STOP;
 	return 0;
 }

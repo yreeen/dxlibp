@@ -220,5 +220,5 @@ int dxpSoundMp3GetSampleLength(DXPAVCONTEXT *av)
 		FileRead_seek(av->fileHandle,status - 4,SEEK_CUR);
 	}
 	FileRead_seek(av->fileHandle,pos,SEEK_SET);
-	return (length - 1) * 1152;
+	return length * 1152;
 }
