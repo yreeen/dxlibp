@@ -59,7 +59,7 @@ int dxpSoundThreadFunc_file(SceSize size,void* argp)
 			}
 			if(dxpSoundCodecDecode(pHnd) < 0)
 			{
-				if(!pHnd->file.loop)
+				if(pHnd->file.loop)
 				{
 					dxpSoundCodecSeek(pHnd,0);
 					continue;
