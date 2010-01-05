@@ -234,6 +234,10 @@ int dxpGraphicsSetup2DTex(DXPTEXTURE3 *texptr,int flag)
 		dxpGraphicsData.drawstate = DXP_DRAWSTATE_TEX2D;
 		dxpGraphicsData.forceupdate = 1;
 		GUENABLE(GU_TEXTURE_2D);
+		if(dxpGraphicsData.bilinear_enable)
+			sceGuTexFilter(GU_LINEAR,GU_LINEAR);
+		else
+			sceGuTexFilter(GU_NEAREST,GU_NEAREST);
 		if(dxpGraphicsData.usedepth)
 		{
 			GUENABLE(GU_DEPTH_TEST);
