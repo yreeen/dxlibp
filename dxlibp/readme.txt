@@ -1,4 +1,4 @@
-DX Library Portable	Ver0.5.4
+DX Library Portable	Ver0.5.5
 開発者：憂煉
 
 これはPSPの開発を簡単に行うためのライブラリです。
