@@ -193,7 +193,7 @@ int UnswizzleGraph(int gh)
 	u32 size;
 	DXPTEXTURE3 *texptr = dxpGraphHandle2TexPtr(gh);
 	if(!texptr)return -1;
-	if(texptr->swizzledflag)return 0;
+	if(!texptr->swizzledflag)return 0;
 	size = dxpGraphicsCalcTexSize(texptr->pitch,texptr->height,texptr->psm);
 	if(texptr->texvram)
 	{

@@ -58,6 +58,6 @@ int printfDx(const char *format,...)
 		}
 	}
 	dxpDebugBuf.strbuf[dxpDebugData.cy][dxpDebugData.cx] = '\0';
-	dxpDrawDebugScreen();
+//	dxpDrawDebugScreen();
 	return 0;
 }
