@@ -1237,6 +1237,13 @@ int SetDrawScreen(int ghandle);
 */
 int ScreenFlip(void);
 /**
+ * 裏画面の内容を表画面にコピーし、ScreenFlipを実行します。(本家互換)
+ * 
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
+int ScreenCopy(void);
+/**
  * ScreenFlip、ScreenCopy関数実行時に垂直同期待ちをするかのフラグをセット(本家互換)
  * 
  * 垂直同期を待つ場合、ゲームの負荷が大きいといきなり60→30→20と60の約数のfpsに切り替わって遊びにくいことがあります。
