@@ -18,8 +18,8 @@
 /*DXPのコンパイルオプション*/
 #define DXP_BUILDOPTION_FILEHANDLE_MAX		32		//FileRead系関数で同時に開けるファイルハンドルの数
 #define DXP_BUILDOPTION_FILENAMELENGTH_MAX	260		//FileRead系関数で使えるファイル名の長さ
-#define DXP_BUILDOPTION_TEXTURE_MAXNUM		256		//DXPが内部で持つテクスチャの最大枚数
-#define DXP_BUILDOPTION_GHANDLE_MAXNUM		512		//グラフィックスハンドルの最大数
+#define DXP_BUILDOPTION_TEXTURE_MAXNUM		512		//DXPが内部で持つテクスチャの最大枚数
+#define DXP_BUILDOPTION_GHANDLE_MAXNUM		2048	//グラフィックスハンドルの最大数
 #define DXP_BUILDOPTION_FONTHANDLE_MAX 8
 
 /*---定数とマクロ---*/

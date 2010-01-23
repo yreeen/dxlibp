@@ -175,6 +175,7 @@ int dxpGraphicsInit()
 	sceGuTexScale(1.0f,1.0f);
 	sceGuTexOffset(0.0f,0.0f);
 	sceGuTexFilter(GU_NEAREST,GU_NEAREST);
+	sceGuTexWrap(GU_CLAMP,GU_CLAMP);
 	GUFINISH;
 	sceDisplayWaitVblankStart();
 	GUSTART;

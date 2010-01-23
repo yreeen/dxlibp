@@ -10,8 +10,10 @@ static void br()
 	dxpDebugData.cx = 0;
 	dxpDebugData.cy += 1;
 	dxpDebugData.cy %= dxpDebugData.strbufsize[1];
+
 	if(dxpDebugData.cy == 0)dxpDebugData.l1 = dxpDebugData.strbufsize[1];
 	if(dxpDebugData.l1)dxpDebugData.l1 = (dxpDebugData.l1 + 1) % dxpDebugData.strbufsize[1] + dxpDebugData.strbufsize[1];	
+	dxpDebugBuf.strbuf[(dxpDebugData.l1 - 1) % dxpDebugData.strbufsize[1]][0] = '\0';
 }
 
 void dxpDrawDebugScreen()
@@ -27,6 +29,9 @@ void dxpDrawDebugScreen()
 int printfDx(const char *format,...)
 {
 	if(!dxpDebugData.init)dxpDebugInit();
+
+
+
 	va_list vlist;
 	va_start(vlist,format);
 	vsnprintf(dxpDebugBuf.vfsbuf,2048,format,vlist);
@@ -39,7 +44,7 @@ int printfDx(const char *format,...)
 	{
 		if(dxpCpSJIS_MultiByteCharCheck(dxpDebugBuf.vfsbuf[i]))
 		{
-			if(dxpDebugData.cx >= dxpDebugData.strbufsize[1] - 1)br();
+			if(dxpDebugData.cx >= dxpDebugData.strbufsize[0])br();
 			dxpDebugBuf.strbuf[dxpDebugData.cy][dxpDebugData.cx] = dxpDebugBuf.vfsbuf[i];
 			dxpDebugBuf.strbuf[dxpDebugData.cy][dxpDebugData.cx + 1] = dxpDebugBuf.vfsbuf[i + 1];
 			++i;
@@ -58,6 +63,5 @@ int printfDx(const char *format,...)
 		}
 	}
 	dxpDebugBuf.strbuf[dxpDebugData.cy][dxpDebugData.cx] = '\0';
-//	dxpDrawDebugScreen();
 	return 0;
 }
