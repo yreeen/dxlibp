@@ -46,11 +46,19 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\debug\applogadd.c"
+				RelativePath=".\graphics\3d\3dgraphics.c"
 				>
 			</File>
 			<File
 				RelativePath=".\debug_\applogadd.c"
+				>
+			</File>
+			<File
+				RelativePath=".\debug\applogadd.c"
+				>
+			</File>
+			<File
+				RelativePath=".\graphics\3d\camera.c"
 				>
 			</File>
 			<File
@@ -98,11 +106,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\debug_\debug.c"
+				RelativePath=".\debug\debug.c"
 				>
 			</File>
 			<File
-				RelativePath=".\debug\debug.c"
+				RelativePath=".\debug_\debug.c"
 				>
 			</File>
 			<File
@@ -135,6 +143,10 @@
 			</File>
 			<File
 				RelativePath=".\graphics\drawline.c"
+				>
+			</File>
+			<File
+				RelativePath=".\graphics\3d\drawline3d.c"
 				>
 			</File>
 			<File
@@ -178,6 +190,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\graphics\3d\drawtriangle3d.c"
+				>
+			</File>
+			<File
 				RelativePath=".\graphics\drawturngraph.c"
 				>
 			</File>
@@ -194,11 +210,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\debug\dxpdebugputs_zenkaku.c"
+				RelativePath=".\debug_\dxpdebugputs_zenkaku.c"
 				>
 			</File>
 			<File
-				RelativePath=".\debug_\dxpdebugputs_zenkaku.c"
+				RelativePath=".\debug\dxpdebugputs_zenkaku.c"
 				>
 			</File>
 			<File
@@ -386,11 +402,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\debug\printfdx.c"
+				RelativePath=".\debug_\printfdx.c"
 				>
 			</File>
 			<File
-				RelativePath=".\debug_\printfdx.c"
+				RelativePath=".\debug\printfdx.c"
 				>
 			</File>
 			<File

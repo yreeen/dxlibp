@@ -1,12 +1,14 @@
 //#include <intrafont.h>
 
-
 #include <valloc.h>
 #include <malloc.h>
 #include <string.h>
 #include <pspgu.h>
 #include <pspdisplay.h>
 #include"../graphics.h"
+
+
+
 u32 __attribute__((aligned(16))) dxpGuList[GULIST_LEN];
 
 u8 dxpPsm2SliceSize[11][2]
@@ -149,6 +151,8 @@ int dxpGraphicsInit()
 	dxpGraphicsData.intrafont_scissor[2] = 480;
 	dxpGraphicsData.intrafont_scissor[3] = 272;
 
+	dxpGraphicsData.depthfunc = GU_GEQUAL;
+
 	for(i = 0;i < DXP_BUILDOPTION_TEXTURE_MAXNUM;++i)dxpGraphicsData.texarray[i] = NULL;
 	for(i = 0;i < DXP_BUILDOPTION_GHANDLE_MAXNUM;++i)dxpGraphicsData.grapharray[i] = NULL;
 	//GEのセットアップ
@@ -166,9 +170,8 @@ int dxpGraphicsInit()
 		dxpGraphicsData.intrafont_scissor[2],
 		dxpGraphicsData.intrafont_scissor[3]
 	);
-
+	sceGuClearDepth(0);
 	sceGuDepthRange(65535,0);
-	sceGuDepthFunc(GU_LESS);
 	sceGuEnable(GU_SCISSOR_TEST);
 	sceGuFrontFace(GU_CW);
 	sceGuShadeModel(GU_FLAT);
@@ -176,11 +179,31 @@ int dxpGraphicsInit()
 	sceGuTexOffset(0.0f,0.0f);
 	sceGuTexFilter(GU_NEAREST,GU_NEAREST);
 	sceGuTexWrap(GU_CLAMP,GU_CLAMP);
+	/*
+		memo
+		カメラ位置（画面横幅/2,画面縦幅/2,画面縦幅/(2 * tan(fovy)))
+		注視点位置（画面横幅/2,画面縦幅/2,1)
+		上　　　　（0,1,0）
+	*/
+	VECTOR v[3] = {{240,136,-235.5589f},{240,136,1},{0,1,0}};
+	SetCameraPositionAndTargetAndUpVec(v[0],v[1],v[2]);
+
+	sceGumMatrixMode(GU_MODEL);
+	sceGumLoadIdentity();
+
+	dxpGraphicsData.camera.aspect = 480.0f / 272.0f;
+	dxpGraphicsData.camera.near = 0.5f;
+	dxpGraphicsData.camera.far = 1000.0f;
+	dxpGraphicsData.camera.fov = 60;
+	dxpGraphics3dUpdateProjectionMatrix();
+
 	GUFINISH;
 	sceDisplayWaitVblankStart();
 	GUSTART;
 	sceGuDisplay(GU_TRUE);
 	dxpGraphicsData.init = 1;
+
+
 	return 0;
 }
 
@@ -242,9 +265,10 @@ int dxpGraphicsSetup2DTex(DXPTEXTURE3 *texptr,int flag)
 		if(dxpGraphicsData.usedepth)
 		{
 			GUENABLE(GU_DEPTH_TEST);
+			sceGuDepthFunc(dxpGraphicsData.depthfunc);
 			sceGuDepthBuffer(dxpGraphicsData.depthbuffer.texvram,512);	//深度バッファを有効にするときでいい
-			if(dxpGraphicsData.writedepth)sceGuDepthMask(0xffff);
-			else sceGuDepthMask(0);
+			if(dxpGraphicsData.writedepth)sceGuDepthMask(0);
+			else sceGuDepthMask(1);
 		}
 		else GUDISABLE(GU_DEPTH_TEST);
 	}
@@ -424,6 +448,15 @@ int dxpGraphicsSetup2D(u32 color)
 		GUDISABLE(GU_TEXTURE_2D);
 		dxpGraphicsData.texture = NULL;
 		dxpGraphicsData.drawstate = DXP_DRAWSTATE_NONTEX2D;
+		if(dxpGraphicsData.usedepth)
+		{
+			GUENABLE(GU_DEPTH_TEST);
+			sceGuDepthFunc(dxpGraphicsData.depthfunc);
+			sceGuDepthBuffer(dxpGraphicsData.depthbuffer.texvram,512);	//深度バッファを有効にするときでいい
+			if(dxpGraphicsData.writedepth)sceGuDepthMask(0);
+			else sceGuDepthMask(1);
+		}
+		else GUDISABLE(GU_DEPTH_TEST);
 		dxpGraphicsData.forceupdate = 1;
 	}
 
@@ -564,4 +597,72 @@ int SetCreateSwizzledGraphFlag(int flag)
 {
 	dxpGraphicsData.create_swizzled_graph = flag ? 1 : 0;
 	return 0;
+}
+
+static int dxpUseZBuffer(int flag)
+{
+	if(flag)
+	{
+		if(dxpGraphicsData.depthbuffer.texvram)return 0;
+		dxpGraphicsData.depthbuffer.texvram = valloc(vgetMemorySize(512,272,GU_PSM_4444));
+		if(!dxpGraphicsData.depthbuffer.texvram)
+		{
+			dxpGraphicsData.usedepth = 0;
+			dxpGraphicsData.usedepth3d = 0;
+			return -1;
+		}
+		return 0;
+	}
+	if(!dxpGraphicsData.usedepth && !dxpGraphicsData.usedepth3d)
+	{
+		vfree(dxpGraphicsData.depthbuffer.texvram);
+		dxpGraphicsData.depthbuffer.texvram = NULL;
+	}
+	return 0;
+}
+
+int SetUseZBufferFlag(int flag)
+{
+	dxpGraphicsData.usedepth = flag ? 1 : 0;
+	return dxpUseZBuffer(flag);
+}
+
+int SetUseZBuffer3D(int flag)
+{
+	dxpGraphicsData.usedepth3d = flag ? 1 : 0;
+	return dxpUseZBuffer(flag);
+}
+
+int SetWriteZBufferFlag(int flag)
+{
+	dxpGraphicsData.writedepth = flag ? 1 : 0;
+	return 0;
+}
+
+int SetWriteZBuffer3D(int flag)
+{
+	dxpGraphicsData.writedepth3d = flag ? 1 : 0;
+	return 0;
+}
+
+
+
+
+
+
+void printfDxMatrix(MATRIX* m)
+{
+	printfDx("printfDxMatrix\n");
+	printfDx("%+f,%+f,%+f,%+f\n%+f,%+f,%+f,%+f\n%+f,%+f,%+f,%+f\n%+f,%+f,%+f,%+f\n",
+		m->pspm.x.x,m->pspm.x.y,m->pspm.x.z,m->pspm.x.w,
+		m->pspm.y.x,m->pspm.y.y,m->pspm.y.z,m->pspm.y.w,
+		m->pspm.z.x,m->pspm.z.y,m->pspm.z.z,m->pspm.z.w,
+		m->pspm.w.x,m->pspm.w.y,m->pspm.w.z,m->pspm.w.w
+		);
+}
+
+void printfDxVector(VECTOR *v)
+{
+	printfDx("printfDxVector\n");
+	printfDx("%+f,%+f,%+f\n",v->x,v->y,v->z);
 }

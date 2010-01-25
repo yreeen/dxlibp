@@ -145,6 +145,11 @@ OBJS += sound/mp3.o
 #OBJS += sound/setpansoundmem.o
 #OBJS += sound/setcreatesounddatatype.o
 
+#3d graphics functions
+OBJS += graphics/3d/3dgraphics.o
+OBJS += graphics/3d/drawline3d.o
+OBJS += graphics/3d/drawtriangle3d.o
+OBJS += graphics/3d/camera.o
 
 INCDIR = 
 CFLAGS = -G0 -Wall -O3# -save-temps # -pg

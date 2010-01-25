@@ -1,5 +1,7 @@
 #include "dxlibp.h"
 #include <pspgu.h>
+#include <pspgum.h>
+
 #include <valloc.h>
 /*
 3D系の画像を扱う場合は画像サイズは2^nのみとする
@@ -109,6 +111,12 @@ typedef struct DXP_FVF_2DTEX_F
 	float		x,y,z;
 }DXP_FVF_2DTEX_F;
 
+#define DXP_VTYPE_3D GU_VERTEX_32BITF
+typedef struct DXP_FVF_3D
+{
+	float x,y,z;
+}DXP_FVF_3D;
+
 typedef struct DXPTEXTURE3
 {
 	int			psm;
@@ -205,6 +213,16 @@ typedef struct DXPGRAPHICSDATA
 
 	int intrafont_statebuf;
 	int intrafont_scissor[4];
+	int depthfunc;
+	struct
+	{
+		MATRIX viewMatrix;
+		float near;
+		float far;
+		float aspect;
+		float fov;
+		MATRIX projectionMatrix;
+	}camera;
 
 
 	DXPTEXTURE3 *texarray[DXP_BUILDOPTION_TEXTURE_MAXNUM];
@@ -225,6 +243,7 @@ int dxpGraphicsReleseGraphicHandle(DXPGRAPHICSHANDLE* gptr);
 
 int dxpGraphicsSetup2DTex(DXPTEXTURE3 *texptr,int flag);
 int dxpGraphicsSetup2D(u32 color);
+int dxpGraphicsSetup3D(u32 color);
 
 #define PSM2BYTEX2(PSM) (PSM == GU_PSM_5650 || PSM == GU_PSM_5551 || PSM == GU_PSM_4444 ? 4 : (PSM == GU_PSM_8888 ? 8 : (PSM == GU_PSM_T8 ? 2 : 1)))
 
@@ -249,3 +268,8 @@ static inline void* dxpGuGetMemory(u32 size)
 	if(p > GULIST_LIM){GUSYNC;GUSTART;}//コマンドリストが残り少ないので一度同期をとる
 	return sceGuGetMemory(size);
 }
+
+void dxpGraphics3dUpdateProjectionMatrix();
+
+void printfDxMatrix(MATRIX* m);
+void printfDxVector(VECTOR *v);

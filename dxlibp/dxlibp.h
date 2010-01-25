@@ -325,7 +325,11 @@ typedef struct DATEDATA__
 typedef ScePspFVector3 VECTOR;
 typedef struct MATRIX
 {
-	float m[4][4];
+	union
+	{
+		float m[4][4];
+		ScePspFMatrix4 pspm;
+	};
 }MATRIX;
 
 
@@ -638,7 +642,9 @@ static inline MATRIX MMult(MATRIX m1,MATRIX m2){MATRIX m;__asm__ volatile ("ulv.
  * @param scale 拡大率
  * @return 結果の行列
 */
-static inline MATRIX MScale(MATRIX m,float scale){__asm__ volatile ("ulv.q R000,0  + %0\nulv.q R001,16 + %0\nulv.q R002,32 + %0\nulv.q R003,48 + %0\nmtv S100,%1\nmscl.q R000,R000,S100\nmscl.q R001,R001,S100\nmscl.q R002,R002,S100\nmscl.q R003,R003,S100\nusv.q R000,0  + %0\nusv.q R001,16 + %0\nusv.q R002,32 + %0\nusv.q R003,48 + %0\n":"=m"(m):"r"(scale)	);return m;}
+
+static inline MATRIX MScale(MATRIX m,float scale){__asm__ volatile ("ulv.q R000,0 + %0\nulv.q R001,16 + %0\nulv.q R002,32 + %0\nulv.q R003,48 + %0\nmtv %1,S100\nvmscl.q M000,M000,S100\nusv.q R000,0 + %0\nusv.q R001,16 + %0\nusv.q R002,32 + %0\nusv.q R003,48 + %0\n":"=m"(m):"r"(scale));return m;}
+
 /**
  * 転置行列を取得します
  *
@@ -1650,6 +1656,24 @@ int printfDx(const char *format,...);
 */
 int clsDx(void);
 /*@}*/
+
+int DrawLine3D(VECTOR pos1,VECTOR pos2,int color);
+int DrawTriangle3D(VECTOR pos1,VECTOR pos2,VECTOR pos3,int color,int fillflag);
+
+int SetCameraPositionAndTargetAndUpVec( VECTOR Position, VECTOR Target, VECTOR Up );
+int SetupCamera_ProjectionMatrix( MATRIX ProjectionMatrix );
+int SetupCamera_Perspective( float Fov );
+int SetCameraNearFar( float Near, float Far );
+int SetCameraDotAspect(float Aspect);
+
+int SetUseZBufferFlag(int flag);
+int SetUseZBuffer3D(int flag);
+int SetWriteZBufferFlag(int flag);
+int SetWriteZBuffer3D(int flag);
+
+int SetTransformToWorld( MATRIX *Matrix );
+
+
 #ifdef __cplusplus
 }
 #endif
