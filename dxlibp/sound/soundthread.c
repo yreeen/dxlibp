@@ -68,7 +68,7 @@ int dxpSoundThreadFunc_file(SceSize size,void* argp)
 				pHnd->playing = 0;
 				continue;
 			}
-			while(sceAudioGetChannelRestLength(channel) > 0)sceKernelDelayThread(1000);
+			while(sceAudioGetChannelRestLen(channel) > 0)sceKernelDelayThread(1000);
 			sceAudioSetChannelDataLen(channel,pHnd->avContext.outSampleNum);
 			sceAudioOutputPanned(channel,
 				PSP_AUDIO_VOLUME_MAX * (pHnd->pan > 0 ? 1.0f - pHnd->pan / 10000.0f : 1.0f) * pHnd->volume / 255.0f,
@@ -176,7 +176,7 @@ int dxpSoundThreadFunc_memnopress(SceSize len,void* ptr)
 			}
 		//再生バッファ監視
 		//再生
-			if(sceAudioGetChannelRestLength(channel[i]) <= 0)
+			if(sceAudioGetChannelRestLen(channel[i]) <= 0)
 			{
 				sceAudioOutputPanned(channel[i],
 					PSP_AUDIO_VOLUME_MAX * (dxpSoundArray[handle[i]].pan > 0 ? 1.0f - dxpSoundArray[handle[i]].pan / 10000.0f : 1.0f) * dxpSoundArray[handle[i]].volume / 255.0f,

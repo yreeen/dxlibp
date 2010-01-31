@@ -16,7 +16,7 @@ int SetDrawScreen(int ghandle)
 		DXPGRAPHICSHANDLE *gptr;
 		GHANDLE2GPTR(gptr,ghandle);
 		tmp = gptr->tex;
-		if(!tmp->texvram || !tmp->swizzledflag)return -1;
+		if(!tmp->texvram || tmp->swizzledflag)return -1;
 		if(!(tmp->psm == GU_PSM_4444 || tmp->psm == GU_PSM_5551 || tmp->psm == GU_PSM_5650 || tmp->psm == GU_PSM_8888))return -1;
 		dxpGraphicsData.rendertarget = tmp;
 		++tmp->refcount;

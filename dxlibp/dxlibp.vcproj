@@ -166,6 +166,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\graphics\3d\drawpolygon3d.c"
+				>
+			</File>
+			<File
 				RelativePath=".\graphics\drawrectgraph.c"
 				>
 			</File>
@@ -386,6 +390,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\graphics\3d\model.c"
+				>
+			</File>
+			<File
 				RelativePath=".\sound\mp3.c"
 				>
 			</File>
@@ -402,11 +410,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\debug_\printfdx.c"
+				RelativePath=".\debug\printfdx.c"
 				>
 			</File>
 			<File
-				RelativePath=".\debug\printfdx.c"
+				RelativePath=".\debug_\printfdx.c"
 				>
 			</File>
 			<File

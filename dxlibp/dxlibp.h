@@ -3,7 +3,7 @@
  * @mainpage
 
  * DXライブラリPortable @n
- * Ver0.5.5@n
+ * Ver0.5.6@n
  * 製作者：憂煉@n
  * このライブラリを使う際にこのライブラリの著作権表記は要りませんが、このライブラリが依存しているライブラリの著作権表記は行う必要があります。@n
  * また、このライブラリのソースコードの一部または全部を転載、引用、公開などする場合はこのライブラリの著作権表記が必要です。@n
@@ -20,11 +20,12 @@
 #define DXP_BUILDOPTION_FILENAMELENGTH_MAX	260		//FileRead系関数で使えるファイル名の長さ
 #define DXP_BUILDOPTION_TEXTURE_MAXNUM		512		//DXPが内部で持つテクスチャの最大枚数
 #define DXP_BUILDOPTION_GHANDLE_MAXNUM		2048	//グラフィックスハンドルの最大数
+#define DXP_BUILDOPTION_MODEL_MAXNUM		16		//3Dモデルの最大数
 #define DXP_BUILDOPTION_FONTHANDLE_MAX 8
 
 /*---定数とマクロ---*/
 
-#define RUNCHECK {printfDx("%s,%s,%s,%d\n",__TIME__,__FILE__,__func__,__LINE__);ScreenCopy();AppLogAdd("%s,%s,%s,%d\n",__TIME__,__FILE__,__func__,__LINE__);}
+#define RUNCHECK {printfDx("%s,%s,%s,%d\n",__TIME__,__FILE__,__func__,__LINE__);ScreenCopy();/*AppLogAdd("%s,%s,%s,%d\n",__TIME__,__FILE__,__func__,__LINE__);*/}
 #define FILETRACE {AppLogAdd("%s,%s,%s,%d\n",__TIME__,__FILE__,__func__,__LINE__);}
 
 #ifndef	TRUE
@@ -331,6 +332,42 @@ typedef struct MATRIX
 		ScePspFMatrix4 pspm;
 	};
 }MATRIX;
+
+typedef struct COLOR_U8
+{
+	union
+	{
+		u32 code;
+		struct
+		{
+			u8 r;
+			u8 g;
+			u8 b;
+			u8 a;
+		};
+	};
+}COLOR_U8;
+
+typedef struct COLOR_F
+{
+	float r,g,b,a;
+}COLOR_F;
+
+typedef struct VERTEX3D
+{
+	// テクスチャ座標
+	float u, v ;
+
+	// ディフューズカラー
+	COLOR_U8 dif ;
+
+	// 法線
+	VECTOR norm ;
+
+	// 座標
+	VECTOR pos ;
+} VERTEX3D;
+
 
 
 #ifdef	__cplusplus
@@ -1659,6 +1696,7 @@ int clsDx(void);
 
 int DrawLine3D(VECTOR pos1,VECTOR pos2,int color);
 int DrawTriangle3D(VECTOR pos1,VECTOR pos2,VECTOR pos3,int color,int fillflag);
+int DrawPolygon3D( VERTEX3D *Vertex, int PolygonNum, int GrHandle, int TransFlag );
 
 int SetCameraPositionAndTargetAndUpVec( VECTOR Position, VECTOR Target, VECTOR Up );
 int SetupCamera_ProjectionMatrix( MATRIX ProjectionMatrix );
@@ -1673,6 +1711,15 @@ int SetWriteZBuffer3D(int flag);
 
 int SetTransformToWorld( MATRIX *Matrix );
 
+static inline COLOR_U8 GetColorU8(int red,int green,int blue,int alpha)
+{
+	COLOR_U8 c;
+	c.a = alpha & 0xff;
+	c.b = blue & 0xff;
+	c.g = green & 0xff;
+	c.r = red & 0xff;
+	return c;
+}
 
 #ifdef __cplusplus
 }

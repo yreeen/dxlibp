@@ -148,6 +148,7 @@ OBJS += sound/mp3.o
 #3d graphics functions
 OBJS += graphics/3d/3dgraphics.o
 OBJS += graphics/3d/drawline3d.o
+OBJS += graphics/3d/drawpolygon3d.o
 OBJS += graphics/3d/drawtriangle3d.o
 OBJS += graphics/3d/camera.o
 

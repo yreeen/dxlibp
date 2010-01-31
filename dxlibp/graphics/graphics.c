@@ -185,7 +185,7 @@ int dxpGraphicsInit()
 		注視点位置（画面横幅/2,画面縦幅/2,1)
 		上　　　　（0,1,0）
 	*/
-	VECTOR v[3] = {{240,136,-235.5589f},{240,136,1},{0,1,0}};
+	VECTOR v[3] = {{240,136,-235.5589f},{240,136,0},{0,1,0}};
 	SetCameraPositionAndTargetAndUpVec(v[0],v[1],v[2]);
 
 	sceGumMatrixMode(GU_MODEL);
@@ -473,10 +473,11 @@ int dxpGraphicsSetup2D(u32 color)
 	t = (dxpGraphicsData.color & 0x00ff0000) >> 16;
 	b *= t;
 	b /= 255;
-	a = (color & 0xff000000) >> 24;
-	t = (dxpGraphicsData.color & 0xff000000) >> 24;
-	a *= t;
-	a /= 255;
+	//a = (color & 0xff000000) >> 24;
+	//t = (dxpGraphicsData.color & 0xff000000) >> 24;
+	//a *= t;
+	//a /= 255;
+	a = (dxpGraphicsData.color & 0xff000000) >> 24;
 	color = (a << 24) | (b << 16) | (g << 8) | r;
 
 	int op;
@@ -650,19 +651,19 @@ int SetWriteZBuffer3D(int flag)
 
 
 
-void printfDxMatrix(MATRIX* m)
-{
-	printfDx("printfDxMatrix\n");
-	printfDx("%+f,%+f,%+f,%+f\n%+f,%+f,%+f,%+f\n%+f,%+f,%+f,%+f\n%+f,%+f,%+f,%+f\n",
-		m->pspm.x.x,m->pspm.x.y,m->pspm.x.z,m->pspm.x.w,
-		m->pspm.y.x,m->pspm.y.y,m->pspm.y.z,m->pspm.y.w,
-		m->pspm.z.x,m->pspm.z.y,m->pspm.z.z,m->pspm.z.w,
-		m->pspm.w.x,m->pspm.w.y,m->pspm.w.z,m->pspm.w.w
-		);
-}
-
-void printfDxVector(VECTOR *v)
-{
-	printfDx("printfDxVector\n");
-	printfDx("%+f,%+f,%+f\n",v->x,v->y,v->z);
-}
+//void printfDxMatrix(MATRIX* m)
+//{
+//	printfDx("printfDxMatrix\n");
+//	printfDx("%+f,%+f,%+f,%+f\n%+f,%+f,%+f,%+f\n%+f,%+f,%+f,%+f\n%+f,%+f,%+f,%+f\n",
+//		m->pspm.x.x,m->pspm.x.y,m->pspm.x.z,m->pspm.x.w,
+//		m->pspm.y.x,m->pspm.y.y,m->pspm.y.z,m->pspm.y.w,
+//		m->pspm.z.x,m->pspm.z.y,m->pspm.z.z,m->pspm.z.w,
+//		m->pspm.w.x,m->pspm.w.y,m->pspm.w.z,m->pspm.w.w
+//		);
+//}
+//
+//void printfDxVector(VECTOR *v)
+//{
+//	printfDx("printfDxVector\n");
+//	printfDx("%+f,%+f,%+f\n",v->x,v->y,v->z);
+//}

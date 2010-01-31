@@ -35,6 +35,7 @@ DRAM上ではswizzleする
 #define DXP_DRAWSTATE_NONTEX3D	2
 #define DXP_DRAWSTATE_TEX3D		3
 #define DXP_DRAWSTATE_INTRAFONT	4
+#define DXP_DRAWSTATE_MODEL		5
 
 #define GUENABLE(STATUS) {if(!sceGuGetStatus(STATUS))sceGuEnable(STATUS);}
 #define GUDISABLE(STATUS) {if(sceGuGetStatus(STATUS))sceGuDisable(STATUS);}
@@ -144,22 +145,83 @@ typedef	struct	DXPGRAPHICSHANDLE
 	int			handle;
 }DXPGRAPHICSHANDLE;
 
-typedef struct DXPMATERIAL
+typedef struct DXPMODEL_VERTEX
 {
-	const char *name;
-	u32	emissive;
-	u32	ambient;
-	u32	diffuse;
-	u32	specular;
-}DXPMATERIAL;
+//	float weight;
+	float uv;
+	COLOR_U8 color;
+	VECTOR norm;
+	VECTOR pos;
+}DXPMODEL_VERTEX;
 
-typedef struct DXPMESH
+typedef struct DXPMODEL_TEXTURE
 {
-	const char *name;
-}DXPMESH;
+	int handle;
+	int backup;
+	int addressMode[2];
+	int filterMode;
+}DXPMODEL_TEXTURE;
+
+typedef struct DXPMODEL_MATERIAL
+{
+	//名前
+	char *name;
+	//色
+	COLOR_U8 ambient;
+	COLOR_U8 emissive;
+	COLOR_U8 diffuse;
+	COLOR_U8 specular;
+	float specularPower;
+	//テクスチャ
+	int texIndex;
+	//パラメータ
+	int blendMode;
+	int blendParam;
+}DXPMODEL_MATERIAL;
+
+typedef struct DXPMODEL_MESH
+{
+	char *name;
+	//bone
+	//int boneIndex;
+	//material
+	int materialIndex;
+}DXPMODEL_MESH;
 
 typedef struct DXPMODEL
 {
+	char *name;
+	//
+	VECTOR pos;
+	float scale;
+	float rot[3];
+	MATRIX l2wmatrix;
+	unsigned visible : 1;
+	struct
+	{
+		COLOR_F 
+			diffuse,
+			specular,
+			emissive,
+			ambient;
+	}colorScale;//マテリアルカラーにCPUで乗算しておく
+	unsigned semiTransFlag : 1;//半透明のモノを持っているかどうか
+	float alpha;
+	unsigned usedepth : 1;
+	unsigned writedepth : 1;
+	unsigned usevertdiffcolor : 1;
+
+	//bone
+	;
+	//texture
+	int texNum;
+	DXPMODEL_TEXTURE *tex;
+	//material
+	int materialNum;
+	DXPMODEL_MATERIAL material;
+	//mesh
+	int meshNum;
+	DXPMODEL_MESH mesh;
 }DXPMODEL;
 
 
@@ -227,6 +289,7 @@ typedef struct DXPGRAPHICSDATA
 
 	DXPTEXTURE3 *texarray[DXP_BUILDOPTION_TEXTURE_MAXNUM];
 	DXPGRAPHICSHANDLE *grapharray[DXP_BUILDOPTION_GHANDLE_MAXNUM];
+	DXPMODEL *modelarray[DXP_BUILDOPTION_MODEL_MAXNUM];
 }DXPGRAPHICSDATA;
 
 int dxpGraphicsInit();
@@ -242,6 +305,7 @@ int dxpGraphicsReleseGraphicHandle(DXPGRAPHICSHANDLE* gptr);
 
 
 int dxpGraphicsSetup2DTex(DXPTEXTURE3 *texptr,int flag);
+int dxpGraphicsSetup3DTex(DXPGRAPHICSHANDLE *gptr,int flag);
 int dxpGraphicsSetup2D(u32 color);
 int dxpGraphicsSetup3D(u32 color);
 
