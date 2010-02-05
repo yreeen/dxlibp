@@ -185,6 +185,7 @@ int dxpGraphicsInit()
 		注視点位置（画面横幅/2,画面縦幅/2,1)
 		上　　　　（0,1,0）
 	*/
+#ifndef DXP_BUILDOPTION_NO3D
 	VECTOR v[3] = {{240,136,-235.5589f},{240,136,0},{0,1,0}};
 	SetCameraPositionAndTargetAndUpVec(v[0],v[1],v[2]);
 
@@ -196,6 +197,7 @@ int dxpGraphicsInit()
 	dxpGraphicsData.camera.far = 1000.0f;
 	dxpGraphicsData.camera.fov = 60;
 	dxpGraphics3dUpdateProjectionMatrix();
+#endif
 
 	GUFINISH;
 	sceDisplayWaitVblankStart();

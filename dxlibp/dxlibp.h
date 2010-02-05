@@ -21,7 +21,9 @@
 #define DXP_BUILDOPTION_TEXTURE_MAXNUM		512		//DXPが内部で持つテクスチャの最大枚数
 #define DXP_BUILDOPTION_GHANDLE_MAXNUM		2048	//グラフィックスハンドルの最大数
 #define DXP_BUILDOPTION_MODEL_MAXNUM		16		//3Dモデルの最大数
-#define DXP_BUILDOPTION_FONTHANDLE_MAX 8
+#define DXP_BUILDOPTION_FONTHANDLE_MAX		8
+
+#define DXP_BUILDOPTION_NO3D						//3D機能の無効化。これをコメントアウトした場合、実装途中の3D関数が使用可能になりますが、libpspgumへの依存が発生します。
 
 /*---定数とマクロ---*/
 
@@ -324,6 +326,7 @@ typedef struct DATEDATA__
 
 
 typedef ScePspFVector3 VECTOR;
+
 typedef struct MATRIX
 {
 	union
@@ -332,6 +335,14 @@ typedef struct MATRIX
 		ScePspFMatrix4 pspm;
 	};
 }MATRIX;
+
+typedef struct QUATERNION
+{
+	float x;
+	float y;
+	float z;
+	float w;
+}QUATERNION;
 
 typedef struct COLOR_U8
 {

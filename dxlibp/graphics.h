@@ -154,6 +154,7 @@ typedef struct DXPMODEL_VERTEX
 	VECTOR pos;
 }DXPMODEL_VERTEX;
 
+
 typedef struct DXPMODEL_TEXTURE
 {
 	int handle;
@@ -179,6 +180,11 @@ typedef struct DXPMODEL_MATERIAL
 	int blendParam;
 }DXPMODEL_MATERIAL;
 
+typedef struct DXPMODEL_SHAPE
+{
+	
+}DXPMODEL_SHAPE;
+
 typedef struct DXPMODEL_MESH
 {
 	char *name;
@@ -186,17 +192,49 @@ typedef struct DXPMODEL_MESH
 	//int boneIndex;
 	//material
 	int materialIndex;
+	DXPMODEL_SHAPE *shape;
 }DXPMODEL_MESH;
+
+typedef struct DXPMODEL_BONE
+{
+	MATRIX Offset;
+	int MainFrame;
+	MATRIX q;
+}DXPMODEL_BONE;
+
+typedef struct DXPMODEL_FRAME
+{
+	struct
+	{
+		struct DXPMODEL_FRAME//二分木的な物で管理する
+			*parent,
+			*next,
+			*prev,
+			*child;
+	}fcb;
+
+	char *name;
+	int MeshNum;
+	DXPMODEL_MESH *Mesh;
+
+	VECTOR Translate;
+	VECTOR Scale;
+	QUATERNION Rotate;
+	
+	unsigned visible : 1;
+
+
+	
+}DXPMODEL_FRAME;
 
 typedef struct DXPMODEL
 {
 	char *name;
 	//
-	VECTOR pos;
-	float scale;
-	float rot[3];
-	MATRIX l2wmatrix;
-	unsigned visible : 1;
+	VECTOR Translate;
+	VECTOR Scale;
+	QUATERNION Rotate;
+	MATRIX Local2WorldMatrix;
 	struct
 	{
 		COLOR_F 
@@ -204,9 +242,10 @@ typedef struct DXPMODEL
 			specular,
 			emissive,
 			ambient;
-	}colorScale;//マテリアルカラーにCPUで乗算しておく
-	unsigned semiTransFlag : 1;//半透明のモノを持っているかどうか
-	float alpha;
+	}ColorScale;//マテリアルカラーにCPUで乗算しておく
+	unsigned SemiTransFlag : 1;//半透明のモノを持っているかどうか
+	float Alpha;
+	unsigned visible : 1;
 	unsigned usedepth : 1;
 	unsigned writedepth : 1;
 	unsigned usevertdiffcolor : 1;
@@ -214,14 +253,14 @@ typedef struct DXPMODEL
 	//bone
 	;
 	//texture
-	int texNum;
-	DXPMODEL_TEXTURE *tex;
+	int TextureNum;
+	DXPMODEL_TEXTURE *Texture;
 	//material
-	int materialNum;
-	DXPMODEL_MATERIAL material;
+	int MaterialNum;
+	DXPMODEL_MATERIAL *Material;
 	//mesh
-	int meshNum;
-	DXPMODEL_MESH mesh;
+	int MeshNum;
+	DXPMODEL_MESH *Mesh;
 }DXPMODEL;
 
 
@@ -335,5 +374,5 @@ static inline void* dxpGuGetMemory(u32 size)
 
 void dxpGraphics3dUpdateProjectionMatrix();
 
-void printfDxMatrix(MATRIX* m);
-void printfDxVector(VECTOR *v);
+//void printfDxMatrix(MATRIX* m);
+//void printfDxVector(VECTOR *v);

@@ -1,4 +1,5 @@
 #include "../../graphics.h"
+#ifndef DXP_BUILDOPTION_NO3D
 
 
 int dxpGraphicsSetup3DTex(DXPGRAPHICSHANDLE *gptr,int flag)
@@ -341,3 +342,5 @@ int SetTransformToWorld( MATRIX *Matrix )
 	sceGumLoadMatrix(Matrix);
 	return 0;
 }
+
+#endif

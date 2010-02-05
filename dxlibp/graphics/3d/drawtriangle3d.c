@@ -1,5 +1,9 @@
 #include "../../graphics.h"
 
+#ifndef DXP_BUILDOPTION_NO3D
+
+
+
 int DrawTriangle3D(VECTOR pos1,VECTOR pos2,VECTOR pos3,int color,int fillflag)
 {
 	GUSTART;
@@ -25,3 +29,5 @@ int DrawTriangle3D(VECTOR pos1,VECTOR pos2,VECTOR pos3,int color,int fillflag)
 	sceGumDrawArray(GU_TRIANGLES,DXP_VTYPE_3D | GU_TRANSFORM_3D,3,0,vtx);
 	return 0;
 }
+
+#endif

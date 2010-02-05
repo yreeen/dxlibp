@@ -1,4 +1,5 @@
 #include "../../graphics.h"
+#ifndef DXP_BUILDOPTION_NO3D
 #include <fastmath.h>
 
 int SetCameraPositionAndTargetAndUpVec( VECTOR Position, VECTOR Target, VECTOR Up )
@@ -62,3 +63,4 @@ int SetCameraDotAspect(float Aspect)
 	return 0;
 }
 
+#endif

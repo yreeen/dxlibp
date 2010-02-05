@@ -1,4 +1,5 @@
 #include "../../graphics.h"
+#ifndef DXP_BUILDOPTION_NO3D
 
 int DrawLine3D(VECTOR pos1,VECTOR pos2,int color)
 {
@@ -15,3 +16,5 @@ int DrawLine3D(VECTOR pos1,VECTOR pos2,int color)
 	sceGumDrawArray(GU_LINES,DXP_VTYPE_3D | GU_TRANSFORM_3D,2,0,vtx);
 	return 0;
 }
+
+#endif
