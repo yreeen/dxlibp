@@ -23,7 +23,7 @@ typedef struct DXPFONTDATA
 extern DXPFONTHANDLE dxpFontArray[];
 extern DXPFONTDATA dxpFontData;
 
-void dxpFontIntrafontStart(void);
+u32 dxpFontIntrafontStart(int color);
 void dxpFontIntrafontFinish(void);
 DXPFONTHANDLE* dxpFontReserveHandle();
 void dxpFontReleaseHandle(int handle);

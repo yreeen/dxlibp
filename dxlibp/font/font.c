@@ -32,7 +32,7 @@ void dxpFontEnd()
 	dxpFontData.init = 0;
 }
 
-void dxpFontIntrafontStart(void)
+u32 dxpFontIntrafontStart(int color)
 {
 	GUSTART;
 	if(dxpGraphicsData.drawstate != DXP_DRAWSTATE_INTRAFONT)
@@ -99,24 +99,44 @@ void dxpFontIntrafontStart(void)
 		destfix = 0;
 		break;
 	default:
-		return;
+		return 0;
 	}
 	GUENABLE(GU_BLEND);
 	sceGuBlendFunc(op,src,dest,srcfix,destfix);
-	unsigned int color = dxpGraphicsData.color;
+	u32 r,g,b,a,t;
+	r = color & 0x000000ff;
+	t = dxpGraphicsData.color & 0x000000ff;
+	r *= t;
+	r /= 255;
+	g = (color >> 8) & 0x000000ff;
+	t = (dxpGraphicsData.color >> 8) & 0x000000ff;
+	g *= t;
+	g /= 255;
+	b = (color >> 16) & 0x000000ff;
+	t = (dxpGraphicsData.color >> 16) & 0x000000ff;
+	b *= t;
+	b /= 255;
+	a = (color >> 24) & 0x000000ff;
+	t = (dxpGraphicsData.color >> 24) & 0x000000ff;
+	a *= t;
+	a /= 255;
+	t = (r & 0x000000ff) |
+		((g & 0x000000ff) << 8) |
+		((b & 0x000000ff) << 16) |
+		((a & 0x000000ff) << 24);
+
 	switch(dxpGraphicsData.blendmode)
 	{
 	case DX_BLENDMODE_NOBLEND:
 	case DX_BLENDMODE_MUL:
 	case DX_BLENDMODE_DESTCOLOR:
-		color |= 0xff000000;
+		t |= 0xff000000;
 		break;
 	case DX_BLENDMODE_INVSRC:
-		color = (color & 0xff000000) | (~color & 0x00ffffff);
+		t = (t & 0xff000000) | (~t & 0x00ffffff);
 		break;
 	}
-	sceGuColor(color);
-	dxpGraphicsData.gucolor = color;
+	return t;
 }																					
 
 void dxpFontIntrafontFinish(void)
@@ -164,8 +184,8 @@ int DrawStringToHandle(int x,int y,const char *str,int color,int handle,int edge
 	if(!pHnd->used)return -1;
 	if(!edgecolor)edgecolor = pHnd->edgeColor;
 	if(!pHnd->edgeEnable)edgecolor = 0;
-	dxpFontIntrafontStart();
-	intraFontSetStyle(pHnd->pif,pHnd->scale,color,edgecolor,pHnd->fontAlign);
+	u32 fcolor = dxpFontIntrafontStart(color);
+	intraFontSetStyle(pHnd->pif,pHnd->scale,fcolor,edgecolor,pHnd->fontAlign);
 	intraFontPrint(pHnd->pif,x,y + DXP_FONT_DEFAULT_SIZE * pHnd->scale,str);
 	dxpFontIntrafontFinish();
 	return 0;
