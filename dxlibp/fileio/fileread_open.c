@@ -9,7 +9,7 @@ int FileRead_open(const char* filename,int async)
 
 	DXPFILEIOHANDLE *pHnd;
 	int i;
-	if(!filename)return -1;
+	if(!filename)return 0;
 	if(strlen(filename) + 1 >= DXP_BUILDOPTION_FILENAMELENGTH_MAX)return -1;
 	//istate = pspSdkDisableInterrupts();
 	if(!dxpFileioData.init)dxpFileioInit();
@@ -18,7 +18,7 @@ int FileRead_open(const char* filename,int async)
 	if(i >= DXP_BUILDOPTION_FILEHANDLE_MAX)
 	{
 		//pspSdkEnableInterrupts(istate);
-		return -1;
+		return 0;
 	}
 	pHnd = &dxpFileioData.handleArray[i];
 	strncpy(pHnd->filename,filename,DXP_BUILDOPTION_FILENAMELENGTH_MAX);
@@ -26,13 +26,13 @@ int FileRead_open(const char* filename,int async)
 	//pspSdkEnableInterrupts(istate);
 	pHnd->onmemory = 0;
 	pHnd->pos = 0;
-	if(dxpFileioReopen(i) < 0)
+	if(dxpFileioReopen(i + 1) < 0)
 	{
 		pHnd->used = 0;
-		return -1;
+		return 0;
 	}
 	SceIoStat stat;
 	sceIoGetstat(pHnd->filename,&stat);
 	pHnd->size = stat.st_size;
-	return i;
+	return i + 1;
 }

@@ -44,3 +44,7 @@ extern DXPFILEIODATA dxpFileioData;
 
 void dxpFileioInit();
 int dxpFileioReopen(int handle);
+
+
+#define FHANDLE2PTR(PTR,HANDLE) {if(HANDLE <= 0 || HANDLE > DXP_BUILDOPTION_FILEHANDLE_MAX)return -1;PTR = dxpFileioData.handleArray + HANDLE - 1;if(!PTR->used)return -1;}
+

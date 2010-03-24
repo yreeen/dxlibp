@@ -2,10 +2,8 @@
 #include <stdio.h>
 int FileRead_getc(int filehandle)
 {
-	if(filehandle < 0 || filehandle >= DXP_BUILDOPTION_FILEHANDLE_MAX)return -1;
 	DXPFILEIOHANDLE *pHnd;
-	pHnd = &dxpFileioData.handleArray[filehandle];
-	if(!pHnd->used)return 0;
+	FHANDLE2PTR(pHnd,filehandle);
 	if(pHnd->onmemory)
 	{
 		if(pHnd->pos >= pHnd->size)

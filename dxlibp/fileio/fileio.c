@@ -59,10 +59,9 @@ void dxpFileioInit()
 int dxpFileioReopen(int handle)
 {
 	char name[DXP_BUILDOPTION_FILENAMELENGTH_MAX];
-	if(handle < 0 || handle >= DXP_BUILDOPTION_FILEHANDLE_MAX)return -1;
 	DXPFILEIOHANDLE *pHnd;
-	pHnd = &dxpFileioData.handleArray[handle];
-	if(!pHnd->used || pHnd->onmemory)return 0;
+	FHANDLE2PTR(pHnd,handle);
+	if(pHnd->onmemory)return 0;
 	while(dxpFileioData.sleep)
 	{
 		sceKernelDelayThread(100);
