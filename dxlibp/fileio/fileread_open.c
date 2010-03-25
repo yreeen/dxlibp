@@ -10,7 +10,7 @@ int FileRead_open(const char* filename,int async)
 	DXPFILEIOHANDLE *pHnd;
 	int i;
 	if(!filename)return 0;
-	if(strlen(filename) + 1 >= DXP_BUILDOPTION_FILENAMELENGTH_MAX)return -1;
+	if(strlen(filename) + 1 >= DXP_BUILDOPTION_FILENAMELENGTH_MAX)return 0;
 	//istate = pspSdkDisableInterrupts();
 	if(!dxpFileioData.init)dxpFileioInit();
 	for(i = 0;i < DXP_BUILDOPTION_FILEHANDLE_MAX;++i)
