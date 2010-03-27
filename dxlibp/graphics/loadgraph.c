@@ -47,7 +47,7 @@ static DXPTEXTURE3* LoadPngImage(const char *FileName)
 	texptr = dxpGraphicsCreateTexture();
 	if(!texptr)goto err;
 	fp = FileRead_open(FileName,0);
-	if(fp == -1)goto err;
+	if(fp == 0)goto err;
 	FileRead_read(buf,filesize,fp);
 	FileRead_close(fp);
 	params.funcs.pmalloc = malloc;

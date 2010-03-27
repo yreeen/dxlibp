@@ -69,7 +69,7 @@ int LoadSoundMem(const char *filename)
 	int fileSize = FileRead_size(filename);
 	if(fileSize <= 0)return -1;
 	int fileHandle = FileRead_open(filename,0);
-	if(fileHandle < 0)return -1;
+	if(fileHandle == 0)return -1;
 	int handle = dxpSoundReserveHandle();
 	if(handle < 0)
 	{
