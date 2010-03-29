@@ -8,7 +8,7 @@ int	FileRead_seek(int filehandle,int offset,int origin)
 	FHANDLE2PTR(pHnd,filehandle);
 	if(pHnd->onmemory)
 	{
-		int target;
+		int target = 0;
 		switch(origin)
 		{
 		case SEEK_CUR:
