@@ -1,0 +1,207 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="PSP|Win32">
+      <Configuration>PSP</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{256E9704-DC3C-4F1D-85DA-5BC9893DEDEE}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(Configuration)\</IntDir>
+    <NMakeBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">make</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">make rebuild</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">make clean</NMakeCleanCommandLine>
+    <NMakeOutput Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'" />
+    <NMakePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(ProjectDir);$(PSPSDK)\include;$(PSPSDK)\psp\include;$(PSPSDK)\psp\sdk\include;$(MakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeForcedIncludes Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(NMakeForcedIncludes)</NMakeForcedIncludes>
+    <NMakeAssemblySearchPath Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
+    <NMakeForcedUsingAssemblies Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(ProjectDir);$(PSPSDK)\include;$(PSPSDK)\psp\include;$(PSPSDK)\psp\sdk\include;$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">
+    <BuildLog>
+      <Path>BuildLog.htm</Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="graphics\3d\3dgraphics.c" />
+    <ClCompile Include="debug_\applogadd.c" />
+    <ClCompile Include="debug\applogadd.c" />
+    <ClCompile Include="graphics\3d\camera.c" />
+    <ClCompile Include="general\changecpuspeed.c" />
+    <ClCompile Include="general\changerandmode.c" />
+    <ClCompile Include="sound\changevolumesoundmem.c" />
+    <ClCompile Include="input\checkhitkey.c" />
+    <ClCompile Include="input\checkhitkeyall.c" />
+    <ClCompile Include="sound\checksoundmem.c" />
+    <ClCompile Include="graphics\cleardrawscreen.c" />
+    <ClCompile Include="debug\clsdx.c" />
+    <ClCompile Include="graphics\convertgraphformat.c" />
+    <ClCompile Include="cpcnv\cpcnv.c" />
+    <ClCompile Include="font\createfonttohandle.c" />
+    <ClCompile Include="debug\debug.c" />
+    <ClCompile Include="debug_\debug.c" />
+    <ClCompile Include="font\deletefonttohandle.c" />
+    <ClCompile Include="sound\deletesoundmem.c" />
+    <ClCompile Include="graphics\derivationgraph.c" />
+    <ClCompile Include="graphics\drawbox.c" />
+    <ClCompile Include="graphics\drawcircle.c" />
+    <ClCompile Include="graphics\drawextendgraph.c" />
+    <ClCompile Include="graphics\drawgraph.c" />
+    <ClCompile Include="graphics\drawline.c" />
+    <ClCompile Include="graphics\3d\drawline3d.c" />
+    <ClCompile Include="graphics\drawmodigraph.c" />
+    <ClCompile Include="graphics\drawmodigraphf.c" />
+    <ClCompile Include="graphics\drawoval.c" />
+    <ClCompile Include="graphics\drawpixel.c" />
+    <ClCompile Include="graphics\3d\drawpolygon3d.c" />
+    <ClCompile Include="graphics\drawrectgraph.c" />
+    <ClCompile Include="graphics\drawrotagraph.c" />
+    <ClCompile Include="graphics\drawrotagraph2.c" />
+    <ClCompile Include="graphics\drawrotagraph2f.c" />
+    <ClCompile Include="graphics\drawrotagraphf.c" />
+    <ClCompile Include="graphics\drawtriangle.c" />
+    <ClCompile Include="graphics\3d\drawtriangle3d.c" />
+    <ClCompile Include="graphics\drawturngraph.c" />
+    <ClCompile Include="general\dxlib_end.c" />
+    <ClCompile Include="general\dxlib_init.c" />
+    <ClCompile Include="general\dxlib_isinit.c" />
+    <ClCompile Include="debug_\dxpdebugputs_zenkaku.c" />
+    <ClCompile Include="debug\dxpdebugputs_zenkaku.c" />
+    <ClCompile Include="graphics\dxppng.c" />
+    <ClCompile Include="fileio\fileio.c" />
+    <ClCompile Include="fileio\fileread_close.c" />
+    <ClCompile Include="fileio\fileread_eof.c" />
+    <ClCompile Include="fileio\fileread_gets.c" />
+    <ClCompile Include="fileio\fileread_idlecheck.c" />
+    <ClCompile Include="fileio\fileread_open.c" />
+    <ClCompile Include="fileio\fileread_read.c" />
+    <ClCompile Include="fileio\fileread_seek.c" />
+    <ClCompile Include="fileio\fileread_size.c" />
+    <ClCompile Include="fileio\fileread_tell.c" />
+    <ClCompile Include="font\font.c" />
+    <ClCompile Include="general\general.c" />
+    <ClCompile Include="general\getdatetime.c" />
+    <ClCompile Include="graphics\getdisplayformat.c" />
+    <ClCompile Include="graphics\getdrawscreengraph.c" />
+    <ClCompile Include="font\getdrawstringwidthtohandle.c" />
+    <ClCompile Include="graphics\getgraphsize.c" />
+    <ClCompile Include="input\gethitkeystateall.c" />
+    <ClCompile Include="input\getinputstate.c" />
+    <ClCompile Include="input\getjoypadanaloginput.c" />
+    <ClCompile Include="input\getjoypadanaloginputright.c" />
+    <ClCompile Include="input\getjoypadinputstate.c" />
+    <ClCompile Include="input\getjoypadnum.c" />
+    <ClCompile Include="general\getnowcount.c" />
+    <ClCompile Include="general\getnowhiperformancecount.c" />
+    <ClCompile Include="graphics\getpixel.c" />
+    <ClCompile Include="general\getrand.c" />
+    <ClCompile Include="graphics\getscreenstate.c" />
+    <ClCompile Include="graphics\graphics.c" />
+    <ClCompile Include="sound\initsoundmem.c" />
+    <ClCompile Include="input\input.c" />
+    <ClCompile Include="font\intraFont.c" />
+    <ClCompile Include="font\intrafont_wrapper.c" />
+    <ClCompile Include="cpcnv\liblzr.c" />
+    <ClCompile Include="graphics\loaddivgraph.c" />
+    <ClCompile Include="graphics\loadgraph.c" />
+    <ClCompile Include="graphics\loadgraphscreen.c" />
+    <ClCompile Include="sound\loadsoundmem.c" />
+    <ClCompile Include="graphics\makegraph.c" />
+    <ClCompile Include="math\matrix.c" />
+    <ClCompile Include="graphics\3d\model.c" />
+    <ClCompile Include="sound\mp3.c" />
+    <ClCompile Include="cpcnv\sjis\multibytecharcheck.c" />
+    <ClCompile Include="osk\osk.c" />
+    <ClCompile Include="sound\playsoundmem.c" />
+    <ClCompile Include="debug\printfdx.c" />
+    <ClCompile Include="debug_\printfdx.c" />
+    <ClCompile Include="general\processmessage.c" />
+    <ClCompile Include="safealloc\safealloc.c" />
+    <ClCompile Include="graphics\screencopy.c" />
+    <ClCompile Include="graphics\screenflip.c" />
+    <ClCompile Include="general\setcodepoint.c" />
+    <ClCompile Include="sound\setcreatesounddatatype.c" />
+    <ClCompile Include="graphics\setdisplayformat.c" />
+    <ClCompile Include="graphics\setdrawarea.c" />
+    <ClCompile Include="graphics\setdrawblendmode.c" />
+    <ClCompile Include="graphics\setdrawbright.c" />
+    <ClCompile Include="graphics\setdrawmode.c" />
+    <ClCompile Include="graphics\setdrawscreen.c" />
+    <ClCompile Include="graphics\setgraphmode.c" />
+    <ClCompile Include="input\setjoypadinputtokeyinput.c" />
+    <ClCompile Include="input\setkeyinputtopspinput.c" />
+    <ClCompile Include="sound\setlooppossoundmem.c" />
+    <ClCompile Include="sound\setloopsamplepossoundmem.c" />
+    <ClCompile Include="sound\setpansoundmem.c" />
+    <ClCompile Include="graphics\settranscolor.c" />
+    <ClCompile Include="graphics\setwaitvsyncflag.c" />
+    <ClCompile Include="cpcnv\sjis\sjisfromucs2.c" />
+    <ClCompile Include="cpcnv\sjis\sjisstrlen.c" />
+    <ClCompile Include="cpcnv\sjis\sjistoucs2.c" />
+    <ClCompile Include="general\sleep.c" />
+    <ClCompile Include="sound\sound.c" />
+    <ClCompile Include="sound\soundcodec.c" />
+    <ClCompile Include="sound\soundthread.c" />
+    <ClCompile Include="general\srand.c" />
+    <ClCompile Include="input\startjoypadvibration.c" />
+    <ClCompile Include="input\stopjoypadvibration.c" />
+    <ClCompile Include="sound\stopsoundmem.c" />
+    <ClCompile Include="graphics\texutils.c" />
+    <ClCompile Include="cpcnv\ucs2\ucs2strlen.c" />
+    <ClCompile Include="cpcnv\utf8\utf8fromucs2.c" />
+    <ClCompile Include="cpcnv\utf8\utf8strlen.c" />
+    <ClCompile Include="math\vector.c" />
+    <ClCompile Include="graphics\waitgpusync.c" />
+    <ClCompile Include="cpcnv\utf8\utf8toucs2.c" />
+    <ClCompile Include="fileio\fileread_getc.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Makefile" />
+    <None Include="BuildLog.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Doxyfile" />
+    <None Include="readme.txt" />
+    <None Include="実装表.txt" />
+    <None Include="開発雑記.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="cpcnv.h" />
+    <ClInclude Include="debug.h" />
+    <ClInclude Include="dxlibp.h" />
+    <ClInclude Include="graphics\dxppng.h" />
+    <ClInclude Include="fileio.h" />
+    <ClInclude Include="font.h" />
+    <ClInclude Include="general.h" />
+    <ClInclude Include="graphics.h" />
+    <ClInclude Include="input.h" />
+    <ClInclude Include="font\intraFont.h" />
+    <ClInclude Include="font\intrafont_wrapper.h" />
+    <ClInclude Include="font\libccc.h" />
+    <ClInclude Include="cpcnv\liblzr.h" />
+    <ClInclude Include="safealloc.h" />
+    <ClInclude Include="sound.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
