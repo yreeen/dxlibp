@@ -29,7 +29,7 @@
 				CleanCommandLine="make clean"
 				Output=""
 				PreprocessorDefinitions=""
-				IncludeSearchPath="c:\pspsdk\psp\sdk\include;c:\pspsdk\sdk\include;d:\pspsdk\psp\sdk\include;d:\pspsdk\sdk\include;e:\pspsdk\psp\sdk\include;e:\pspsdk\psp\include;"
+				IncludeSearchPath="$(ProjectDir);$(PSPSDK)\include;$(PSPSDK)\psp\include;$(PSPSDK)\psp\sdk\include;"
 				ForcedIncludes=""
 				AssemblySearchPath=""
 				ForcedUsingAssemblies=""
