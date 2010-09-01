@@ -62,7 +62,7 @@ static DXPTEXTURE3* LoadPngImage(const char *FileName)
 	texptr->width = png.widthN2;
 	texptr->height = png.heightN2;
 	texptr->pitch = png.pitch;
-	texptr->ppalette = png.clut;
+	texptr->ppalette = (u32 *)png.clut;
 	texptr->psm = png.psm;
 	texptr->reloadflag = 1;
 	texptr->size2_nflag = (png.height == png.heightN2 && png.width == png.widthN2 ? 1 : 0);
