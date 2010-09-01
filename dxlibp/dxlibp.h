@@ -42,9 +42,15 @@
 
 
 /*Windowsの定義をすこし流用*/
+#ifdef BYTE
 #define	BYTE	u8
+#endif
+#ifdef WORD
 #define	WORD	u16
+#endif
+#ifdef DWORD
 #define	DWORD	u32
+#endif
 
 /* 文字コード定義 */
 #define DXP_CP_SJIS			(0x0d)
