@@ -1,6 +1,6 @@
 #include "../../cpcnv.h"
 
-int dxpCpUTF8_toUcs2(dxpUcs2 * dst, size_t count,const dxpChar * src)
+int dxpCpUTF8_toUcs2(dxpUcs2 * dst, u32 count,const dxpChar * src)
 {
 	if (!src || !dst || !count) return 0;
 
