@@ -43,9 +43,9 @@
 #ifdef _MSC_VER
 /* どうせVCでコンパイルしないけどIntelliSenseたんのために... */
 #define __inline__ __inline
-#define __asm__ __asm
+#define __asm__(x)
 #define __attribute__(x)
-#defined aligned(x)
+#define aligned(x)
 
 typedef unsigned __int8		u8;
 typedef unsigned __int16	u16;
