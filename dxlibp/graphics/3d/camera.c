@@ -16,7 +16,7 @@ int SetCameraPositionAndTargetAndUpVec( VECTOR Position, VECTOR Target, VECTOR U
 	sceGumLoadIdentity();
 	sceGumLookAt(&Position,&Target,&Up);
 	sceGumMultMatrix(&zinv);
-	sceGumStoreMatrix(&dxpGraphicsData.camera.viewMatrix);
+	sceGumStoreMatrix(&dxpGraphicsData.camera.viewMatrix.pspm);
 	return 0;
 }
 
@@ -30,14 +30,14 @@ void dxpGraphics3dUpdateProjectionMatrix()
 		dxpGraphicsData.camera.near,
 		dxpGraphicsData.camera.far
 	);
-	sceGumStoreMatrix(&dxpGraphicsData.camera.projectionMatrix);
+	sceGumStoreMatrix(&dxpGraphicsData.camera.projectionMatrix.pspm);
 }
 
 int SetupCamera_ProjectionMatrix( MATRIX ProjectionMatrix )
 {
 	dxpGraphicsData.camera.projectionMatrix = ProjectionMatrix;
 	sceGumMatrixMode(GU_PROJECTION);
-	sceGumLoadMatrix(&ProjectionMatrix);
+	sceGumLoadMatrix(&ProjectionMatrix.pspm);
 	return 0;
 }
 

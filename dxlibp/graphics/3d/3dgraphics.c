@@ -339,7 +339,7 @@ int dxpGraphicsSetup3D(u32 color)
 int SetTransformToWorld( MATRIX *Matrix )
 {
 	sceGumMatrixMode(GU_MODEL);
-	sceGumLoadMatrix(Matrix);
+	sceGumLoadMatrix(&Matrix->pspm);
 	return 0;
 }
 
