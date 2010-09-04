@@ -13,9 +13,11 @@ extern "C" {
 #endif
 
 #ifdef _WIN32
+#ifdef _MSC_VER
 typedef unsigned __int8		u8;
 typedef unsigned __int16	u16;
 typedef unsigned __int32	u32;
+#endif // _MSC_VER
 #else
 #include <psptypes.h>
 #endif
