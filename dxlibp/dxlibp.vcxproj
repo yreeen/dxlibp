@@ -38,7 +38,7 @@
     </NMakeAssemblySearchPath>
     <NMakeForcedUsingAssemblies Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">
     </NMakeForcedUsingAssemblies>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(ProjectDir);$(PSPSDK)\include;$(PSPSDK)\psp\include;$(PSPSDK)\psp\sdk\include;</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(ProjectDir);$(PSPSDK)\include;$(PSPSDK)\psp\include;$(PSPSDK)\psp\sdk\include;C:\pspsdk\include;C:\pspsdk\psp\include;C:\pspsdk\psp\sdk\include;</IncludePath>
     <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(PSPSDK)\bin;$(PSPSDK)\psp\bin;$(PATH);</ExecutablePath>
     <ReferencePath Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'" />
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'" />
