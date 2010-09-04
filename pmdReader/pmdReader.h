@@ -12,9 +12,9 @@ http://blog.goo.ne.jp/torisu_tetosuki/e/209ad341d3ece2b1b4df24abf619d6e4
 extern "C" {
 #endif
 
-#ifdef WIN32
-typedef unsigned __int16	u16;
+#ifdef _WIN32
 typedef unsigned __int8		u8;
+typedef unsigned __int16	u16;
 typedef unsigned __int32	u32;
 #else
 #include <psptypes.h>
