@@ -154,7 +154,7 @@ OBJS += graphics/3d/camera.o
 
 INCDIR = 
 CFLAGS = -G0 -Wall -O3# -save-temps # -pg
-CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
+CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti -fcheck-new
 ASFLAGS = $(CFLAGS)
 
 LIBDIR =
