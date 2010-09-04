@@ -29,12 +29,20 @@
     <NMakeReBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">make rebuild</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">make clean</NMakeCleanCommandLine>
     <NMakeOutput Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'" />
-    <NMakePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">
+    </NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(ProjectDir);$(PSPSDK)\include;$(PSPSDK)\psp\include;$(PSPSDK)\psp\sdk\include;$(MakeIncludeSearchPath)</NMakeIncludeSearchPath>
-    <NMakeForcedIncludes Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(NMakeForcedIncludes)</NMakeForcedIncludes>
-    <NMakeAssemblySearchPath Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
-    <NMakeForcedUsingAssemblies Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(ProjectDir);$(PSPSDK)\include;$(PSPSDK)\psp\include;$(PSPSDK)\psp\sdk\include;$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;</IncludePath>
+    <NMakeForcedIncludes Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">
+    </NMakeForcedIncludes>
+    <NMakeAssemblySearchPath Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">
+    </NMakeAssemblySearchPath>
+    <NMakeForcedUsingAssemblies Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">
+    </NMakeForcedUsingAssemblies>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(ProjectDir);$(PSPSDK)\include;$(PSPSDK)\psp\include;$(PSPSDK)\psp\sdk\include;</IncludePath>
+    <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">$(PSPSDK)\bin;$(PSPSDK)\psp\bin;$(PATH);</ExecutablePath>
+    <ReferencePath Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'" />
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'" />
+    <SourcePath Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'" />
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='PSP|Win32'">
     <BuildLog>
@@ -42,6 +50,7 @@
     </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\pmdReader\pmdReader.c" />
     <ClCompile Include="graphics\3d\3dgraphics.c" />
     <ClCompile Include="debug_\applogadd.c" />
     <ClCompile Include="debug\applogadd.c" />
@@ -185,6 +194,7 @@
     <None Include="開発雑記.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\pmdReader\pmdReader.h" />
     <ClInclude Include="cpcnv.h" />
     <ClInclude Include="debug.h" />
     <ClInclude Include="dxlibp.h" />

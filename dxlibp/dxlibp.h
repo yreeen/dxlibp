@@ -23,7 +23,7 @@
 #define DXP_BUILDOPTION_MODEL_MAXNUM		16		//3Dモデルの最大数
 #define DXP_BUILDOPTION_FONTHANDLE_MAX		8
 
-#define DXP_BUILDOPTION_NO3D						//3D機能の無効化。これをコメントアウトした場合、実装途中の3D関数が使用可能になりますが、libpspgumへの依存が発生します。
+//#define DXP_BUILDOPTION_NO3D						//3D機能の無効化。これをコメントアウトした場合、実装途中の3D関数が使用可能になりますが、libpspgumへの依存が発生します。
 
 /*---定数とマクロ---*/
 
@@ -40,8 +40,15 @@
 #define LONGLONG u64
 #endif
 
+#ifdef _MSC_VER
+/* どうせVCでコンパイルしないけどIntelliSenseたんのために... */
+#define __inline__ __inline
+#define __asm__ __asm
+typedef unsigned __int8		u8;
+typedef unsigned __int16	u16;
+typedef unsigned __int32	u32;
 
-/*Windowsの定義をすこし流用*/
+/* Windowsの定義をすこし流用 */
 #ifdef BYTE
 #define	BYTE	u8
 #endif
@@ -51,6 +58,9 @@
 #ifdef DWORD
 #define	DWORD	u32
 #endif
+
+#endif // _MSC_VER
+
 
 /* 文字コード定義 */
 #define DXP_CP_SJIS			(0x0d)
