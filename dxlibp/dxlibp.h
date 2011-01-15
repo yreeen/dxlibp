@@ -1277,6 +1277,13 @@ int GetScreenState(int *xsize,int *ysize,int *bpp);
 */
 int SetDrawArea(int x1,int y1,int x2,int y2);
 /**
+ * 描画可能領域を描画対象画面全体にする(本家互換)
+ * 
+ * @retval 0 成功
+ * @retval -1 失敗
+*/
+int SetDrawAreaFull(void);
+/**
  * 描画先のグラフィックスをクリアします。(本家互換)
  * 
  * @retval 0 成功
@@ -1697,6 +1704,28 @@ int GetDrawFormatStringWidthToHandle(int handle,const char *format, ... );
  * @retval -1 失敗
 */
 int InitFontToHandle(void);
+/*@}*/
+
+/**@defgroup 設定関連*/
+/*@{*/
+/**
+ * ウインドウがアクティブではない状態でも処理を続行するか、フラグをセットする(本家互換)
+ *
+ * 本家との互換性維持のための関数です。0を返すだけです。
+ *
+ * @return 常に0
+*/
+int SetAlwaysRunFlag(int flag);
+
+/**
+ * DirectDraw や Direct3D の協調レベルをマルチスレッド対応にするかどうかをセットする(本家互換)
+ *
+ * 本家との互換性維持のための関数です。0を返すだけです。
+ *
+ * @return 常に0
+*/
+int SetMultiThreadFlag(int flag);
+
 /*@}*/
 
 /**@defgroup デバッグ関連*/
