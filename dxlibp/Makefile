@@ -15,6 +15,8 @@ OBJS += general/setcodepoint.o
 OBJS += general/changerandmode.o
 OBJS += general/changecpuspeed.o
 OBJS += general/sleep.o
+OBJS += general/setmultithreadflag.o
+OBJS += general/setalwaysrunflag.o
 
 #threadsafe alloc/free
 OBJS += safealloc/safealloc.o
@@ -83,6 +85,7 @@ OBJS += graphics/getscreenstate.o
 OBJS += graphics/screenflip.o
 OBJS += graphics/screencopy.o
 OBJS += graphics/setdrawarea.o
+OBJS += graphics/setdrawareafull.o
 OBJS += graphics/setgraphmode.o
 OBJS += graphics/setdrawmode.o
 OBJS += graphics/setdrawbright.o
