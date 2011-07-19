@@ -1,3 +1,4 @@
+#include "../general.h"
 #include "../font.h"
 #include "../graphics.h"
 #include "libc/stdio.h"
@@ -15,7 +16,21 @@ void dxpFontInit()
 	for(i = 0;i < DXP_BUILDOPTION_FONTHANDLE_MAX;++i)
 		dxpFontArray[i].used = 0;
 	dxpFontArray[0].used = 1;
-	dxpFontArray[0].pif = intraFontLoad(DXP_FONTNAME_DEFAULT,INTRAFONT_STRING_SJIS);
+
+	int charset;
+	switch(dxpGeneralData.charset)
+	{
+	case DXP_CP_UTF8:
+		charset = INTRAFONT_STRING_UTF8;
+		break;
+
+	case DXP_CP_SJIS:
+	default:
+		charset = INTRAFONT_STRING_SJIS;
+		break;
+	}
+
+	dxpFontArray[0].pif = intraFontLoad(DXP_FONTNAME_DEFAULT,charset);
 	dxpFontArray[0].scale = 1.0f;
 	dxpFontArray[0].edgeColor = DXP_COLOR_DARKGRAY;
 	dxpFontArray[0].fontAlign = DXP_FONT_ALIGN_DEFAULT;

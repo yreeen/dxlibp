@@ -1,12 +1,21 @@
 #include "../general.h"
+#include "../font.h"
 
-int SetCodepoint(int codepoint)
+int SetCodepointToHandle(int codepoint,int handle)
 {
+	if(handle < 0 || handle >= DXP_BUILDOPTION_FONTHANDLE_MAX)return -1;
+	if(!dxpFontData.init)dxpFontInit();
+	DXPFONTHANDLE *pHnd;
+	pHnd = &dxpFontArray[handle];
+	if(!pHnd->used)return -1;
+
 	switch(codepoint)
 	{
-	case DXP_CP_SJIS:
-		break;
 	case DXP_CP_UTF8:
+		intraFontSetEncoding(pHnd->pif,INTRAFONT_STRING_UTF8);
+		break;
+	case DXP_CP_SJIS:
+		intraFontSetEncoding(pHnd->pif,INTRAFONT_STRING_SJIS);
 		break;
 	default:
 		return -1;
@@ -14,3 +23,9 @@ int SetCodepoint(int codepoint)
 	dxpGeneralData.charset = codepoint;
 	return 0;
 }
+
+int SetCodepoint(int codepoint)
+{
+	return SetCodepointToHandle(codepoint,0);
+}
+
