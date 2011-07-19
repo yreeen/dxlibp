@@ -5,6 +5,7 @@
 float GetDrawStringWidthToHandleF(const char *str,int len,int handle)
 {
 	if(handle < 0 || handle >= DXP_BUILDOPTION_FONTHANDLE_MAX)return -1;
+	if(!dxpFontData.init)dxpFontInit();
 	DXPFONTHANDLE *pHnd;
 	pHnd = &dxpFontArray[handle];
 	if(!pHnd->used)return -1;
