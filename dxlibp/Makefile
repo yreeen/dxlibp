@@ -166,5 +166,12 @@ LDFLAGS =
 PSPSDK=$(shell psp-config --pspsdk-path)
 include $(PSPSDK)/lib/build.mak
 
+PSPPREFIX=$(shell psp-config --psp-prefix)
+INSTALL_PATH=$(PSPPREFIX)/lib/libdxp.a
+
+install : $(OBJS)
+	@ echo "Installing to \"$(INSTALL_PATH)\"..."
+	install -m644 -T "$(TARGET_LIB)" "$(INSTALL_PATH)"
+
 doc :
 	doxygen
