@@ -131,6 +131,9 @@ OBJS += cpcnv/ucs2/ucs2strlen.o
 #on screen keyboard functions
 OBJS += osk/osk.o
 
+#PSP dialog functions
+OBJS += dialog/dialog.o
+
 #sound functions
 OBJS += sound/sound.o
 OBJS += sound/soundcodec.o
