@@ -1,13 +1,7 @@
 #include "../safealloc.h"
 #include <stdio.h>
 #include <malloc.h>
-//
-//
-//
-//
-//
-//
-//
+
 //
 //typedef struct DXPSAFEALLOCDATA
 //{
@@ -83,28 +77,71 @@
 //		}
 //	}
 //}
+
+
+//void* dxpSafeAlloc(u32 size)
+//{
+//	if(!size)return NULL;
+//	int blockId = sceKernelAllocPartitionMemory(PSP_MEMORY_PARTITION_USER,"dxp threadsafe alloc",PSP_SMEM_Low,size + 64,0);
+//	if(blockId < 0)return NULL;
+//	u32 addr = (u32)sceKernelGetBlockHeadAddr(blockId),addr2;
+//	if(!addr)
+//	{
+//		sceKernelFreePartitionMemory(blockId);
+//		return NULL;
+//	}
+//	addr2 = addr = (addr + 64) & ~63;
+//	addr2 -= 4;
+//	*(int*)addr2 = blockId;
+//	return (void*)addr;
+//}
 //
+//void dxpSafeFree(void *addr)
+//{
+//	if(!addr)return;
+//	int *blockIdPtr = (int*)addr;
+//	sceKernelFreePartitionMemory(*(--blockIdPtr));
+//}
+//
+
+static int dxpSafeAllocGlobalVPL = -1;
+
+#define DXPSAFEALLOC_SIZE (1 * 1024 * 1024)
+
+int dxpSafeAllocInit()
+{
+	int trynum;
+	//if(dxpSafeAllocGlobalVPL >= 0)
+	//	sceKernelDeleteVpl(dxpSafeAllocGlobalVPL);
+	for(trynum = 0;trynum < 5;++trynum)
+	{
+		dxpSafeAllocGlobalVPL = sceKernelCreateVpl("dxpsafeallocvpl",PSP_MEMORY_PARTITION_USER,0,DXPSAFEALLOC_SIZE >> trynum,NULL);
+		if(dxpSafeAllocGlobalVPL >= 0)return 0;
+	}
+	return -1;
+}
+
+int dxpSafeAllocEnd()
+{
+	//if(dxpSafeAllocGlobalVPL < 0)return -1;
+	sceKernelDeleteVpl(dxpSafeAllocGlobalVPL);
+	return 0;
+}
 
 void* dxpSafeAlloc(u32 size)
 {
 	if(!size)return NULL;
-	int blockId = sceKernelAllocPartitionMemory(PSP_MEMORY_PARTITION_USER,"dxp threadsafe alloc",PSP_SMEM_Low,size + 64,0);
-	if(blockId < 0)return NULL;
-	u32 addr = (u32)sceKernelGetBlockHeadAddr(blockId),addr2;
-	if(!addr)
-	{
-		sceKernelFreePartitionMemory(blockId);
+	if(dxpSafeAllocGlobalVPL < 0)return NULL;
+	void* addr;
+	if(sceKernelAllocateVpl(dxpSafeAllocGlobalVPL,size,&addr,NULL) < 0)
 		return NULL;
-	}
-	addr2 = addr = (addr + 64) & ~63;
-	addr2 -= 4;
-	*(int*)addr2 = blockId;
-	return (void*)addr;
+	return addr;
+
 }
 
 void dxpSafeFree(void *addr)
 {
 	if(!addr)return;
-	int *blockIdPtr = (int*)addr;
-	sceKernelFreePartitionMemory(*(--blockIdPtr));
+	if(dxpSafeAllocGlobalVPL < 0)return;
+	sceKernelFreeVpl(dxpSafeAllocGlobalVPL,addr);
 }
