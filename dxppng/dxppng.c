@@ -543,15 +543,14 @@ int dxppng_decode(DXPPNG_PARAMS *params,DXPPNG *png)
 				}
 				if(errflag)break;
 			}
+			inflateEnd(&z);
+			funcs->pfree(linebuf[0]);
 			if(errflag)
 			{
 				funcs->pfree(png->clut);
 				funcs->pfree(rawbuf);
-				funcs->pfree(linebuf[0]);
 				return -1;
 			}
-			inflateEnd(&z);
-			funcs->pfree(linebuf[0]);
 			png->raw = rawbuf;
 		}//uncompress end
 		if(png->psm == PSM_8888)
