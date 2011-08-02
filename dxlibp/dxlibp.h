@@ -261,6 +261,18 @@ typedef unsigned __int64	u64;
 #define	DXP_OSK_URL			(0x00080000)	//URL入力支援
 
 
+/* メッセージダイアログのオプション */
+#define DXP_MSGDIALOG_OPTION_NONE 	    	(0)
+#define DXP_MSGDIALOG_OPTION_YESNO			(PSP_UTILITY_MSGDIALOG_OPTION_YESNO_BUTTONS)
+#define DXP_MSGDIALOG_OPTION_DEFAULT_NO 	(PSP_UTILITY_MSGDIALOG_OPTION_DEFAULT_NO)
+
+/* メッセージダイアログの戻り値 */
+#define DXP_MSGDIALOG_RESULT_UNK 	(PSP_UTILITY_MSGDIALOG_RESULT_UNKNOWN1)
+#define DXP_MSGDIALOG_RESULT_YES	(PSP_UTILITY_MSGDIALOG_RESULT_YES)
+#define DXP_MSGDIALOG_RESULT_NO		(PSP_UTILITY_MSGDIALOG_RESULT_NO)
+#define DXP_MSGDIALOG_RESULT_BACK	(PSP_UTILITY_MSGDIALOG_RESULT_BACK)
+
+
 /* 乱数生成方法の定義。SetRandMode関数に渡します。 */
 #define DXP_RANDMODE_MT	(0)	//メルセンヌ・ツイスター方式の乱数生成器を使います。おそらく、本家との互換性があります。
 #define DXP_RANDMODE_HW	(1)	//PSPのハードウェアの乱数生成器を使います。高速です。
@@ -1726,6 +1738,25 @@ int SetAlwaysRunFlag(int flag);
 */
 int SetMultiThreadFlag(int flag);
 
+/*@}*/
+
+/** @defgroup ユーティリティ*/
+/*@{*/
+/**
+ * PSPのメッセージダイアログを出す
+ *
+ * @param text 表示する文字列 @b ※注意：現在SDKの仕様上512バイトまでの文字列しか表示できません
+ * @param option ダイアログの形式
+ * @return @a DXP_MSGDIALOG_RESULT_*
+*/
+int ShowTextDialog(const char *text,int options DXPDEFARG(DXP_MSGDIALOG_OPTION_NONE));
+/**
+ * PSPのエラーダイアログを出す
+ *
+ * @param errorvalue エラーのID(0x80001234等)
+ * @return @a DXP_MSGDIALOG_RESULT_*
+*/
+int ShowErrorDialog(unsigned int errorvalue);
 /*@}*/
 
 /**@defgroup デバッグ関連*/
