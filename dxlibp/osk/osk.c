@@ -75,13 +75,12 @@ int GetTextOSK(char *buf,int buflen,int mode,const char *title,const char *init)
 				sceUtilityOskShutdownStart();
 				break;
 			
+			case PSP_UTILITY_DIALOG_NONE:
 			case PSP_UTILITY_DIALOG_FINISHED:
+				done = 1;
 				break;
 				
-			case PSP_UTILITY_DIALOG_NONE:
-				done = 1;
-				
-			default :
+			default:
 				break;
 		}
 		ScreenFlip();
