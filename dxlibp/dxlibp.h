@@ -261,20 +261,16 @@ typedef unsigned __int64	u64;
 #define	DXP_OSK_URL			(0x00080000)	//URL入力支援
 
 
-typedef enum
-{
-	DXP_DIALOG_OPTION_NONE 			= 0,
-	DXP_DIALOG_OPTION_YESNO			= PSP_UTILITY_MSGDIALOG_OPTION_YESNO_BUTTONS,
-	DXP_DIALOG_OPTION_DEFAULT_NO 	= PSP_UTILITY_MSGDIALOG_OPTION_DEFAULT_NO,
-}dxpDialogOption;
+/* メッセージダイアログのオプション */
+#define DXP_MSGDIALOG_OPTION_NONE 	    	(0)
+#define DXP_MSGDIALOG_OPTION_YESNO			(PSP_UTILITY_MSGDIALOG_OPTION_YESNO_BUTTONS)
+#define DXP_MSGDIALOG_OPTION_DEFAULT_NO 	(PSP_UTILITY_MSGDIALOG_OPTION_DEFAULT_NO)
 
-typedef enum
-{
-	DXP_DIALOG_RESULT_UNK 	= PSP_UTILITY_MSGDIALOG_RESULT_UNKNOWN1,
-	DXP_DIALOG_RESULT_YES	= PSP_UTILITY_MSGDIALOG_RESULT_YES,
-	DXP_DIALOG_RESULT_NO	= PSP_UTILITY_MSGDIALOG_RESULT_NO,
-	DXP_DIALOG_RESULT_BACK	= PSP_UTILITY_MSGDIALOG_RESULT_BACK,
-}dxpDialogResult;
+/* メッセージダイアログの戻り値 */
+#define DXP_MSGDIALOG_RESULT_UNK 	(PSP_UTILITY_MSGDIALOG_RESULT_UNKNOWN1)
+#define DXP_MSGDIALOG_RESULT_YES	(PSP_UTILITY_MSGDIALOG_RESULT_YES)
+#define DXP_MSGDIALOG_RESULT_NO		(PSP_UTILITY_MSGDIALOG_RESULT_NO)
+#define DXP_MSGDIALOG_RESULT_BACK	(PSP_UTILITY_MSGDIALOG_RESULT_BACK)
 
 
 /* 乱数生成方法の定義。SetRandMode関数に渡します。 */
@@ -1751,14 +1747,14 @@ int SetMultiThreadFlag(int flag);
  *
  * @param text 表示する文字列 @b ※注意：現在SDKの仕様上512バイトまでの文字列しか表示できません
  * @param option ダイアログの形式
- * @return ::dxpDialogResult
+ * @return @a DXP_MSGDIALOG_RESULT_*
 */
-int ShowTextDialog(const char *text,dxpDialogOption option DXPDEFARG(DXP_DIALOG_OPTION_NONE));
+int ShowTextDialog(const char *text,int options DXPDEFARG(DXP_MSGDIALOG_OPTION_NONE));
 /**
  * PSPのエラーダイアログを出す
  *
  * @param errorvalue エラーのID(0x80001234等)
- * @return ::dxpDialogResult
+ * @return @a DXP_MSGDIALOG_RESULT_*
 */
 int ShowErrorDialog(unsigned int errorvalue);
 /*@}*/

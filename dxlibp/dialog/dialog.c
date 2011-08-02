@@ -57,14 +57,14 @@ int dxpShowDialog(pspUtilityMsgDialogParams *params)
 	return params->buttonPressed;
 }
 
-int ShowTextDialog(const char *text,dxpDialogOption option)
+int ShowTextDialog(const char *text,int options)
 {
-	option |= PSP_UTILITY_MSGDIALOG_OPTION_TEXT;
+	options |= PSP_UTILITY_MSGDIALOG_OPTION_TEXT;
 
 	pspUtilityMsgDialogParams params;
 	dxpDialogParamInit(&params);
 	params.mode = PSP_UTILITY_MSGDIALOG_MODE_TEXT;
-	params.options = option;
+	params.options = options;
 	strncpy(params.message,text,strlen(text) < 512?strlen(text):512);
 
 	return dxpShowDialog(&params);
