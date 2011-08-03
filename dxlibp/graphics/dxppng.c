@@ -426,7 +426,7 @@ int dxppng_decode(DXPPNG_PARAMS *params,DXPPNG *png)
 						switch(bitDepth)
 						{
 						case 1://g or p 1
-							bit = k & 7;
+							bit = (~k) & 7;
 							color = (linebuf[cl][k >> 3] & (1 << bit)) >> bit;
 							if(!params->mode)//raw
 							{
@@ -435,14 +435,14 @@ int dxppng_decode(DXPPNG_PARAMS *params,DXPPNG *png)
 							}
 							if(k & 1)
 							{
-								*out |= color & 0xf;
+								*out = (color & 0xf) << 4;
 							}else
 							{
-								*out = (color & 0xf) << 4;
+								*out |= color & 0xf;
 							}
 							break;
 						case 2://g or p 1
-							bit = (k & 3) << 1;
+							bit = (~k & 3) << 1;
 							color = (linebuf[cl][k >> 2] & (3 << bit)) >> bit;
 							if(!params->mode)//raw
 							{
@@ -451,10 +451,10 @@ int dxppng_decode(DXPPNG_PARAMS *params,DXPPNG *png)
 							}
 							if(k & 1)
 							{
-								*out |= color & 0xf;
+								*out = (color & 0xf) << 4;
 							}else
 							{
-								*out = (color & 0xf) << 4;
+								*out |= color & 0xf;
 							}
 							break;
 						case 4://g or p 1
@@ -467,10 +467,10 @@ int dxppng_decode(DXPPNG_PARAMS *params,DXPPNG *png)
 							}
 							if(k & 1)
 							{
-								*out |= color & 0xf;
+								*out = (color & 0xf) << 4;
 							}else
 							{
-								*out = (color & 0xf) << 4;
+								*out |= color & 0xf;
 							}
 							break;
 						case 8://all 1 2 3 4
