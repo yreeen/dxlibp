@@ -133,6 +133,7 @@ OBJS += osk/osk.o
 
 #sound functions
 OBJS += sound/sound.o
+OBJS += sound/sound2.o
 OBJS += sound/soundcodec.o
 OBJS += sound/soundthread.o
 OBJS += sound/mp3.o

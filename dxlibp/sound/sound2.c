@@ -17,6 +17,7 @@ typedef struct DXPSOUND2SOUNDDATA
 			DXPAVCONTEXT Context;
 		}Stream;
 	}Data;
+	int Length;
 	void (*Prefetch)(int NextPos);
 	void (*GetData)();
 }DXPSOUND2SOUNDDATA;
