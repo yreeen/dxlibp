@@ -411,6 +411,9 @@
     <ClCompile Include="..\..\pmdReader\pmdReader.c">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="sound\sound2.c">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="BuildLog.htm" />
