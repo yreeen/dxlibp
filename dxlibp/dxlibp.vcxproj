@@ -169,6 +169,7 @@
     <ClCompile Include="cpcnv\sjis\sjistoucs2.c" />
     <ClCompile Include="general\sleep.c" />
     <ClCompile Include="sound\sound.c" />
+    <ClCompile Include="sound\sound2.c" />
     <ClCompile Include="sound\soundcodec.c" />
     <ClCompile Include="sound\soundthread.c" />
     <ClCompile Include="general\srand.c" />
