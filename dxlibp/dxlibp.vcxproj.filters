@@ -471,5 +471,8 @@
     <ClInclude Include="..\..\pmdReader\pmdReader.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="tiny_mutex.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

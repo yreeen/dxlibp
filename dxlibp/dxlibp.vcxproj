@@ -211,6 +211,7 @@
     <ClInclude Include="cpcnv\liblzr.h" />
     <ClInclude Include="safealloc.h" />
     <ClInclude Include="sound.h" />
+    <ClInclude Include="tiny_mutex.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
