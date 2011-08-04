@@ -70,6 +70,8 @@ typedef struct DXPSOUND2SOUNDDATA
 		struct
 		{
 			DXPAVCONTEXT Context;
+			u32* OutputBuf[2];//dxpSafeAllocで確保
+			int OutputDecoding;
 		}Stream;
 	}Data;
 	int SampleElement;//1024とか1152とか
@@ -105,16 +107,45 @@ int dxpSound2PrefetchFromHandle(DXPSOUND2HANDLE *ptr,int next)
 	switch(sdata->Type)
 	{
 	case DX_SOUNDDATATYPE_FILE:
-		//sdata->Data.Stream.Context.
+		if(sdata->Data.Stream.Context.nextPos != next)
+			dxpSoundCodec2Seek(&sdata->Data.Stream.Context,next);
+		sdata->Data.Stream.OutputDecoding ^= 1;
+		sdata->Data.Stream.Context.pcmOut = sdata->Data.Stream.OutputBuf[sdata->Data.Stream.OutputDecoding];
+		dxpSoundCodec2Decode(&sdata->Data.Stream.Context);
+		sdata->SampleElement = sdata->Data.Stream.Context.outSampleNum;
 		break;
 	case DX_SOUNDDATATYPE_MEMNOPRESS:
+		sdata->SampleElement = 1024;
 		break;
 	default:
 		return -1;
 	}
 	return sdata->SampleElement;
 }
-int dxpSound2GetDataFromHandle(DXPSOUND2HANDLE *ptr,int next);
+void* dxpSound2GetDataFromHandle(DXPSOUND2HANDLE *ptr,int next)
+{
+	DXPSOUND2SOUNDDATA *sdata = NULL;
+	if(next >= ptr->Length)return NULL;
+	if(next >= ptr->MainData->Length)
+	{
+		if(!ptr->LoopData)return NULL;
+		sdata = ptr->LoopData;
+		next -= ptr->MainData->Length;
+	}else
+		sdata = ptr->MainData;
+	switch(sdata->Type)
+	{
+	case DX_SOUNDDATATYPE_FILE:
+		dxpSoundCodec2Decode(&sdata->Data.Stream.Context);
+		break;
+	case DX_SOUNDDATATYPE_MEMNOPRESS:
+		return ((u32*)sdata->Data.Mem.Data) + next;
+		break;
+	default:
+		return NULL;
+	}
+	return NULL;
+}
 
 
 
@@ -161,6 +192,7 @@ typedef struct DXPSOUND2CHANNEL
 	int NextPos;
 	int StopFlag;
 	int IsHandleCurrentPosResponsible;
+	int NextOutputLength;
 }DXPSOUND2CHANNEL;
 
 int dxpSoundThreadFunc(SceSize len,void* ptr)
@@ -197,7 +229,7 @@ int dxpSoundThreadFunc(SceSize len,void* ptr)
 				if(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData != NULL)
 				{
 					tmLock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData->Mutex);
-					//プリフェッチを行う。
+					ChannelArray[ci].NextOutputLength = dxpSound2PrefetchFromHandle(dxpSound2Control.HandleArray + ChannelArray[ci].Handle,ChannelArray[ci].NextPos);
 					tmUnlock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData->Mutex);
 				}
 				tmUnlock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Mutex);
@@ -247,16 +279,16 @@ int dxpSoundThreadFunc(SceSize len,void* ptr)
 			tmLock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Mutex);
 			vol = ChannelArray[ci].Volume >= 0 ? ChannelArray[ci].Volume : dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Volume;
 			pan = -10000 <= ChannelArray[ci].Pan && ChannelArray[ci].Pan <= 10000 ? ChannelArray[ci].Pan : dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Pan;
+			sceAudioSetChannelDataLen(ChannelArray[ci].Channel,ChannelArray[ci].NextOutputLength);
 			sceAudioOutputPanned(
 				ChannelArray[ci].Channel,
 				PSP_AUDIO_VOLUME_MAX * (pan > 0 ? 1.0f - pan / 10000.0f : 1.0f) * vol / 255.0f,
 				PSP_AUDIO_VOLUME_MAX * (pan < 0 ? 1.0f + pan / 10000.0f : 1.0f) * vol / 255.0f,
-				/*データもってこい*/0);
+				dxpSound2GetDataFromHandle(dxpSound2Control.HandleArray + ChannelArray[ci].Handle,ChannelArray[ci].NextPos));
 			ChannelArray[ci].CurrentPos = ChannelArray[ci].NextPos;
 			if(ChannelArray[ci].IsHandleCurrentPosResponsible)
 				dxpSound2Control.HandleArray[ChannelArray[ci].Handle].CurrentPos = ChannelArray[ci].CurrentPos;
-
-			ChannelArray[ci].NextPos += 1024;//ここ要修正。SampleElement
+			ChannelArray[ci].NextPos += ChannelArray[ci].NextOutputLength;
 
 			if(ChannelArray[ci].PlayType == DX_PLAYTYPE_LOOP)
 			{
@@ -284,8 +316,9 @@ int dxpSoundThreadFunc(SceSize len,void* ptr)
 				if(ChannelArray[ci].NextPos >= dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Length)
 					ChannelArray[ci].StopFlag = 1;
 			}
-			//プリフェッチ
 
+			if(!ChannelArray[ci].StopFlag)
+				ChannelArray[ci].NextOutputLength = dxpSound2PrefetchFromHandle(dxpSound2Control.HandleArray + ChannelArray[ci].Handle,ChannelArray[ci].NextPos);
 
 			tmUnlock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Mutex);
 		}
