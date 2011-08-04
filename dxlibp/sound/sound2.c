@@ -88,6 +88,7 @@ int dxpSoundThreadFunc(SceSize len,void* ptr)
 	DXPSOUND2CHANNEL ChannelArray[PSP_AUDIO_CHANNEL_MAX];
 	int ci;
 	int vol,pan;
+	int a,b;
 	for(ci = 0;ci < PSP_AUDIO_CHANNEL_MAX;++ci)
 		ChannelArray[ci].Channel = -1;
 
@@ -175,13 +176,34 @@ int dxpSoundThreadFunc(SceSize len,void* ptr)
 			if(ChannelArray[ci].IsHandleCurrentPosResponsible)
 				dxpSound2Control.HandleArray[ChannelArray[ci].Handle].CurrentPos = ChannelArray[ci].CurrentPos;
 
-
-			
 			ChannelArray[ci].NextPos += 1024;//ここ要修正。SampleElement
 
-
-			//ループとかどうすんのかここに書く
-
+			if(ChannelArray[ci].PlayType == DX_PLAYTYPE_LOOP)
+			{
+				if(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].LoopData)
+				{
+					if(ChannelArray[ci].NextPos >= dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Length)
+						ChannelArray[ci].NextPos = dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData->Length;
+				}else
+				{
+					
+					if(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].LoopPos[1] < 0)
+						b = dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Length;
+					else 
+						b = dxpSound2Control.HandleArray[ChannelArray[ci].Handle].LoopPos[1];
+					if(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].LoopPos[0] < 0)
+						a = 0;
+					else 
+						a = dxpSound2Control.HandleArray[ChannelArray[ci].Handle].LoopPos[0];
+					if(ChannelArray[ci].NextPos >= b)
+						ChannelArray[ci].NextPos = a;
+				}
+			}
+			else
+			{
+				if(ChannelArray[ci].NextPos >= dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Length)
+					ChannelArray[ci].StopFlag = 1;
+			}
 			//プリフェッチ
 
 
@@ -191,3 +213,4 @@ int dxpSoundThreadFunc(SceSize len,void* ptr)
 	sceKernelExitDeleteThread(0);
 	return 0;
 }
+
