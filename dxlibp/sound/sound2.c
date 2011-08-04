@@ -18,8 +18,8 @@ typedef struct DXPSOUND2SOUNDDATA
 		}Stream;
 	}Data;
 	int Length;
-	int (*Prefetch)(int NextPos);
-	void* (*GetData)();
+	int (*Prefetch)(struct DXPSOUND2SOUNDDATA* thisptr,int NextPos);
+	void* (*GetData)(struct DXPSOUND2SOUNDDATA* thisptr);
 }DXPSOUND2SOUNDDATA;
 
 typedef struct DXPSOUND2HANDLE
@@ -85,6 +85,7 @@ int dxpSoundThreadFunc(SceSize len,void* ptr)
 {
 	DXPSOUND2CHANNEL ChannelArray[PSP_AUDIO_CHANNEL_MAX];
 	int ci;
+	int vol,pan;
 	for(ci = 0;ci < PSP_AUDIO_CHANNEL_MAX;++ci)
 		ChannelArray[ci].Channel = -1;
 
@@ -113,7 +114,7 @@ int dxpSoundThreadFunc(SceSize len,void* ptr)
 				{
 					tmLock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData->Mutex);
 					if(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData->Prefetch != NULL)
-						dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData->Prefetch(ChannelArray[ci].NextPos);
+						dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData->Prefetch(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData,ChannelArray[ci].NextPos);
 					tmUnlock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData->Mutex);
 				}
 				tmUnlock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Mutex);
@@ -133,6 +134,7 @@ int dxpSoundThreadFunc(SceSize len,void* ptr)
 					if(ChannelArray[ci].Channel < 0)continue;
 					while(sceAudioGetChannelRestLen(ChannelArray[ci].Channel) > 0)sceKernelDelayThread(1000);
 					sceAudioChRelease(ChannelArray[ci].Channel);
+					ChannelArray[ci].Channel = -1;
 					tmLock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Mutex);
 					dxpSound2Control.HandleArray[ChannelArray[ci].Handle].RefCount -= 1;
 					tmUnlock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Mutex);
@@ -145,11 +147,56 @@ int dxpSoundThreadFunc(SceSize len,void* ptr)
 
 		for(ci = 0;ci < PSP_AUDIO_CHANNEL_MAX;++ci)
 		{
+			//チャンネルのバッファが空になった
+			//終了すべきか？なら解放
+			//次のデータを取ってきて再生
+			//次のデータの位置を探して、必要ならPrefetch。ループ
+
+
+
+
 			if(sceAudioGetChannelRestLength(ChannelArray[ci].Channel) <= 0)
 			{
-//				sceAudioOutputPanned
+				if(ChannelArray[ci].StopFlag)
+				{
+					sceAudioChRelease(ChannelArray[ci].Channel);
+					ChannelArray[ci].Channel = -1;
+					tmLock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Mutex);
+					dxpSound2Control.HandleArray[ChannelArray[ci].Handle].RefCount -= 1;
+					tmUnlock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Mutex);
+					continue;
+				}
+				tmLock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Mutex);
+				tmLock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData->Mutex);
+				vol = ChannelArray[ci].Volume >= 0 ? ChannelArray[ci].Volume : dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Volume;
+				pan = -10000 <= ChannelArray[ci].Pan && ChannelArray[ci].Pan <= 10000 ? ChannelArray[ci].Pan : dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Pan;
+				if(ChannelArray[ci].NextPos > dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData->Length 
+					&& dxpSound2Control.HandleArray[ChannelArray[ci].Handle].LoopData)
+				{
+					tmLock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].LoopData->Mutex);
+					sceAudioOutputPanned(
+						ChannelArray[ci].Channel,
+						PSP_AUDIO_VOLUME_MAX * (pan > 0 ? 1.0f - pan / 10000.0f : 1.0f) * vol / 255.0f,
+						PSP_AUDIO_VOLUME_MAX * (pan < 0 ? 1.0f + pan / 10000.0f : 1.0f) * vol / 255.0f,
+						dxpSound2Control.HandleArray[ChannelArray[ci].Handle].LoopData->GetData(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].LoopData));
+					tmUnlock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].LoopData->Mutex);
+				}
+				else
+				{
+					sceAudioOutputPanned(
+						ChannelArray[ci].Channel,
+						PSP_AUDIO_VOLUME_MAX * (pan > 0 ? 1.0f - pan / 10000.0f : 1.0f) * vol / 255.0f,
+						PSP_AUDIO_VOLUME_MAX * (pan < 0 ? 1.0f + pan / 10000.0f : 1.0f) * vol / 255.0f,
+						dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData->GetData(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData));
+					
+				}
+				tmUnlock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData->Mutex);
+				tmUnlock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Mutex);
+
 
 			}
 		}
+
+
 	}
 }
