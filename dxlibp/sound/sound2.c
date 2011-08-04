@@ -2,6 +2,61 @@
 #include "../tiny_mutex.h"
 #include "../sound.h"
 
+int dxpSoundCodec2InitMP3(DXPAVCONTEXT *context)
+{
+	if(!context)return -1;
+	return dxpSoundMp3Init(&pHnd->avContext);
+}
+
+int dxpSoundCodec2GetSampleLength(DXPAVCONTEXT *context)
+{
+	if(!context)return -1;
+	switch(context->format)
+	{
+	case DXP_SOUNDFMT_MP3:
+		return dxpSoundMp3GetSampleLength(&pHnd->avContext);
+	default:
+		return -1;
+	}
+}
+
+int dxpSoundCodec2Seek(DXPAVCONTEXT *context,int sample)
+{
+	if(!context)return -1;
+	switch(context->format)
+	{
+	case DXP_SOUNDFMT_MP3:
+		return dxpSoundMp3Seek(context,sample);
+	default:
+		return -1;
+	}
+}
+
+int dxpSoundCodec2Decode(DXPAVCONTEXT *context)
+{
+	if(!context)return -1;
+	switch(context->format)
+	{
+	case DXP_SOUNDFMT_MP3:
+		return dxpSoundMp3Decode(context);
+	default:
+		return -1;
+	}
+}
+
+int dxpSoundCodec2End(DXPAVCONTEXT *context)
+{
+	if(!context)return -1;
+	switch(context->format)
+	{
+	case DXP_SOUNDFMT_MP3:
+		return dxpSoundMp3End(context);
+	default:
+		return -1;
+	}
+}
+
+
 typedef struct DXPSOUND2SOUNDDATA
 {
 	int Mutex;
@@ -35,6 +90,31 @@ typedef struct DXPSOUND2HANDLE
 	int NextOnlyPan;
 	int CurrentPos;
 }DXPSOUND2HANDLE;
+
+int dxpSound2PrefetchFromHandle(DXPSOUND2HANDLE *ptr,int next)
+{
+	DXPSOUND2SOUNDDATA *sdata = NULL;
+	if(next >= ptr->Length)return -1;
+	if(next >= ptr->MainData->Length)
+	{
+		if(!ptr->LoopData)return -1;
+		sdata = ptr->LoopData;
+		next -= ptr->MainData->Length;
+	}else
+		sdata = ptr->MainData;
+	switch(sdata->Type)
+	{
+	case DX_SOUNDDATATYPE_FILE:
+		sdata->Data.Stream.Context.
+		break;
+	case DX_SOUNDDATATYPE_MEMNOPRESS:
+		break;
+	default:
+		return -1;
+	}
+	return sdata->SampleElement;
+}
+int dxpSound2GetDataFromHandle(DXPSOUND2HANDLE *ptr,int next);
 
 
 
