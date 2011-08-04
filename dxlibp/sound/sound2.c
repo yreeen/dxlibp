@@ -5,7 +5,7 @@
 int dxpSoundCodec2InitMP3(DXPAVCONTEXT *context)
 {
 	if(!context)return -1;
-	return dxpSoundMp3Init(&pHnd->avContext);
+	return dxpSoundMp3Init(context);
 }
 
 int dxpSoundCodec2GetSampleLength(DXPAVCONTEXT *context)
@@ -14,7 +14,7 @@ int dxpSoundCodec2GetSampleLength(DXPAVCONTEXT *context)
 	switch(context->format)
 	{
 	case DXP_SOUNDFMT_MP3:
-		return dxpSoundMp3GetSampleLength(&pHnd->avContext);
+		return dxpSoundMp3GetSampleLength(context);
 	default:
 		return -1;
 	}
@@ -105,7 +105,7 @@ int dxpSound2PrefetchFromHandle(DXPSOUND2HANDLE *ptr,int next)
 	switch(sdata->Type)
 	{
 	case DX_SOUNDDATATYPE_FILE:
-		sdata->Data.Stream.Context.
+		//sdata->Data.Stream.Context.
 		break;
 	case DX_SOUNDDATATYPE_MEMNOPRESS:
 		break;
