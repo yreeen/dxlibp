@@ -1,6 +1,8 @@
 #include <pspaudio.h>
 #include "../tiny_mutex.h"
 #include "../sound.h"
+#include <stdio.h>
+#define for_each_c(ITR,ARRAY) for(ITR = ARRAY;ITR < ARRAY + (sizeof(ARRAY) / sizeof(ARRAY[0]));++ITR)
 
 int dxpSoundCodec2InitMP3(DXPAVCONTEXT *context)
 {
@@ -298,7 +300,6 @@ int dxpSoundThreadFunc(SceSize len,void* ptr)
 						ChannelArray[ci].NextPos = dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData->Length;
 				}else
 				{
-					
 					if(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].LoopPos[1] < 0)
 						b = dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Length;
 					else 
@@ -327,3 +328,61 @@ int dxpSoundThreadFunc(SceSize len,void* ptr)
 	return 0;
 }
 
+int LoadSoundMem_TEST(const char* filename)
+{
+	int fh = FileRead_open(filename,0);
+
+}
+int DeleteSoundMem_TEST(int shandle)
+{
+
+}
+
+int dxpSound2Init()
+{
+	DXPSOUND2HANDLE *pHnd;
+	sceUtilityLoadAvModule(PSP_AV_MODULE_AVCODEC);
+	sceKernelStartThread(sceKernelCreateThread("dxpSound2Thread",dxpSoundThreadFunc,0x11,0x8000,PSP_THREAD_ATTR_USER,NULL),0,NULL);
+	for_each_c(pHnd,dxpSound2Control.HandleArray)
+	{
+		char name[64];
+		snprintf(name,63,"dxpSound2HandleMutex%p",pHnd);
+		pHnd->CurrentPos = 0;
+		pHnd->Length = 0;
+		pHnd->LoopData = NULL;
+		pHnd->LoopPos[0] = -1;
+		pHnd->LoopPos[1] = -1;
+		pHnd->MainData = NULL;
+		pHnd->Mutex = tmCreate(name);
+		pHnd->NextOnlyPan = -1000000;
+		pHnd->NextOnlyVolume = -1;
+		pHnd->Pan = 0;
+		pHnd->RefCount = 0;
+		pHnd->Volume = 255;
+	}
+	return 0;
+}
+
+int dxpSound2Term()
+{
+	DXPSOUND2HANDLE *pHnd;
+	DXPSOUND2MESSAGE msg;
+	msg.Type = DS2M_EXIT;
+	sceKernelSendMsgPipe(dxpSound2Control.MessagePipeID,&msg,sizeof(msg),0,0,NULL);
+	for_each_c(pHnd,dxpSound2Control.HandleArray)
+	{
+		while(1)
+		{
+			int rc;
+			tmLock(pHnd->Mutex);
+			rc = pHnd->RefCount;
+			tmUnlock(pHnd->Mutex);
+			if(!rc)break;
+		}
+		tmDelete(pHnd->Mutex);
+		pHnd->Mutex = NULL;
+		
+
+	}
+	return 0;
+}
