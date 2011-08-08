@@ -174,6 +174,8 @@ typedef struct DXPSOUND2MESSAGE
 	int Volume;
 	int Pan;
 	int StartPos;
+	int StopMutex;
+	int *StopSignal;
 }DXPSOUND2MESSAGE;
 
 extern DXPSOUND2CONTROL dxpSound2Control;
@@ -195,6 +197,8 @@ typedef struct DXPSOUND2CHANNEL
 	int StopFlag;
 	int IsHandleCurrentPosResponsible;
 	int NextOutputLength;
+	int StopMutex;
+	int* StopMutex;
 }DXPSOUND2CHANNEL;
 
 int dxpSoundThreadFunc(SceSize len,void* ptr)
@@ -228,6 +232,7 @@ int dxpSoundThreadFunc(SceSize len,void* ptr)
 				tmLock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Mutex);
 				dxpSound2Control.HandleArray[ChannelArray[ci].Handle].RefCount += 1;
 				ChannelArray[ci].IsHandleCurrentPosResponsible = dxpSound2Control.HandleArray[ChannelArray[ci].Handle].RefCount == 1 ? 1 : 0;
+				ChannelArray[ci].StopMutex = msg.StopMutex
 				if(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData != NULL)
 				{
 					tmLock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData->Mutex);
@@ -333,6 +338,24 @@ int LoadSoundMem_TEST(const char* filename)
 	int fh = FileRead_open(filename,0);
 
 }
+
+int PlaySoundMem_TEST(int shandle,int playtype,int rewind)
+{
+	if(shandle < 0 || shandle >= DXP_BUILDOPTION_SOUNDHANDLE_MAX)return -1;
+	switch(playtype)
+	{
+	case DX_PLAYTYPE_NORMAL:
+		break;
+	case DX_PLAYTYPE_BACK:
+		break;
+	case DX_PLAYTYPE_LOOP:
+		break;
+	default:
+		return -1;
+	}
+
+}
+
 int DeleteSoundMem_TEST(int shandle)
 {
 
