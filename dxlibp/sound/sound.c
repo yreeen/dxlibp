@@ -99,7 +99,7 @@ int LoadSoundMem(const char *filename)
 			FileRead_close(fileHandle);
 			return -1;
 		}
-		memset(pHnd->memnopress.pcmBuf,0,pHnd->memnopress.length);
+		memset(pHnd->memnopress.pcmBuf,0,pHnd->memnopress.length * 4);
 		pHnd->avContext.nextPos = 0;
 		for(i = 0;1;++i)
 		{

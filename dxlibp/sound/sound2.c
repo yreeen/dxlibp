@@ -2,12 +2,22 @@
 #include "../tiny_mutex.h"
 #include "../sound.h"
 #include <stdio.h>
+#include <string.h>
+#include <malloc.h>
+
+#define DXP_BUILDOPTION_SOUNDDATA_MAX (DXP_BUILDOPTION_SOUNDHANDLE_MAX * 2)
+
 #define for_each_c(ITR,ARRAY) for(ITR = ARRAY;ITR < ARRAY + (sizeof(ARRAY) / sizeof(ARRAY[0]));++ITR)
 
-int dxpSoundCodec2InitMP3(DXPAVCONTEXT *context)
+
+
+int dxpSoundCodec2Init(DXPAVCONTEXT *context)
 {
+	int status;
 	if(!context)return -1;
-	return dxpSoundMp3Init(context);
+	status = dxpSoundMp3Init(context);
+	if(!(status < 0))return 0;
+	return -1;
 }
 
 int dxpSoundCodec2GetSampleLength(DXPAVCONTEXT *context)
@@ -61,13 +71,14 @@ int dxpSoundCodec2End(DXPAVCONTEXT *context)
 
 typedef struct DXPSOUND2SOUNDDATA
 {
+	int used;
 	int Mutex;
 	int RefCount;
 	int Type;
 	union{
 		struct
 		{
-			void* Data;
+			u32* Data;
 		}Mem;
 		struct
 		{
@@ -82,6 +93,7 @@ typedef struct DXPSOUND2SOUNDDATA
 
 typedef struct DXPSOUND2HANDLE
 {
+	int used;
 	int Mutex;
 	int RefCount;
 	int Length;
@@ -153,9 +165,10 @@ void* dxpSound2GetDataFromHandle(DXPSOUND2HANDLE *ptr,int next)
 
 typedef struct DXPSOUND2CONTROL
 {
+	int init;
 	SceUID MessagePipeID;
 	DXPSOUND2HANDLE HandleArray[DXP_BUILDOPTION_SOUNDHANDLE_MAX];
-	DXPSOUND2SOUNDDATA SoundArray[DXP_BUILDOPTION_SOUNDHANDLE_MAX * 2];
+	DXPSOUND2SOUNDDATA SoundArray[DXP_BUILDOPTION_SOUNDDATA_MAX];
 }DXPSOUND2CONTROL;
 
 typedef enum DXPSOUND2MESSAGETYPE
@@ -177,6 +190,68 @@ typedef struct DXPSOUND2MESSAGE
 }DXPSOUND2MESSAGE;
 
 extern DXPSOUND2CONTROL dxpSound2Control;
+
+int dxpSound2ReserveHandle()
+{
+	if(!dxpSound2Control.init)return -1;
+	int i;
+	DXPSOUND2HANDLE *pHnd;
+	for(i = 0;i < DXP_BUILDOPTION_SOUNDHANDLE_MAX;++i)
+	{
+		if(dxpSound2Control.HandleArray[i].used)continue;
+		pHnd = dxpSound2Control.HandleArray + i;
+		memset(pHnd,0,sizeof(DXPSOUND2HANDLE));
+		pHnd->MainData = NULL;
+		pHnd->LoopData = NULL;
+		pHnd->Volume = 255;
+		pHnd->used = 1;
+		return i;
+	}
+	return -1;
+}
+
+int dxpSound2ReleaseHandle(int handle)
+{
+	if(!dxpSound2Control.init)return -1;
+	DXPSOUND2HANDLE *pHnd;
+	if(handle < 0 || handle >= DXP_BUILDOPTION_SOUNDHANDLE_MAX)return -1;
+	pHnd = dxpSound2Control.HandleArray + handle;
+	pHnd->used = 0;
+	return 0;
+}
+
+DXPSOUND2HANDLE* dxpSound2Handle2Ptr(int handle)
+{
+	if(!dxpSound2Control.init)return NULL;
+	DXPSOUND2HANDLE *pHnd;
+	if(handle < 0 || handle >= DXP_BUILDOPTION_SOUNDHANDLE_MAX)return NULL;
+	pHnd = dxpSound2Control.HandleArray + handle;
+	if(!pHnd->used)return NULL;
+	return pHnd;
+}
+
+DXPSOUND2SOUNDDATA* dxpSound2ReserveData()
+{
+	if(!dxpSound2Control.init)return NULL;
+	int i;
+	DXPSOUND2SOUNDDATA *pData;
+	for(i = 0;i < DXP_BUILDOPTION_SOUNDDATA_MAX;++i)
+	{
+		if(dxpSound2Control.SoundArray[i].used)continue;
+		pData = dxpSound2Control.SoundArray + i;
+		memset(pData,0,sizeof(DXPSOUND2SOUNDDATA));
+		pData->used = 1;
+		return pData;
+	}
+	return NULL;
+}
+
+void dxpSound2ReleaseData(DXPSOUND2SOUNDDATA* ptr)
+{
+	if(!dxpSound2Control.init)return;
+	if(ptr == NULL)return;
+	ptr->used = 0;
+}
 
 
 //------------------------------------------------
@@ -330,12 +405,133 @@ int dxpSoundThreadFunc(SceSize len,void* ptr)
 
 int LoadSoundMem_TEST(const char* filename)
 {
-	int fh = FileRead_open(filename,0);
+	int i = 0;
+	int fh = 0;
+	DXPSOUND2HANDLE *pHnd = NULL;
+	DXPAVCONTEXT context;
+	if(!dxpSound2Control.init)return -1;
+	int fsize = FileRead_size(filename);
+	if(fsize <= 0)return -1;
+	fh = FileRead_open(filename,0);
+	if(fh == 0)return -1;
+	int handle = dxpSound2ReserveHandle();
+	pHnd = dxpSound2Handle2Ptr(handle);
+	if(pHnd == NULL)goto err;
+	
+	pHnd->MainData = dxpSound2ReserveData();
+	if(pHnd->MainData == NULL)goto err;
+	pHnd->LoopData = NULL;
+	pHnd->MainData->Type = dxpSoundData.createSoundDataType;
+	switch(pHnd->MainData->Type)
+	{
+	case DX_SOUNDDATATYPE_MEMNOPRESS:
+		context.fileHandle = fh;
+		context.fileSize = fsize;
+		if(dxpSoundCodec2Init(&context) < 0)
+			goto err;
+		pHnd->MainData->Length = dxpSoundCodec2GetSampleLength(&context);
+		pHnd->MainData->Data.Mem.Data = memalign(64,pHnd->MainData->Length * 4);
+		if(!pHnd->MainData->Data.Mem.Data)
+		{
+			dxpSoundCodec2End(&context);
+			goto err;
+		}
+		memset(pHnd->MainData->Data.Mem.Data,0,pHnd->MainData->Length * 4);
+		dxpSoundCodec2Seek(&context,0);
+		for(i = 0;1;++i)
+		{
+			if(context.nextPos > pHnd->MainData->Length)break;
+			context.pcmOut = pHnd->MainData->Data.Mem.Data + context.nextPos;
+			if(dxpSoundCodec2Decode(&context) < 0)break;
+		}
+		dxpSoundCodec2End(&context);
+		FileRead_close(fh);
+		break;
+	case DX_SOUNDDATATYPE_FILE:
+		//–¢ì¬
+		break;
+	default:
+		goto err;
+	}
 
+	return handle;
+err:
+	if(pHnd != NULL)
+		dxpSound2ReleaseData(pHnd->MainData);
+	dxpSound2ReleaseHandle(handle);
+	FileRead_close(fh);
+	return -1;
 }
+
 int DeleteSoundMem_TEST(int shandle)
 {
+	return -1;
+}
 
+int PlaySoundMem_TEST(int handle,int playtype,int rewindflag)
+{
+	DXPSOUND2MESSAGE msg;
+	DXPSOUND2HANDLE *pHnd = dxpSound2Handle2Ptr(handle);
+	if(pHnd == NULL)return -1;
+	msg.PlayType = playtype;
+	msg.Handle = handle;
+	msg.Pan = -20000;
+	if(-10000 <= pHnd->NextOnlyPan && pHnd->NextOnlyPan <= 10000)
+	{
+		msg.Pan = pHnd->NextOnlyPan;
+		pHnd->NextOnlyPan = -20000;
+	}
+	msg.StartPos;
+	msg.Volume = -1;
+	if(pHnd->NextOnlyVolume > 0)
+	{
+		msg.Volume = pHnd->NextOnlyVolume;
+		pHnd->NextOnlyVolume = -1;
+	}
+	msg.Type = DXPSOUND2MESSAGETYPE::DS2M_PLAY;
+	
+	sceKernelTrySendMsgPipe(dxpSound2Control.MessagePipeID,&msg,sizeof(msg),0,0);
+//	DXPSOUNDHANDLE *pHnd;
+//	SHND2PTR(handle,pHnd);
+////	while(pHnd->cmd != DXP_SOUNDCMD_NONE)sceKernelDelayThread(100);
+//	switch(pHnd->soundDataType)
+//	{
+//	case DX_SOUNDDATATYPE_MEMNOPRESS:
+//		if(playtype == DX_PLAYTYPE_NORMAL)
+//		{
+//			int channel = sceAudioChReserve(PSP_AUDIO_NEXT_CHANNEL,pHnd->avContext.outSampleNum,PSP_AUDIO_FORMAT_STEREO);
+//			if(channel < 0)return 0;
+//			int pos = 0;
+//			while(pos < pHnd->memnopress.length)
+//			{
+//				sceAudioOutputPannedBlocking(channel,
+//					PSP_AUDIO_VOLUME_MAX * (pHnd->pan > 0 ? 1.0f - pHnd->pan / 10000.0f : 1.0f) * pHnd->volume / 255.0f,
+//					PSP_AUDIO_VOLUME_MAX * (pHnd->pan < 0 ? 1.0f + pHnd->pan / 10000.0f : 1.0f) * pHnd->volume / 255.0f,
+//					pHnd->memnopress.pcmBuf + pos);
+//				pos += pHnd->avContext.outSampleNum;
+//			}
+//			sceAudioChRelease(channel);
+//			return 0;
+//		}
+//		while(pHnd->cmd != DXP_SOUNDCMD_NONE)sceKernelDelayThread(100);
+//		pHnd->memnopress.cmdplaytype = playtype;
+//		pHnd->cmd = DXP_SOUNDCMD_PLAY;
+//		break;
+//	case DX_SOUNDDATATYPE_FILE:
+//		pHnd->file.loop = playtype == DX_PLAYTYPE_LOOP ? 1 : 0;
+//		if(rewindflag)pHnd->file.gotoPos = 0;
+//		while(pHnd->cmd != DXP_SOUNDCMD_NONE)sceKernelDelayThread(100);
+//		pHnd->cmd = DXP_SOUNDCMD_PLAY;
+//		if(playtype == DX_PLAYTYPE_NORMAL)
+//		{
+//			while(pHnd->cmd != DXP_SOUNDCMD_NONE)sceKernelDelayThread(100);
+//			while(pHnd->playing)sceKernelDelayThread(100);
+//		}
+//		break;
+//	default:
+//		return -1;
+//	}
+//	return 0;
 }
 
 int dxpSound2Init()
@@ -347,6 +543,7 @@ int dxpSound2Init()
 	{
 		char name[64];
 		snprintf(name,63,"dxpSound2HandleMutex%p",pHnd);
+		pHnd->used = 0;
 		pHnd->CurrentPos = 0;
 		pHnd->Length = 0;
 		pHnd->LoopData = NULL;
@@ -360,6 +557,7 @@ int dxpSound2Init()
 		pHnd->RefCount = 0;
 		pHnd->Volume = 255;
 	}
+
 	return 0;
 }
 
@@ -371,6 +569,7 @@ int dxpSound2Term()
 	sceKernelSendMsgPipe(dxpSound2Control.MessagePipeID,&msg,sizeof(msg),0,0,NULL);
 	for_each_c(pHnd,dxpSound2Control.HandleArray)
 	{
+		if(!pHnd->used)continue;
 		while(1)
 		{
 			int rc;
@@ -380,7 +579,7 @@ int dxpSound2Term()
 			if(!rc)break;
 		}
 		tmDelete(pHnd->Mutex);
-		pHnd->Mutex = NULL;
+		pHnd->Mutex = 0;
 		
 
 	}
