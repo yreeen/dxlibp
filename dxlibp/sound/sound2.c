@@ -187,6 +187,8 @@ typedef struct DXPSOUND2MESSAGE
 	int Volume;
 	int Pan;
 	int StartPos;
+	int StopMutex;
+	int *StopNotice;
 }DXPSOUND2MESSAGE;
 
 extern DXPSOUND2CONTROL dxpSound2Control;
@@ -270,6 +272,8 @@ typedef struct DXPSOUND2CHANNEL
 	int StopFlag;
 	int IsHandleCurrentPosResponsible;
 	int NextOutputLength;
+	int StopMutex;
+	int* StopNotice;
 }DXPSOUND2CHANNEL;
 
 int dxpSoundThreadFunc(SceSize len,void* ptr)
@@ -303,6 +307,8 @@ int dxpSoundThreadFunc(SceSize len,void* ptr)
 				tmLock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].Mutex);
 				dxpSound2Control.HandleArray[ChannelArray[ci].Handle].RefCount += 1;
 				ChannelArray[ci].IsHandleCurrentPosResponsible = dxpSound2Control.HandleArray[ChannelArray[ci].Handle].RefCount == 1 ? 1 : 0;
+				ChannelArray[ci].StopMutex = msg.StopMutex;
+				ChannelArray[ci].StopNotice = msg.StopNotice;
 				if(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData != NULL)
 				{
 					tmLock(dxpSound2Control.HandleArray[ChannelArray[ci].Handle].MainData->Mutex);
@@ -462,7 +468,6 @@ err:
 	FileRead_close(fh);
 	return -1;
 }
-
 int DeleteSoundMem_TEST(int shandle)
 {
 	return -1;
@@ -481,14 +486,14 @@ int PlaySoundMem_TEST(int handle,int playtype,int rewindflag)
 		msg.Pan = pHnd->NextOnlyPan;
 		pHnd->NextOnlyPan = -20000;
 	}
-	msg.StartPos;
+	msg.StartPos = rewindflag ? 0 : pHnd->CurrentPos;
 	msg.Volume = -1;
 	if(pHnd->NextOnlyVolume > 0)
 	{
 		msg.Volume = pHnd->NextOnlyVolume;
 		pHnd->NextOnlyVolume = -1;
 	}
-	msg.Type = DXPSOUND2MESSAGETYPE::DS2M_PLAY;
+	msg.Type = DS2M_PLAY;
 	
 	sceKernelTrySendMsgPipe(dxpSound2Control.MessagePipeID,&msg,sizeof(msg),0,0);
 //	DXPSOUNDHANDLE *pHnd;
