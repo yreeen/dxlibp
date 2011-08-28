@@ -111,32 +111,33 @@ int dxpSoundMp3Init(DXPAVCONTEXT *av)
 	FileRead_seek(av->fileHandle,av->mp3.id3v2Pos,SEEK_SET);
 	if(FileRead_read(buf,4,av->fileHandle) != 4)return -1;
 	status = dxpSoundMp3CheckFrameHeader(buf);
-	if(status == -1)return -1;
+	if(status == -1)return -2;
 	av->format = DXP_SOUNDFMT_MP3;
 	av->sampleRate = dxpSoundMp3GetSampleRate(buf);
 
 	FileRead_seek(av->fileHandle,av->mp3.id3v2Pos,SEEK_SET);
 	av->mp3.avBuf = dxpSafeAlloc(sizeof(DXPAVCODEC_BUFFER));
-	if(!av->mp3.avBuf)return -1;
+	if(!av->mp3.avBuf)return -3;
 	memset(av->mp3.avBuf,0,sizeof(DXPAVCODEC_BUFFER));
+printfDx("avBuf addr = %p\n",av->mp3.avBuf);
 	status = sceAudiocodecCheckNeedMem((unsigned long*)av->mp3.avBuf,PSP_CODEC_MP3);
 	if(status < 0)
 	{
 		dxpSafeFree(av->mp3.avBuf);
-		return -1;
+		return -4;
 	}
 	status = sceAudiocodecGetEDRAM((unsigned long*)av->mp3.avBuf,PSP_CODEC_MP3);
 	if(status < 0)
 	{
 		dxpSafeFree(av->mp3.avBuf);
-		return -1;
+		return -5;
 	}
 	status = sceAudiocodecInit((unsigned long*)av->mp3.avBuf,PSP_CODEC_MP3);
 	if(status < 0)
 	{
 		sceAudiocodecReleaseEDRAM((unsigned long*)av->mp3.avBuf);
 		dxpSafeFree(av->mp3.avBuf);
-		return -1;
+		return -6;
 	}
 	av->mp3.mp3Buf = NULL;
 	av->mp3.mp3BufSize = 0;

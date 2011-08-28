@@ -48,8 +48,8 @@ int DxLib_Init()
 	}
 	dxpInputInit();
 	dxpGraphicsInit();
-	dxpSoundInit();
-
+//	dxpSoundInit();
+//	dxpSound2Init();
 	SRand(time(NULL));
 	
 	dxpGeneralData.initialized = 1;

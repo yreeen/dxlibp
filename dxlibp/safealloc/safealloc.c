@@ -132,16 +132,20 @@ void* dxpSafeAlloc(u32 size)
 {
 	if(!size)return NULL;
 	if(dxpSafeAllocGlobalVPL < 0)return NULL;
-	void* addr;
-	if(sceKernelAllocateVpl(dxpSafeAllocGlobalVPL,size,&addr,NULL) < 0)
+	u32 addr,addr2;
+	void* addr_raw;
+	if(sceKernelAllocateVpl(dxpSafeAllocGlobalVPL,size + 64,&addr_raw,NULL) < 0)
 		return NULL;
-	return addr;
-
+	addr = (u32)addr_raw;
+	addr2 = addr = (addr + 64) & ~63;
+	addr2 -= 4;
+	*(u32*)addr2 = (u32)addr_raw;
+	return (void*)addr;
 }
 
 void dxpSafeFree(void *addr)
 {
-	if(!addr)return;
 	if(dxpSafeAllocGlobalVPL < 0)return;
-	sceKernelFreeVpl(dxpSafeAllocGlobalVPL,addr);
+	u32 addr_raw = (u32*)addr - 1;
+	sceKernelFreeVpl(dxpSafeAllocGlobalVPL,(void*)addr_raw);
 }
