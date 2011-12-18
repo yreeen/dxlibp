@@ -121,6 +121,8 @@ int dxpSoundThreadFunc_memnopress(SceSize len,void* ptr)
 			case DXP_SOUNDCMD_NONE:
 				continue;
 			case DXP_SOUNDCMD_PLAY:
+                if (!dxpSoundArray[i].playing) dxpSoundArray[i].playing = 1;
+
 				for(j = 0;j < PSP_AUDIO_CHANNEL_MAX;++j)
 				{
 					if(handle[j] < 0)
@@ -138,18 +140,18 @@ int dxpSoundThreadFunc_memnopress(SceSize len,void* ptr)
 			case DXP_SOUNDCMD_STOP:
 			case DXP_SOUNDCMD_EXIT:
 			default:
+				dxpSoundArray[i].playing = 0;
 				for(j = 0;j < PSP_AUDIO_CHANNEL_MAX;++j)
 				{
 					if(handle[j] == i)
 					{
 						if(channel[j] >= 0)sceAudioChRelease(channel[j]);
 						channel[j] = -1;
-						--dxpSoundArray[handle[j]].playing;
 						handle[j] = -1;
 					}
 				}
 				dxpSoundArray[i].cmd = DXP_SOUNDCMD_NONE;
-				break;			
+				break;
 			}
 		}
 
@@ -170,7 +172,7 @@ int dxpSoundThreadFunc_memnopress(SceSize len,void* ptr)
 						sceAudioChRelease(channel[i]);
 					channel[i] = -1;
 					handle[i] = -1;
-					--dxpSoundArray[handle[i]].playing;
+					dxpSoundArray[handle[i]].playing = 0;
 					continue;
 				}
 			}
